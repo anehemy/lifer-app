@@ -60,8 +60,8 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
             const isActive = location === item.path;
             return (
               <Link key={item.path} href={item.path}>
-                <a
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                <div
+                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer ${
                     isActive
                       ? "bg-primary text-primary-foreground shadow-md"
                       : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
@@ -69,7 +69,7 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
                 >
                   <Icon className="h-5 w-5" />
                   <span className="font-medium">{item.label}</span>
-                </a>
+                </div>
               </Link>
             );
           })}
