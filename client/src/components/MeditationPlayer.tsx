@@ -57,8 +57,24 @@ export default function MeditationPlayer({ meditation, onClose, onComplete }: Me
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.8; // Slower, calmer pace
-    utterance.pitch = 1.0;
+    
+    // Select a female voice
+    const voices = window.speechSynthesis.getVoices();
+    const femaleVoice = voices.find(voice => 
+      voice.name.includes('Female') || 
+      voice.name.includes('Samantha') || 
+      voice.name.includes('Victoria') ||
+      voice.name.includes('Karen') ||
+      voice.name.includes('Moira') ||
+      voice.name.includes('Zira') ||
+      voice.name.toLowerCase().includes('female')
+    );
+    if (femaleVoice) {
+      utterance.voice = femaleVoice;
+    }
+    
+    utterance.rate = 0.75; // Very slow, calming pace
+    utterance.pitch = 1.1; // Slightly higher pitch for warmth
     utterance.volume = isMuted ? 0 : 1;
     
     utterance.onend = () => {

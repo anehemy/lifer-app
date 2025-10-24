@@ -269,20 +269,21 @@ Make it personal, poetic, and powerful. This should move them.`;
           context += `\n\nVision items: ${visionItems.map(v => v.title).join(", ")}`;
         }
         
-        const systemPrompt = `You are a meditation guide creating a personalized ${input.duration}-minute guided meditation script.
+        const systemPrompt = `You are a meditation guide. Create a ${input.duration}-minute guided meditation for "${input.meditationType}".
 
-Create a meditation script that:
-- Is exactly ${input.duration} minutes when read at a calm, meditative pace (about 100-120 words per minute)
-- Uses second person ("you", "your")
-- Includes breathing instructions, body awareness, and visualization
-- Incorporates the user's personal context naturally
-- Has a clear beginning (grounding), middle (main practice), and end (integration)
-- Uses calming, supportive language
-- Includes appropriate pauses marked with [pause 5s], [pause 10s], etc.
+IMPORTANT: Output ONLY the meditation script itself - the exact words to be spoken to the user. Do NOT include any meta-commentary, instructions, or explanations about the script.
 
-Meditation type: ${input.meditationType}
+Guidelines for the meditation:
+- About ${input.duration * 100} words total (spoken at 100 words/minute)
+- Use second person ("you", "your") throughout
+- Begin with grounding (breath awareness, settling in)
+- Middle section: main practice (visualization, body scan, or reflection)
+- End with gentle integration and return to awareness
+- Use calming, supportive, gentle language
+- Include natural pauses by saying "pause for a moment" or "take your time"
+- Weave in the user's context naturally if provided
 
-Format the script with clear sections and pause markers.`;
+Start directly with the meditation. For example: "Begin by finding a comfortable position..."`;
 
         const response = await invokeLLM({
           messages: [
