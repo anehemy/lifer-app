@@ -147,11 +147,11 @@ export async function deleteVisionItem(id: number, userId: number): Promise<void
 }
 
 // Primary Aim
-export async function getUserPrimaryAim(userId: number): Promise<PrimaryAim | undefined> {
+export async function getUserPrimaryAim(userId: number): Promise<PrimaryAim | null> {
   const db = await getDb();
-  if (!db) return undefined;
+  if (!db) return null;
   const result = await db.select().from(primaryAims).where(eq(primaryAims.userId, userId)).limit(1);
-  return result.length > 0 ? result[0] : undefined;
+  return result.length > 0 ? result[0] : null;
 }
 
 export async function upsertPrimaryAim(userId: number, aim: Partial<InsertPrimaryAim>): Promise<PrimaryAim> {
