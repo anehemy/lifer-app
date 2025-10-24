@@ -59,7 +59,7 @@ export default function StartHereGuide() {
             <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200">
               <CardContent className="pt-6">
                 <p className="text-lg leading-relaxed">
-                  Hi, I\'m <strong>{MR_MG_NAME}</strong>, your life mentor. I\'m here to help you discover your <strong>Primary Aim</strong> - 
+                  Hi, I'm <strong>{MR_MG_NAME}</strong>, your life mentor. I'm here to help you discover your <strong>Primary Aim</strong> - 
                   not what you want to DO, but who you want to BE and how you want to LIVE.
                 </p>
               </CardContent>
@@ -96,7 +96,7 @@ export default function StartHereGuide() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-muted-foreground">
-                      I\'ll analyze your journal entries to reveal recurring themes and patterns. 
+                      I'll analyze your journal entries to reveal recurring themes and patterns. 
                       These insights help you see yourself more clearly.
                     </p>
                   </CardContent>
@@ -142,7 +142,7 @@ export default function StartHereGuide() {
                   <CardContent>
                     <p className="text-sm text-muted-foreground">
                       Fill out the reflection sections, then let me help you synthesize everything 
-                      into a powerful Primary Aim Statement - your life\'s compass.
+                      into a powerful Primary Aim Statement - your life's compass.
                     </p>
                   </CardContent>
                 </Card>
@@ -166,7 +166,7 @@ export default function StartHereGuide() {
 
             <div className="flex justify-end gap-3 pt-4">
               <Button onClick={handleClose} size="lg">
-                Let\'s Begin! 🚀
+                Let's Begin! 🚀
               </Button>
             </div>
           </div>

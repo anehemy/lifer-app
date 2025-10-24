@@ -39,9 +39,7 @@ export const appRouter = router({
         await deleteJournalEntry(input.id, ctx.user.id);
         return { success: true };
       }),
-  }),
-
-  vision: router({
+  }),  vision: router({
     list: protectedProcedure.query(async ({ ctx }) => {
       const { getUserVisionItems } = await import("./db");
       return getUserVisionItems(ctx.user.id);
@@ -53,7 +51,8 @@ export const appRouter = router({
           description: z.string().optional(),
           category: z.string(),
           affirmation: z.string().optional(),
-          connectionToPrimaryAim: z.string().optional(),
+          targetDate: z.date().optional(),
+          imageUrl: z.string().optional(),
           position: z.number().optional(),
         })
       )
@@ -69,7 +68,8 @@ export const appRouter = router({
           description: z.string().optional(),
           category: z.string().optional(),
           affirmation: z.string().optional(),
-          connectionToPrimaryAim: z.string().optional(),
+          targetDate: z.date().optional(),
+          imageUrl: z.string().optional(),
           position: z.number().optional(),
         })
       )
@@ -78,16 +78,70 @@ export const appRouter = router({
         const { id, ...updates } = input;
         return updateVisionItem(id, ctx.user.id, updates);
       }),
-    delete: protectedProcedure
-      .input(z.object({ id: z.number() }))
+    delete: protectedProcedure.input(z.object({ id: z.number() })).mutation(async ({ ctx, input }) => {
+      const { deleteVisionItem } = await import("./db");
+      return deleteVisionItem(input.id, ctx.user.id);
+    }),
+    suggestVisionItem: protectedProcedure
+      .input(z.object({ category: z.string() }))
       .mutation(async ({ ctx, input }) => {
-        const { deleteVisionItem } = await import("./db");
-        await deleteVisionItem(input.id, ctx.user.id);
-        return { success: true };
-      }),
-  }),
+        const { getUserJournalEntries, getUserPrimaryAim } = await import("./db");
+        const { invokeLLM } = await import("./_core/llm");
+        
+        const entries = await getUserJournalEntries(ctx.user.id);
+        const primaryAim = await getUserPrimaryAim(ctx.user.id);
+        
+        let context = "";
+        if (primaryAim?.statement) {
+          context += `Primary Aim: ${primaryAim.statement}\n\n`;
+        }
+        if (entries.length > 0) {
+          context += `Recent reflections: ${entries.slice(-5).map(e => `Q: ${e.question}\nA: ${e.response}`).join("\n\n")}`;
+        }
+        
+        const systemPrompt = `You are a vision coach helping someone create meaningful vision board items.
 
-  primaryAim: router({
+Based on their reflections and primary aim, suggest a vision item for the category: ${input.category}
+
+Provide your response as JSON with this structure:
+{
+  "title": "A clear, inspiring title (3-8 words)",
+  "description": "A vivid description of what this looks like when achieved (2-3 sentences)",
+  "affirmation": "A powerful present-tense affirmation (I am... / I have... / I create...)"
+}
+
+Make it personal, specific, and aligned with their deeper purpose.`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: context || "Help me create a vision for my life." },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "vision_suggestion",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  title: { type: "string" },
+                  description: { type: "string" },
+                  affirmation: { type: "string" },
+                },
+                required: ["title", "description", "affirmation"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        
+        const content = response.choices[0].message.content;
+        const suggestion = typeof content === 'string' ? JSON.parse(content) : content;
+        
+        return suggestion;
+      }),
+  }), primaryAim: router({
     get: protectedProcedure.query(async ({ ctx }) => {
       const { getUserPrimaryAim } = await import("./db");
       return getUserPrimaryAim(ctx.user.id);
@@ -187,6 +241,60 @@ Make it personal, poetic, and powerful. This should move them.`;
       .mutation(async ({ ctx, input }) => {
         const { createMeditationSession } = await import("./db");
         return createMeditationSession({ userId: ctx.user.id, ...input });
+      }),
+    generateScript: protectedProcedure
+      .input(
+        z.object({
+          meditationType: z.string(),
+          duration: z.number(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { getUserJournalEntries, getUserVisionItems, getUserPrimaryAim } = await import("./db");
+        const { invokeLLM } = await import("./_core/llm");
+        
+        // Gather user context
+        const entries = await getUserJournalEntries(ctx.user.id);
+        const visionItems = await getUserVisionItems(ctx.user.id);
+        const primaryAim = await getUserPrimaryAim(ctx.user.id);
+        
+        let context = "";
+        if (primaryAim?.statement) {
+          context += `\n\nUser's Primary Aim: ${primaryAim.statement}`;
+        }
+        if (entries.length > 0) {
+          context += `\n\nRecent reflections: ${entries.slice(-3).map(e => e.response).join(" ")}`;
+        }
+        if (visionItems.length > 0) {
+          context += `\n\nVision items: ${visionItems.map(v => v.title).join(", ")}`;
+        }
+        
+        const systemPrompt = `You are a meditation guide creating a personalized ${input.duration}-minute guided meditation script.
+
+Create a meditation script that:
+- Is exactly ${input.duration} minutes when read at a calm, meditative pace (about 100-120 words per minute)
+- Uses second person ("you", "your")
+- Includes breathing instructions, body awareness, and visualization
+- Incorporates the user's personal context naturally
+- Has a clear beginning (grounding), middle (main practice), and end (integration)
+- Uses calming, supportive language
+- Includes appropriate pauses marked with [pause 5s], [pause 10s], etc.
+
+Meditation type: ${input.meditationType}
+
+Format the script with clear sections and pause markers.`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Create a personalized meditation script.${context}` },
+          ],
+        });
+        
+        const content = response.choices[0].message.content;
+        const script = typeof content === 'string' ? content : "";
+        
+        return { script };
       }),
   }),
 

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { MessageCircle, Send, Loader2, X, BookOpen } from "lucide-react";
+import { MessageCircle, Send, Loader2, X, BookOpen, Mic, MicOff, Volume2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -14,6 +14,11 @@ export default function AIChatWidget() {
   const [message, setMessage] = useState("");
   const [showAgentSelector, setShowAgentSelector] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
 
   const { data: agents = [] } = trpc.aiChat.listAgents.useQuery();
   const { data: messages = [], refetch: refetchMessages } = trpc.aiChat.getMessages.useQuery(
@@ -61,6 +66,86 @@ export default function AIChatWidget() {
     setCurrentSession(null);
     setSelectedAgent(null);
     setShowAgentSelector(true);
+  };
+
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await transcribeAudio(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+      toast.success("Recording...");
+    } catch (error) {
+      toast.error("Microphone access denied");
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const transcribeAudio = async (audioBlob: Blob) => {
+    try {
+      // Use Web Speech API for transcription (browser-native)
+      const recognition = new ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setMessage(transcript);
+        toast.success("Transcribed!");
+      };
+      
+      recognition.onerror = () => {
+        toast.error("Transcription failed");
+      };
+      
+      recognition.start();
+    } catch (error) {
+      toast.error("Speech recognition not supported");
+    }
+  };
+
+  const speakMessage = (text: string) => {
+    if (!window.speechSynthesis) {
+      toast.error("Text-to-speech not supported");
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1.0;
+    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const stopSpeaking = () => {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
   };
 
   return (
@@ -188,7 +273,16 @@ export default function AIChatWidget() {
                       className="min-h-[60px] resize-none"
                       disabled={sendMessage.isPending}
                     />
-                    <Button
+                    <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={isRecording ? "bg-red-500 text-white" : ""}
+                >
+                  {isRecording ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+                <Button
                       onClick={handleSendMessage}
                       disabled={!message.trim() || sendMessage.isPending}
                       size="icon"
@@ -196,6 +290,7 @@ export default function AIChatWidget() {
                     >
                       <Send className="h-4 w-4" />
                     </Button>
+              </div>
                   </div>
                   <p className="text-xs text-muted-foreground mt-2">
                     Press Enter to send, Shift+Enter for new line

@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit } from "lucide-react";
+import { Plus, Trash2, Edit, Sparkles } from "lucide-react";
 
 const categories = [
   "Personal Growth",
@@ -53,8 +53,20 @@ export default function VisionBoard() {
   
   const deleteItem = trpc.vision.delete.useMutation({
     onSuccess: () => {
-      toast.success("Vision item deleted");
+      toast.success("Vision item deleted!");
       utils.vision.list.invalidate();
+    },
+  });
+
+  const suggestItem = trpc.vision.suggestVisionItem.useMutation({
+    onSuccess: (data) => {
+      setTitle(data.title);
+      setDescription(data.description);
+      setAffirmation(data.affirmation);
+      toast.success("AI suggestion generated!");
+    },
+    onError: () => {
+      toast.error("Failed to generate suggestion");
     },
   });
 
@@ -124,16 +136,29 @@ export default function VisionBoard() {
               </div>
               <div>
                 <Label>Category</Label>
-                <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  <Select value={category} onValueChange={setCategory}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => suggestItem.mutate({ category })}
+                    disabled={suggestItem.isPending}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Click <Sparkles className="h-3 w-3 inline" /> for AI-powered suggestions based on your journey
+                </p>
               </div>
               <div>
                 <Label>Description</Label>

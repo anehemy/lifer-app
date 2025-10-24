@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { Play, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
+import MeditationPlayer from "@/components/MeditationPlayer";
 
 const meditations = [
   { id: "primary-aim", title: "Primary Aim Discovery", duration: 15, description: "Connect with your life's deeper purpose" },
@@ -17,6 +19,7 @@ const meditations = [
 export default function Meditation() {
   const utils = trpc.useUtils();
   const { data: sessions = [] } = trpc.meditation.list.useQuery();
+  const [activeMeditation, setActiveMeditation] = useState<typeof meditations[0] | null>(null);
   
   const createSession = trpc.meditation.create.useMutation({
     onSuccess: () => {
@@ -26,13 +29,17 @@ export default function Meditation() {
   });
 
   const handleStart = (meditation: typeof meditations[0]) => {
-    toast.success(`Starting ${meditation.title}...`);
-    setTimeout(() => {
+    setActiveMeditation(meditation);
+  };
+
+  const handleComplete = () => {
+    if (activeMeditation) {
       createSession.mutate({
-        meditationType: meditation.title,
-        durationMinutes: meditation.duration,
+        meditationType: activeMeditation.title,
+        durationMinutes: activeMeditation.duration,
       });
-    }, meditation.duration * 1000); // Simulate meditation
+    }
+    setActiveMeditation(null);
   };
 
   const totalMinutes = sessions.reduce((sum, s) => sum + s.durationMinutes, 0);
@@ -92,6 +99,14 @@ export default function Meditation() {
           </Card>
         ))}
       </div>
+
+      {activeMeditation && (
+        <MeditationPlayer
+          meditation={activeMeditation}
+          onClose={() => setActiveMeditation(null)}
+          onComplete={handleComplete}
+        />
+      )}
     </div>
   );
 }
