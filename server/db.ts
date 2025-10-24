@@ -124,14 +124,16 @@ export async function getUserJournalEntries(userId: number): Promise<JournalEntr
 export async function createJournalEntry(entry: InsertJournalEntry): Promise<JournalEntry> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(journalEntries).values(entry);
-  const insertId = Number((result as any).insertId);
   
-  if (isNaN(insertId) || !insertId) {
-    throw new Error("Failed to get insert ID for journal entry");
-  }
+  await db.insert(journalEntries).values(entry);
   
-  const [newEntry] = await db.select().from(journalEntries).where(eq(journalEntries.id, insertId));
+  // Get the most recently created entry for this user
+  const [newEntry] = await db
+    .select()
+    .from(journalEntries)
+    .where(eq(journalEntries.userId, entry.userId!))
+    .orderBy(desc(journalEntries.createdAt))
+    .limit(1);
   
   if (!newEntry) {
     throw new Error("Failed to retrieve newly created journal entry");
@@ -156,14 +158,16 @@ export async function getUserVisionItems(userId: number): Promise<VisionItem[]> 
 export async function createVisionItem(item: InsertVisionItem): Promise<VisionItem> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(visionItems).values(item);
-  const insertId = Number((result as any).insertId);
   
-  if (isNaN(insertId) || !insertId) {
-    throw new Error("Failed to get insert ID for vision item");
-  }
+  await db.insert(visionItems).values(item);
   
-  const [newItem] = await db.select().from(visionItems).where(eq(visionItems.id, insertId));
+  // Get the most recently created item for this user
+  const [newItem] = await db
+    .select()
+    .from(visionItems)
+    .where(eq(visionItems.userId, item.userId!))
+    .orderBy(desc(visionItems.id))
+    .limit(1);
   
   if (!newItem) {
     throw new Error("Failed to retrieve newly created vision item");
@@ -205,14 +209,14 @@ export async function upsertPrimaryAim(userId: number, aim: Partial<InsertPrimar
     const [updated] = await db.select().from(primaryAims).where(eq(primaryAims.userId, userId));
     return updated;
   } else {
-    const result = await db.insert(primaryAims).values({ ...aim, userId });
-    const insertId = Number((result as any).insertId);
+    await db.insert(primaryAims).values({ ...aim, userId });
     
-    if (isNaN(insertId) || !insertId) {
-      throw new Error("Failed to get insert ID for primary aim");
-    }
-    
-    const [newAim] = await db.select().from(primaryAims).where(eq(primaryAims.id, insertId));
+    // Get the newly created aim for this user
+    const [newAim] = await db
+      .select()
+      .from(primaryAims)
+      .where(eq(primaryAims.userId, userId))
+      .limit(1);
     
     if (!newAim) {
       throw new Error("Failed to retrieve newly created primary aim");
@@ -299,14 +303,16 @@ export async function getUserMeditationSessions(userId: number): Promise<Meditat
 export async function createMeditationSession(session: InsertMeditationSession): Promise<MeditationSession> {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
-  const result = await db.insert(meditationSessions).values(session);
-  const insertId = Number((result as any).insertId);
   
-  if (isNaN(insertId) || !insertId) {
-    throw new Error("Failed to get insert ID for meditation session");
-  }
+  await db.insert(meditationSessions).values(session);
   
-  const [newSession] = await db.select().from(meditationSessions).where(eq(meditationSessions.id, insertId));
+  // Get the most recently created session for this user
+  const [newSession] = await db
+    .select()
+    .from(meditationSessions)
+    .where(eq(meditationSessions.userId, session.userId!))
+    .orderBy(desc(meditationSessions.completedAt))
+    .limit(1);
   
   if (!newSession) {
     throw new Error("Failed to retrieve newly created meditation session");
