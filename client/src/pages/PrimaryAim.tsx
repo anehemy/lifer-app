@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { Sparkles, Loader2 } from "lucide-react";
 
 const sections = [
   { key: "personal", label: "Personal Identity", prompt: "Who do you want to be as a person? What character traits define your ideal self?" },
@@ -51,8 +52,28 @@ export default function PrimaryAim() {
     },
   });
 
+  const generateStatement = trpc.primaryAim.generateStatement.useMutation({
+    onSuccess: (data) => {
+      setValues({ ...values, statement: data.statement });
+      toast.success("AI has crafted your Primary Aim Statement!");
+    },
+    onError: (error) => {
+      toast.error("Failed to generate statement: " + error.message);
+    },
+  });
+
   const handleSave = () => {
     upsertAim.mutate(values);
+  };
+
+  const handleGenerateStatement = () => {
+    // Check if at least some sections are filled
+    const filledSections = sections.filter(s => values[s.key]?.trim());
+    if (filledSections.length === 0) {
+      toast.error("Please fill out at least one section before generating your Primary Aim Statement");
+      return;
+    }
+    generateStatement.mutate(values);
   };
 
   return (
@@ -95,20 +116,61 @@ export default function PrimaryAim() {
           </Card>
         ))}
 
-        <Card>
+        <Card className="border-2 border-primary/20">
           <CardHeader>
-            <CardTitle>Primary Aim Statement</CardTitle>
-            <p className="text-sm text-muted-foreground">
-              Synthesize your reflections into a Primary Aim Statement (2-3 paragraphs describing the life you want to live)
-            </p>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Primary Aim Statement</CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Let {MR_MG_NAME} help you synthesize your reflections and vision into a powerful Primary Aim Statement
+                </p>
+              </div>
+              <Button
+                onClick={handleGenerateStatement}
+                disabled={generateStatement.isPending}
+                variant="outline"
+                className="gap-2"
+              >
+                {generateStatement.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Crafting...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Generate with AI
+                  </>
+                )}
+              </Button>
+            </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {generateStatement.isPending && (
+              <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200">
+                <CardContent className="pt-4">
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">{MR_MG_AVATAR}</div>
+                    <div>
+                      <p className="text-sm font-medium mb-1">{MR_MG_NAME} is working...</p>
+                      <p className="text-sm text-muted-foreground">
+                        Analyzing your reflections, vision board, and journey to craft your unique Primary Aim Statement...
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             <Textarea
               value={values.statement || ""}
               onChange={(e) => setValues({ ...values, statement: e.target.value })}
-              placeholder="My Primary Aim is to..."
+              placeholder="Click 'Generate with AI' to have Mr. MG craft your Primary Aim Statement, or write your own..."
               className="min-h-[200px]"
+              disabled={generateStatement.isPending}
             />
+            <p className="text-xs text-muted-foreground">
+              💡 Tip: Fill out the sections above and add items to your Vision Board for the best AI-generated statement
+            </p>
           </CardContent>
         </Card>
 

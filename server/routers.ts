@@ -108,6 +108,68 @@ export const appRouter = router({
         const { upsertPrimaryAim } = await import("./db");
         return upsertPrimaryAim(ctx.user.id, input);
       }),
+    generateStatement: protectedProcedure
+      .input(
+        z.object({
+          personal: z.string().optional(),
+          relationships: z.string().optional(),
+          contribution: z.string().optional(),
+          health: z.string().optional(),
+          growth: z.string().optional(),
+          legacy: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { getUserVisionItems } = await import("./db");
+        const { invokeLLM } = await import("./_core/llm");
+        
+        // Get vision board items for additional context
+        const visionItems = await getUserVisionItems(ctx.user.id);
+        
+        // Build context from filled sections
+        let context = "";
+        if (input.personal) context += `\n\nPersonal Identity: ${input.personal}`;
+        if (input.relationships) context += `\n\nRelationships: ${input.relationships}`;
+        if (input.contribution) context += `\n\nContribution/Work: ${input.contribution}`;
+        if (input.health) context += `\n\nHealth & Vitality: ${input.health}`;
+        if (input.growth) context += `\n\nGrowth & Learning: ${input.growth}`;
+        if (input.legacy) context += `\n\nLegacy: ${input.legacy}`;
+        
+        if (visionItems.length > 0) {
+          context += "\n\n=== Vision Board Items ===";
+          visionItems.forEach(item => {
+            context += `\n- ${item.category}: ${item.title}`;
+            if (item.description) context += ` - ${item.description}`;
+          });
+        }
+        
+        const systemPrompt = `You are Mr. MG, a wise life mentor helping someone discover their Primary Aim - the deeper purpose that gives their life meaning.
+
+A Primary Aim is NOT about career goals or achievements. It's about WHO they want to BE and HOW they want to LIVE.
+
+Based on their reflections and vision, craft a powerful Primary Aim Statement that:
+- Is 2-3 paragraphs long
+- Written in first person ("I am...", "My life is...")
+- Focuses on BEING, not DOING
+- Integrates their values, relationships, contribution, health, growth, and legacy
+- Is inspiring yet authentic to their voice
+- Paints a vivid picture of the life they want to live
+- Connects their daily actions to deeper meaning
+
+Make it personal, poetic, and powerful. This should move them.`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: `Here are my reflections:${context}\n\nPlease craft my Primary Aim Statement.` },
+          ],
+        });
+        
+        const content = response.choices[0].message.content;
+        const statement = typeof content === 'string' ? content : "";
+        
+        return { statement };
+      }),
   }),
 
   meditation: router({
