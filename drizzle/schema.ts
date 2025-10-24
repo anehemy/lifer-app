@@ -81,6 +81,46 @@ export type PrimaryAim = typeof primaryAims.$inferSelect;
 export type InsertPrimaryAim = typeof primaryAims.$inferInsert;
 
 /**
+ * AI Agents and Chat System
+ */
+export const aiAgents = mysqlTable("ai_agents", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  role: varchar("role", { length: 100 }).notNull(),
+  systemPrompt: text("system_prompt").notNull(),
+  capabilities: text("capabilities").notNull(), // JSON array of capabilities
+  avatar: varchar("avatar", { length: 10 }).notNull(),
+  isActive: int("is_active").default(1).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const chatSessions = mysqlTable("chat_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("user_id").notNull(),
+  agentId: int("agent_id").notNull(),
+  title: varchar("title", { length: 255 }),
+  context: text("context"), // JSON context data
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});
+
+export const chatMessages = mysqlTable("chat_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  sessionId: int("session_id").notNull(),
+  role: mysqlEnum("role", ["user", "assistant", "system"]).notNull(),
+  content: text("content").notNull(),
+  metadata: text("metadata"), // JSON for additional data
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type AiAgent = typeof aiAgents.$inferSelect;
+export type InsertAiAgent = typeof aiAgents.$inferInsert;
+export type ChatSession = typeof chatSessions.$inferSelect;
+export type InsertChatSession = typeof chatSessions.$inferInsert;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = typeof chatMessages.$inferInsert;
+
+/**
  * Meditation session history
  */
 export const meditationSessions = mysqlTable("meditationSessions", {

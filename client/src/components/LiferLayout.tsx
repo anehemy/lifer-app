@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { BookOpen, Brain, Home, Loader2, LogOut, Sparkles, Target, User } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import AIChatWidget from "@/components/AIChatWidget";
 
 interface LiferLayoutProps {
   children: React.ReactNode;
@@ -104,6 +105,9 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
       <main className="ml-64 min-h-screen">
         <div className="container py-8">{children}</div>
       </main>
+
+      {/* AI Chat Widget */}
+      <AIChatWidget />
     </div>
   );
 }

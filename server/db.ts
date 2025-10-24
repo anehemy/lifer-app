@@ -1,6 +1,27 @@
-import { eq } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { 
+  InsertUser, 
+  users,
+  journalEntries,
+  InsertJournalEntry,
+  JournalEntry,
+  visionItems,
+  InsertVisionItem,
+  VisionItem,
+  primaryAims,
+  InsertPrimaryAim,
+  PrimaryAim,
+  meditationSessions,
+  InsertMeditationSession,
+  MeditationSession,
+  aiAgents,
+  chatSessions,
+  chatMessages,
+  AiAgent,
+  ChatSession,
+  ChatMessage,
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -91,8 +112,7 @@ export async function getUserByOpenId(openId: string) {
 
 // Lifer App Query Helpers
 
-import { journalEntries, visionItems, primaryAims, meditationSessions, JournalEntry, VisionItem, PrimaryAim, MeditationSession, InsertJournalEntry, InsertVisionItem, InsertPrimaryAim, InsertMeditationSession } from "../drizzle/schema";
-import { desc, and } from "drizzle-orm";
+
 
 // Journal Entries
 export async function getUserJournalEntries(userId: number): Promise<JournalEntry[]> {
@@ -170,6 +190,73 @@ export async function upsertPrimaryAim(userId: number, aim: Partial<InsertPrimar
     const [newAim] = await db.select().from(primaryAims).where(eq(primaryAims.id, insertId));
     return newAim;
   }
+}
+
+// AI Agents and Chat
+export async function getAllAgents() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(aiAgents).where(eq(aiAgents.isActive, 1));
+}
+
+export async function getAgentById(agentId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(aiAgents).where(eq(aiAgents.id, agentId)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function createChatSession(userId: number, agentId: number, title?: string, context?: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(chatSessions).values({
+    userId,
+    agentId,
+    title: title || null,
+    context: context ? JSON.stringify(context) : null,
+  });
+  return result[0].insertId;
+}
+
+export async function getUserChatSessions(userId: number, agentId?: number) {
+  const db = await getDb();
+  if (!db) return [];
+  if (agentId) {
+    return await db.select().from(chatSessions)
+      .where(and(eq(chatSessions.userId, userId), eq(chatSessions.agentId, agentId)))
+      .orderBy(desc(chatSessions.updatedAt));
+  }
+  return await db.select().from(chatSessions)
+    .where(eq(chatSessions.userId, userId))
+    .orderBy(desc(chatSessions.updatedAt));
+}
+
+export async function getChatSession(sessionId: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(chatSessions)
+    .where(and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId)))
+    .limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function addChatMessage(sessionId: number, role: "user" | "assistant" | "system", content: string, metadata?: any) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(chatMessages).values({
+    sessionId,
+    role,
+    content,
+    metadata: metadata ? JSON.stringify(metadata) : null,
+  });
+}
+
+export async function getChatMessages(sessionId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(chatMessages)
+    .where(eq(chatMessages.sessionId, sessionId))
+    .orderBy(chatMessages.createdAt);
 }
 
 // Meditation Sessions

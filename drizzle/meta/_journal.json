@@ -15,6 +15,13 @@
       "when": 1761316407566,
       "tag": "0001_outgoing_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1761323678474,
+      "tag": "0002_noisy_agent_brand",
+      "breakpoints": true
     }
   ]
 }
