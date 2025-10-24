@@ -125,10 +125,15 @@ export type InsertChatMessage = typeof chatMessages.$inferInsert;
  */
 export const meditationSessions = mysqlTable("meditationSessions", {
   id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  meditationType: varchar("meditationType", { length: 100 }).notNull(),
+  userId: int("userId").notNull(),
+  meditationType: varchar("meditationType", { length: 255 }).notNull(),
   durationMinutes: int("durationMinutes").notNull(),
+  script: text("script"),
+  audioUrl: varchar("audioUrl", { length: 512 }),
+  reflection: text("reflection"),
+  rating: int("rating"),
   completedAt: timestamp("completedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
 });
 
 export type MeditationSession = typeof meditationSessions.$inferSelect;

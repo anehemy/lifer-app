@@ -311,7 +311,7 @@ export async function createMeditationSession(session: InsertMeditationSession):
     .select()
     .from(meditationSessions)
     .where(eq(meditationSessions.userId, session.userId!))
-    .orderBy(desc(meditationSessions.completedAt))
+    .orderBy(desc(meditationSessions.createdAt))
     .limit(1);
   
   if (!newSession) {
@@ -319,4 +319,23 @@ export async function createMeditationSession(session: InsertMeditationSession):
   }
   
   return newSession;
+}
+
+export async function updateMeditationSession(id: number, userId: number, updates: Partial<InsertMeditationSession>): Promise<MeditationSession> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(meditationSessions)
+    .set(updates)
+    .where(and(eq(meditationSessions.id, id), eq(meditationSessions.userId, userId)));
+  
+  const [updated] = await db.select().from(meditationSessions)
+    .where(eq(meditationSessions.id, id))
+    .limit(1);
+  
+  if (!updated) {
+    throw new Error("Failed to retrieve updated meditation session");
+  }
+  
+  return updated;
 }

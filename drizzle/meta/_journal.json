@@ -22,6 +22,13 @@
       "when": 1761323678474,
       "tag": "0002_noisy_agent_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1761334726494,
+      "tag": "0003_soft_starfox",
+      "breakpoints": true
     }
   ]
 }

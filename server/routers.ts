@@ -231,7 +231,9 @@ Make it personal, poetic, and powerful. This should move them.`;
       const { getUserMeditationSessions } = await import("./db");
       return getUserMeditationSessions(ctx.user.id);
     }),
-    create: protectedProcedure
+    
+    // Step 1: Generate personalized meditation (script + audio)
+    generate: protectedProcedure
       .input(
         z.object({
           meditationType: z.string(),
@@ -239,19 +241,9 @@ Make it personal, poetic, and powerful. This should move them.`;
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const { createMeditationSession } = await import("./db");
-        return createMeditationSession({ userId: ctx.user.id, ...input });
-      }),
-    generateScript: protectedProcedure
-      .input(
-        z.object({
-          meditationType: z.string(),
-          duration: z.number(),
-        })
-      )
-      .mutation(async ({ ctx, input }) => {
-        const { getUserJournalEntries, getUserVisionItems, getUserPrimaryAim } = await import("./db");
+        const { getUserJournalEntries, getUserVisionItems, getUserPrimaryAim, createMeditationSession } = await import("./db");
         const { invokeLLM } = await import("./_core/llm");
+        const { generateSpeechAudio, isTTSAvailable } = await import("./_core/textToSpeech");
         
         // Gather user context
         const entries = await getUserJournalEntries(ctx.user.id);
@@ -269,12 +261,12 @@ Make it personal, poetic, and powerful. This should move them.`;
           context += `\n\nVision items: ${visionItems.map(v => v.title).join(", ")}`;
         }
         
-        const systemPrompt = `You are a meditation guide. Create a ${input.duration}-minute guided meditation for "${input.meditationType}".
+        const systemPrompt = `You are a meditation guide. Create a ${input.durationMinutes}-minute guided meditation for "${input.meditationType}".
 
 IMPORTANT: Output ONLY the meditation script itself - the exact words to be spoken to the user. Do NOT include any meta-commentary, instructions, or explanations about the script.
 
 Guidelines for the meditation:
-- About ${input.duration * 100} words total (spoken at 100 words/minute)
+- About ${input.durationMinutes * 100} words total (spoken at 100 words/minute)
 - Use second person ("you", "your") throughout
 - Begin with grounding (breath awareness, settling in)
 - Middle section: main practice (visualization, body scan, or reflection)
@@ -295,7 +287,43 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
         const content = response.choices[0].message.content;
         const script = typeof content === 'string' ? content : "";
         
-        return { script };
+        // Generate audio if TTS is available
+        let audioUrl = "";
+        if (isTTSAvailable()) {
+          try {
+            audioUrl = await generateSpeechAudio({ text: script });
+          } catch (error) {
+            console.error("[Meditation] Failed to generate audio:", error);
+          }
+        }
+        
+        // Create meditation session
+        const session = await createMeditationSession({
+          userId: ctx.user.id,
+          meditationType: input.meditationType,
+          durationMinutes: input.durationMinutes,
+          script,
+          audioUrl: audioUrl || null,
+        });
+        
+        return session;
+      }),
+    
+    // Step 2: Save post-meditation reflection
+    saveReflection: protectedProcedure
+      .input(
+        z.object({
+          sessionId: z.number(),
+          reflection: z.string(),
+          rating: z.number().min(1).max(5).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { updateMeditationSession } = await import("./db");
+        return updateMeditationSession(input.sessionId, ctx.user.id, {
+          reflection: input.reflection,
+          rating: input.rating,
+        });
       }),
   }),
 
