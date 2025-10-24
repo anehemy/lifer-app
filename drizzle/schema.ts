@@ -53,6 +53,7 @@ export const visionItems = mysqlTable("visionItems", {
   category: varchar("category", { length: 100 }).notNull(),
   affirmation: text("affirmation"),
   connectionToPrimaryAim: text("connectionToPrimaryAim"),
+  imageUrl: text("imageUrl"),
   position: int("position").default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

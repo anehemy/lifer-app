@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { Play, Clock, Star, Pause, X, Volume2, VolumeX } from "lucide-react";
+import MeditationCustomizer from "@/components/MeditationCustomizer";
 
 const meditationTypes = [
   "Stress Release",
@@ -30,6 +31,10 @@ export default function Meditation() {
   const [showReflection, setShowReflection] = useState(false);
   const [reflection, setReflection] = useState("");
   const [rating, setRating] = useState(0);
+  const [showCustomizer, setShowCustomizer] = useState(false);
+  const [userContext, setUserContext] = useState<any>(null);
+  
+  const { data: contextData } = trpc.meditation.getUserContext.useQuery();
   
   const utils = trpc.useUtils();
   const { data: sessions = [] } = trpc.meditation.list.useQuery();
@@ -57,9 +62,24 @@ export default function Meditation() {
   });
   
   const handleGenerate = () => {
+    if (contextData) {
+      setUserContext(contextData);
+      setShowCustomizer(true);
+    } else {
+      // No context available, generate directly
+      generateMeditation.mutate({
+        meditationType: selectedType,
+        durationMinutes: selectedDuration,
+      });
+    }
+  };
+  
+  const handleCustomizerConfirm = (selectedContext: any) => {
+    setShowCustomizer(false);
     generateMeditation.mutate({
       meditationType: selectedType,
       durationMinutes: selectedDuration,
+      customContext: selectedContext,
     });
   };
   
@@ -219,6 +239,16 @@ export default function Meditation() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {showCustomizer && userContext && (
+        <MeditationCustomizer
+          open={showCustomizer}
+          onClose={() => setShowCustomizer(false)}
+          onConfirm={handleCustomizerConfirm}
+          userContext={userContext}
+          meditationType={selectedType}
+        />
+      )}
     </div>
   );
 }

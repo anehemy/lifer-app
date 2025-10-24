@@ -4,10 +4,20 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { aiChatRouter } from "./aiChatRouter";
 import { z } from "zod";
-
 export const appRouter = router({
   system: systemRouter,
-  aiChat: aiChatRouter,
+
+  admin: router({
+    listUsers: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== 'admin') {
+        throw new Error('Admin access required');
+      }
+      const db = await import('./db').then(m => m.getDb());
+      if (!db) return [];
+      const { users } = await import('../drizzle/schema');
+      return await db.select().from(users);
+    }),
+  }),
 
   auth: router({
     me: publicProcedure.query(opts => opts.ctx.user),
@@ -141,6 +151,35 @@ Make it personal, specific, and aligned with their deeper purpose.`;
         
         return suggestion;
       }),
+    
+    generateImage: protectedProcedure
+      .input(z.object({ itemId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { getUserVisionItems, updateVisionItem } = await import("./db");
+        const { generateImage } = await import("./_core/imageGeneration");
+        
+        const items = await getUserVisionItems(ctx.user.id);
+        const item = items.find(i => i.id === input.itemId);
+        
+        if (!item) {
+          throw new Error("Vision item not found");
+        }
+        
+        // Generate image based on vision item
+        const prompt = `${item.title}. ${item.description || ''}. Inspirational, uplifting, beautiful visualization.`;
+        
+        try {
+          const { url: imageUrl } = await generateImage({ prompt });
+          
+          // Update vision item with image URL
+          await updateVisionItem(input.itemId, ctx.user.id, { imageUrl });
+          
+          return { imageUrl };
+        } catch (error) {
+          console.error("[Vision] Image generation failed:", error);
+          throw new Error("Failed to generate image");
+        }
+      }),
   }), primaryAim: router({
     get: protectedProcedure.query(async ({ ctx }) => {
       const { getUserPrimaryAim } = await import("./db");
@@ -224,9 +263,150 @@ Make it personal, poetic, and powerful. This should move them.`;
         
         return { statement };
       }),
+    
+    autoPopulate: protectedProcedure.query(async ({ ctx }) => {
+      const { getUserJournalEntries, getUserVisionItems, getPatternInsights } = await import("./db");
+      const { invokeLLM } = await import("./_core/llm");
+      
+      const [journalEntries, visionItems, patterns] = await Promise.all([
+        getUserJournalEntries(ctx.user.id),
+        getUserVisionItems(ctx.user.id),
+        getPatternInsights(ctx.user.id),
+      ]);
+      
+      let context = "";
+      if (journalEntries.length > 0) {
+        context += "\n\n=== Life Reflections ===\n";
+        journalEntries.slice(0, 10).forEach(entry => {
+          context += `\nQ: ${entry.question}\nA: ${entry.response}\n`;
+        });
+      }
+      
+      if (visionItems.length > 0) {
+        context += "\n\n=== Vision Board ===\n";
+        visionItems.forEach(item => {
+          context += `\n- ${item.title}`;
+          if (item.description) context += `: ${item.description}`;
+        });
+      }
+      
+      if (patterns.length > 0) {
+        context += "\n\n=== Identified Patterns ===\n" + patterns.join("\n");
+      }
+      
+      const systemPrompt = `You are Mr. MG, helping someone discover their Primary Aim by analyzing their reflections.
+
+Based on their inputs, generate content for these 6 sections:
+
+1. Personal Identity: Who are they at their core? What defines them beyond roles?
+2. Relationships: How do they want to show up in relationships? What kind of connections matter?
+3. Contribution: How do they want to serve others and make a difference?
+4. Health & Vitality: How do they want to feel physically, mentally, emotionally?
+5. Growth & Learning: What kind of person are they becoming? How do they evolve?
+6. Legacy: What lasting impact do they want to leave?
+
+For each section, write 2-3 thoughtful sentences that capture their essence based on their reflections. Make it personal and authentic to their voice.`;
+      
+      const response = await invokeLLM({
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: `Here are my reflections:${context}\n\nPlease generate the 6 sections of my Primary Aim.` },
+        ],
+      });
+      
+      const content = response.choices[0].message.content;
+      const text = typeof content === 'string' ? content : "";
+      
+      // Parse the response into sections
+      const sections = {
+        personalIdentity: "",
+        relationships: "",
+        contribution: "",
+        healthVitality: "",
+        growthLearning: "",
+        legacy: "",
+      };
+      
+      // Simple parsing - extract content after each numbered section
+      const lines = text.split('\n');
+      let currentSection = "";
+      let currentContent: string[] = [];
+      
+      lines.forEach(line => {
+        if (line.match(/1\.|Personal Identity/i)) {
+          currentSection = "personalIdentity";
+          currentContent = [];
+        } else if (line.match(/2\.|Relationships/i)) {
+          if (currentSection && currentContent.length > 0) {
+            sections[currentSection as keyof typeof sections] = currentContent.join(' ').trim();
+          }
+          currentSection = "relationships";
+          currentContent = [];
+        } else if (line.match(/3\.|Contribution/i)) {
+          if (currentSection && currentContent.length > 0) {
+            sections[currentSection as keyof typeof sections] = currentContent.join(' ').trim();
+          }
+          currentSection = "contribution";
+          currentContent = [];
+        } else if (line.match(/4\.|Health|Vitality/i)) {
+          if (currentSection && currentContent.length > 0) {
+            sections[currentSection as keyof typeof sections] = currentContent.join(' ').trim();
+          }
+          currentSection = "healthVitality";
+          currentContent = [];
+        } else if (line.match(/5\.|Growth|Learning/i)) {
+          if (currentSection && currentContent.length > 0) {
+            sections[currentSection as keyof typeof sections] = currentContent.join(' ').trim();
+          }
+          currentSection = "growthLearning";
+          currentContent = [];
+        } else if (line.match(/6\.|Legacy/i)) {
+          if (currentSection && currentContent.length > 0) {
+            sections[currentSection as keyof typeof sections] = currentContent.join(' ').trim();
+          }
+          currentSection = "legacy";
+          currentContent = [];
+        } else if (line.trim() && currentSection) {
+          currentContent.push(line.trim());
+        }
+      });
+      
+      // Save the last section
+      if (currentSection && currentContent.length > 0) {
+        sections[currentSection as keyof typeof sections] = currentContent.join(' ').trim();
+      }
+      
+      return sections;
+    }),
   }),
 
   meditation: router({
+    getUserContext: protectedProcedure.query(async ({ ctx }) => {
+      const { getUserJournalEntries, getUserVisionItems, getUserPrimaryAim } = await import("./db");
+      const { getPatternInsights } = await import("./db");
+      
+      const [journalEntries, visionItems, primaryAim, patterns] = await Promise.all([
+        getUserJournalEntries(ctx.user.id),
+        getUserVisionItems(ctx.user.id),
+        getUserPrimaryAim(ctx.user.id),
+        getPatternInsights(ctx.user.id),
+      ]);
+      
+      return {
+        firstName: ctx.user.name?.split(" ")[0] || "friend",
+        recentJournalEntries: journalEntries.slice(0, 5).map((e: any) => ({
+          question: e.question,
+          response: e.response,
+        })),
+        visionItems: visionItems.map((v: any) => ({
+          title: v.title,
+          description: v.description || "",
+        })),
+        primaryAimStatement: primaryAim?.statement || null,
+        patterns: patterns.slice(0, 5),
+      };
+    }),
+    
     list: protectedProcedure.query(async ({ ctx }) => {
       const { getUserMeditationSessions } = await import("./db");
       return getUserMeditationSessions(ctx.user.id);
@@ -238,6 +418,7 @@ Make it personal, poetic, and powerful. This should move them.`;
         z.object({
           meditationType: z.string(),
           durationMinutes: z.number(),
+          customContext: z.any().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -362,6 +543,8 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
         .sort((a, b) => b.count - a.count);
     }),
   }),
+  
+  aiChat: aiChatRouter,
 });
 
 export type AppRouter = typeof appRouter;

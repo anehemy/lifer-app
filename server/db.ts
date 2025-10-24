@@ -226,6 +226,46 @@ export async function upsertPrimaryAim(userId: number, aim: Partial<InsertPrimar
   }
 }
 
+export async function getPatternInsights(userId: number): Promise<string[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  const entries = await db.select().from(journalEntries).where(eq(journalEntries.userId, userId));
+  const patterns: string[] = [];
+  
+  // Simple pattern detection based on keywords
+  const keywords = {
+    growth: ["learn", "grow", "develop", "improve", "better"],
+    relationships: ["family", "friend", "love", "connect", "relationship"],
+    purpose: ["purpose", "meaning", "why", "calling", "passion"],
+    challenges: ["difficult", "hard", "struggle", "challenge", "obstacle"],
+    gratitude: ["grateful", "thankful", "appreciate", "blessing", "fortunate"],
+  };
+  
+  const counts: Record<string, number> = {};
+  
+  entries.forEach(entry => {
+    const text = entry.response.toLowerCase();
+    Object.entries(keywords).forEach(([theme, words]) => {
+      if (words.some(word => text.includes(word))) {
+        counts[theme] = (counts[theme] || 0) + 1;
+      }
+    });
+  });
+  
+  // Return top patterns
+  Object.entries(counts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .forEach(([theme, count]) => {
+      if (count > 1) {
+        patterns.push(`You frequently reflect on ${theme} (${count} times)`);
+      }
+    });
+  
+  return patterns;
+}
+
 // AI Agents and Chat
 export async function getAllAgents() {
   const db = await getDb();
