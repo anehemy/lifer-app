@@ -62,16 +62,15 @@ export default function Meditation() {
   });
   
   const handleGenerate = () => {
-    if (contextData) {
-      setUserContext(contextData);
-      setShowCustomizer(true);
-    } else {
-      // No context available, generate directly
-      generateMeditation.mutate({
-        meditationType: selectedType,
-        durationMinutes: selectedDuration,
-      });
-    }
+    // Always show customizer to let user select what to include
+    setUserContext(contextData || {
+      firstName: "friend",
+      recentJournalEntries: [],
+      visionItems: [],
+      primaryAimStatement: null,
+      patterns: [],
+    });
+    setShowCustomizer(true);
   };
   
   const handleCustomizerConfirm = (selectedContext: any) => {
