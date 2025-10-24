@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, Loader2, X } from "lucide-react";
+import { MessageCircle, Send, Loader2, X, BookOpen } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -139,7 +138,7 @@ export default function AIChatWidget() {
             {/* Chat Messages */}
             {currentSession && !showAgentSelector && (
               <>
-                <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+                <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
                   <div className="space-y-4">
                     {messages.map((msg) => (
                       <div
@@ -171,7 +170,7 @@ export default function AIChatWidget() {
                       </div>
                     )}
                   </div>
-                </ScrollArea>
+                </div>
 
                 {/* Message Input */}
                 <div className="p-4 border-t flex-shrink-0">

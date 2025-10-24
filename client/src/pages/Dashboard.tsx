@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Brain, Sparkles, User, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
+import StartHereGuide from "@/components/StartHereGuide";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -59,11 +60,14 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <div>
-        <h1 className="text-4xl font-bold mb-2">
-          {greeting()}, {user?.name || "Explorer"}!
-        </h1>
-        <p className="text-muted-foreground text-lg">Welcome to your journey of self-discovery</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-4xl font-bold mb-2">
+            {greeting()}, {user?.name || "Explorer"}!
+          </h1>
+          <p className="text-muted-foreground text-lg">Welcome to your journey of self-discovery</p>
+        </div>
+        <StartHereGuide />
       </div>
 
       {/* Stats Grid */}
