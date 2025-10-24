@@ -126,7 +126,17 @@ export async function createJournalEntry(entry: InsertJournalEntry): Promise<Jou
   if (!db) throw new Error("Database not available");
   const result = await db.insert(journalEntries).values(entry);
   const insertId = Number((result as any).insertId);
+  
+  if (isNaN(insertId) || !insertId) {
+    throw new Error("Failed to get insert ID for journal entry");
+  }
+  
   const [newEntry] = await db.select().from(journalEntries).where(eq(journalEntries.id, insertId));
+  
+  if (!newEntry) {
+    throw new Error("Failed to retrieve newly created journal entry");
+  }
+  
   return newEntry;
 }
 
@@ -148,7 +158,17 @@ export async function createVisionItem(item: InsertVisionItem): Promise<VisionIt
   if (!db) throw new Error("Database not available");
   const result = await db.insert(visionItems).values(item);
   const insertId = Number((result as any).insertId);
+  
+  if (isNaN(insertId) || !insertId) {
+    throw new Error("Failed to get insert ID for vision item");
+  }
+  
   const [newItem] = await db.select().from(visionItems).where(eq(visionItems.id, insertId));
+  
+  if (!newItem) {
+    throw new Error("Failed to retrieve newly created vision item");
+  }
+  
   return newItem;
 }
 
@@ -187,7 +207,17 @@ export async function upsertPrimaryAim(userId: number, aim: Partial<InsertPrimar
   } else {
     const result = await db.insert(primaryAims).values({ ...aim, userId });
     const insertId = Number((result as any).insertId);
+    
+    if (isNaN(insertId) || !insertId) {
+      throw new Error("Failed to get insert ID for primary aim");
+    }
+    
     const [newAim] = await db.select().from(primaryAims).where(eq(primaryAims.id, insertId));
+    
+    if (!newAim) {
+      throw new Error("Failed to retrieve newly created primary aim");
+    }
+    
     return newAim;
   }
 }
@@ -271,6 +301,16 @@ export async function createMeditationSession(session: InsertMeditationSession):
   if (!db) throw new Error("Database not available");
   const result = await db.insert(meditationSessions).values(session);
   const insertId = Number((result as any).insertId);
+  
+  if (isNaN(insertId) || !insertId) {
+    throw new Error("Failed to get insert ID for meditation session");
+  }
+  
   const [newSession] = await db.select().from(meditationSessions).where(eq(meditationSessions.id, insertId));
+  
+  if (!newSession) {
+    throw new Error("Failed to retrieve newly created meditation session");
+  }
+  
   return newSession;
 }
