@@ -4,17 +4,28 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
+import LiferLayout from "./components/LiferLayout";
+import Dashboard from "./pages/Dashboard";
+import Journal from "./pages/Journal";
+import Patterns from "./pages/Patterns";
+import VisionBoard from "./pages/VisionBoard";
+import Meditation from "./pages/Meditation";
+import PrimaryAim from "./pages/PrimaryAim";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
-    <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
-    </Switch>
+    <LiferLayout>
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/journal" component={Journal} />
+        <Route path="/patterns" component={Patterns} />
+        <Route path="/vision" component={VisionBoard} />
+        <Route path="/meditation" component={Meditation} />
+        <Route path="/primary-aim" component={PrimaryAim} />
+        <Route path="/404" component={NotFound} />
+        <Route component={NotFound} />
+      </Switch>
+    </LiferLayout>
   );
 }
 

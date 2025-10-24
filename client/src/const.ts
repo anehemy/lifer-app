@@ -21,3 +21,8 @@ export const getLoginUrl = () => {
 
   return url.toString();
 };
+
+// Lifer App specific constants
+export const MR_MG_AVATAR = "🤔";
+export const MR_MG_NAME = "Mr. MG";
+export const MR_MG_TITLE = "Your Life Mentor";

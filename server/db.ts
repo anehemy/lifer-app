@@ -89,4 +89,101 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// Lifer App Query Helpers
+
+import { journalEntries, visionItems, primaryAims, meditationSessions, JournalEntry, VisionItem, PrimaryAim, MeditationSession, InsertJournalEntry, InsertVisionItem, InsertPrimaryAim, InsertMeditationSession } from "../drizzle/schema";
+import { desc, and } from "drizzle-orm";
+
+// Journal Entries
+export async function getUserJournalEntries(userId: number): Promise<JournalEntry[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(journalEntries).where(eq(journalEntries.userId, userId)).orderBy(desc(journalEntries.createdAt));
+}
+
+export async function createJournalEntry(entry: InsertJournalEntry): Promise<JournalEntry> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(journalEntries).values(entry);
+  const insertId = Number((result as any).insertId);
+  const [newEntry] = await db.select().from(journalEntries).where(eq(journalEntries.id, insertId));
+  return newEntry;
+}
+
+export async function deleteJournalEntry(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(journalEntries).where(and(eq(journalEntries.id, id), eq(journalEntries.userId, userId)));
+}
+
+// Vision Board
+export async function getUserVisionItems(userId: number): Promise<VisionItem[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(visionItems).where(eq(visionItems.userId, userId)).orderBy(visionItems.position);
+}
+
+export async function createVisionItem(item: InsertVisionItem): Promise<VisionItem> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(visionItems).values(item);
+  const insertId = Number((result as any).insertId);
+  const [newItem] = await db.select().from(visionItems).where(eq(visionItems.id, insertId));
+  return newItem;
+}
+
+export async function updateVisionItem(id: number, userId: number, updates: Partial<InsertVisionItem>): Promise<VisionItem> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(visionItems).set(updates).where(and(eq(visionItems.id, id), eq(visionItems.userId, userId)));
+  const [updated] = await db.select().from(visionItems).where(eq(visionItems.id, id));
+  return updated;
+}
+
+export async function deleteVisionItem(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(visionItems).where(and(eq(visionItems.id, id), eq(visionItems.userId, userId)));
+}
+
+// Primary Aim
+export async function getUserPrimaryAim(userId: number): Promise<PrimaryAim | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(primaryAims).where(eq(primaryAims.userId, userId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function upsertPrimaryAim(userId: number, aim: Partial<InsertPrimaryAim>): Promise<PrimaryAim> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const existing = await getUserPrimaryAim(userId);
+  
+  if (existing) {
+    await db.update(primaryAims).set(aim).where(eq(primaryAims.userId, userId));
+    const [updated] = await db.select().from(primaryAims).where(eq(primaryAims.userId, userId));
+    return updated;
+  } else {
+    const result = await db.insert(primaryAims).values({ ...aim, userId });
+    const insertId = Number((result as any).insertId);
+    const [newAim] = await db.select().from(primaryAims).where(eq(primaryAims.id, insertId));
+    return newAim;
+  }
+}
+
+// Meditation Sessions
+export async function getUserMeditationSessions(userId: number): Promise<MeditationSession[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(meditationSessions).where(eq(meditationSessions.userId, userId)).orderBy(desc(meditationSessions.completedAt));
+}
+
+export async function createMeditationSession(session: InsertMeditationSession): Promise<MeditationSession> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(meditationSessions).values(session);
+  const insertId = Number((result as any).insertId);
+  const [newSession] = await db.select().from(meditationSessions).where(eq(meditationSessions.id, insertId));
+  return newSession;
+}
