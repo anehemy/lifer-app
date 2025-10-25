@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Trash2, Edit, Sparkles } from "lucide-react";
+import { Plus, Trash2, Edit, Sparkles, Image as ImageIcon } from "lucide-react";
 
 const categories = [
   "Personal Growth",
@@ -51,6 +51,16 @@ export default function VisionBoard() {
     },
   });
   
+  const generateImage = trpc.vision.generateImage.useMutation({
+    onSuccess: () => {
+      toast.success("Image generated successfully!");
+      utils.vision.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
   const deleteItem = trpc.vision.delete.useMutation({
     onSuccess: () => {
       toast.success("Vision item deleted!");
@@ -196,12 +206,27 @@ export default function VisionBoard() {
               </div>
             </CardHeader>
             <CardContent>
+              {item.imageUrl && (
+                <div className="mb-3 rounded-lg overflow-hidden">
+                  <img src={item.imageUrl} alt={item.title} className="w-full h-48 object-cover" />
+                </div>
+              )}
               {item.description && <p className="text-sm text-muted-foreground mb-3">{item.description}</p>}
               {item.affirmation && (
-                <p className="text-sm italic text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg">
+                <p className="text-sm italic text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg mb-3">
                   "{item.affirmation}"
                 </p>
               )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full"
+                onClick={() => generateImage.mutate({ itemId: item.id })}
+                disabled={generateImage.isPending}
+              >
+                <ImageIcon className="h-4 w-4 mr-2" />
+                {item.imageUrl ? "Regenerate Image" : "Generate Image"}
+              </Button>
             </CardContent>
           </Card>
         ))}

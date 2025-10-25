@@ -11,6 +11,9 @@ import Patterns from "./pages/Patterns";
 import VisionBoard from "./pages/VisionBoard";
 import Meditation from "./pages/Meditation";
 import PrimaryAim from "./pages/PrimaryAim";
+import Tokens from "./pages/Tokens";
+import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 
 function Router() {
   return (
@@ -22,6 +25,9 @@ function Router() {
         <Route path="/vision" component={VisionBoard} />
         <Route path="/meditation" component={Meditation} />
         <Route path="/primary-aim" component={PrimaryAim} />
+        <Route path="/tokens" component={Tokens} />
+        <Route path="/settings" component={Settings} />
+        <Route path="/admin" component={Admin} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>

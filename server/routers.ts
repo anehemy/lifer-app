@@ -4,8 +4,40 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { aiChatRouter } from "./aiChatRouter";
 import { z } from "zod";
+
 export const appRouter = router({
   system: systemRouter,
+  
+  tokens: router({
+    getBalance: protectedProcedure.query(async ({ ctx }) => {
+      const { getUserTokens } = await import("./_core/tokens");
+      const balance = await getUserTokens(ctx.user.id);
+      return { balance };
+    }),
+    purchase: protectedProcedure
+      .input(z.object({ packageId: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const { addTokens } = await import("./_core/tokens");
+        
+        // Token packages
+        const packages: Record<string, number> = {
+          starter: 500,
+          pro: 2000,
+          unlimited: 10000,
+        };
+        
+        const tokens = packages[input.packageId];
+        if (!tokens) {
+          throw new Error("Invalid package");
+        }
+        
+        // In production, this would integrate with payment processor
+        // For now, just add the tokens
+        await addTokens(ctx.user.id, tokens);
+        
+        return { success: true, tokensAdded: tokens };
+      }),
+  }),
 
   admin: router({
     listUsers: protectedProcedure.query(async ({ ctx }) => {
@@ -157,6 +189,13 @@ Make it personal, specific, and aligned with their deeper purpose.`;
       .mutation(async ({ ctx, input }) => {
         const { getUserVisionItems, updateVisionItem } = await import("./db");
         const { generateImage } = await import("./_core/imageGeneration");
+        const { deductTokens, TOKEN_COSTS } = await import("./_core/tokens");
+        
+        // Check and deduct tokens
+        const hasTokens = await deductTokens(ctx.user.id, TOKEN_COSTS.IMAGE_GENERATION);
+        if (!hasTokens) {
+          throw new Error("Insufficient AI tokens. Please purchase more tokens to continue.");
+        }
         
         const items = await getUserVisionItems(ctx.user.id);
         const item = items.find(i => i.id === input.itemId);

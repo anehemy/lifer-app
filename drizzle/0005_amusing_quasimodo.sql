@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `aiTokens` int DEFAULT 1000 NOT NULL;

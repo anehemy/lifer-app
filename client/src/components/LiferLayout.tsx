@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { trpc } from "@/lib/trpc";
 import { APP_TITLE, getLoginUrl } from "@/const";
 import { BookOpen, Brain, Home, Loader2, LogOut, Sparkles, Target, User } from "lucide-react";
 import { Link, useLocation } from "wouter";
@@ -11,6 +12,7 @@ interface LiferLayoutProps {
 
 export default function LiferLayout({ children }: LiferLayoutProps) {
   const { user, loading, isAuthenticated, logout } = useAuth();
+  const { data: tokenBalance } = trpc.tokens.getBalance.useQuery(undefined, { enabled: isAuthenticated });
   const [location] = useLocation();
 
   if (loading) {
@@ -29,6 +31,13 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
           <p className="text-xl text-muted-foreground max-w-md">
             Discover your Primary Aim through AI-guided journaling, pattern recognition, and meditation
           </p>
+          {/* Token Balance */}
+          <Link href="/tokens">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors cursor-pointer">
+              <span className="text-sm font-medium">🪙 {tokenBalance?.balance || 0} tokens</span>
+            </div>
+          </Link>
+
           <Button size="lg" onClick={() => window.location.href = getLoginUrl()}>
             Sign In to Begin Your Journey
           </Button>
@@ -86,6 +95,13 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
           </div>
+          {/* Token Balance */}
+          <Link href="/tokens">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors cursor-pointer">
+              <span className="text-sm font-medium">🪙 {tokenBalance?.balance || 0} tokens</span>
+            </div>
+          </Link>
+
           <Button
             variant="outline"
             size="sm"
