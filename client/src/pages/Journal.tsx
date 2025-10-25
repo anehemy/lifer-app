@@ -1,6 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import JournalEntryCard from "@/components/JournalEntryCard";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -143,7 +144,9 @@ export default function Journal() {
       <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
         <CardHeader>
           <div className="flex items-start gap-4">
-            <img src={MR_MG_AVATAR} alt={MR_MG_NAME} className="w-16 h-16 rounded-full object-cover" />
+            <div className="w-16 h-16 rounded-full flex items-center justify-center text-4xl bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-800 dark:to-purple-900">
+              {MR_MG_AVATAR}
+            </div>
             <div className="flex-1">
               <CardTitle className="mb-2">{MR_MG_NAME} asks:</CardTitle>
               <p className="text-lg">{currentQuestion}</p>
@@ -198,32 +201,11 @@ export default function Journal() {
           <h2 className="text-2xl font-semibold mb-4">All Entries</h2>
           <div className="space-y-4">
             {entries.map((entry) => (
-              <Card key={entry.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1">
-                      <p className="text-sm text-muted-foreground mb-2">
-                        {new Date(entry.createdAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                      <p className="font-medium text-purple-600 dark:text-purple-400 mb-2">
-                        {entry.question}
-                      </p>
-                      <p className="text-base whitespace-pre-wrap">{entry.response}</p>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => deleteEntry.mutate({ id: entry.id })}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-              </Card>
+              <JournalEntryCard
+                key={entry.id}
+                entry={entry}
+                onDelete={() => deleteEntry.mutate({ id: entry.id })}
+              />
             ))}
           </div>
         </div>
@@ -234,7 +216,9 @@ export default function Journal() {
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center gap-3">
-              <img src={MR_MG_AVATAR} alt={MR_MG_NAME} className="w-12 h-12 rounded-full object-cover" />
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-800 dark:to-purple-900">
+                {MR_MG_AVATAR}
+              </div>
               <div>
                 <DialogTitle>Ask {MR_MG_NAME}</DialogTitle>
                 <p className="text-sm text-muted-foreground">Get personalized guidance on your current question</p>
@@ -251,7 +235,9 @@ export default function Journal() {
             {mrMgResponse && (
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-4 rounded-lg">
                 <div className="flex items-start gap-3 mb-3">
-                  <img src={MR_MG_AVATAR} alt={MR_MG_NAME} className="w-8 h-8 rounded-full object-cover" />
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xl bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-800 dark:to-purple-900">
+                    {MR_MG_AVATAR}
+                  </div>
                   <p className="font-medium">{MR_MG_NAME} says:</p>
                 </div>
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{mrMgResponse}</p>

@@ -72,13 +72,69 @@ export const appRouter = router({
       .input(z.object({ question: z.string(), response: z.string() }))
       .mutation(async ({ ctx, input }) => {
         const { createJournalEntry } = await import("./db");
-        return createJournalEntry({ userId: ctx.user.id, ...input });
+        const { invokeLLM } = await import("./_core/llm");
+        
+        // Extract metadata from response using AI
+        const metadataPrompt = `Analyze this journal entry and extract contextual metadata. Return ONLY a JSON object with these fields (use null if not applicable):
+{
+  "timeContext": "time period mentioned (e.g., 'childhood', '2010', 'age 15', 'summer')",
+  "placeContext": "location mentioned (e.g., 'New York', 'grandfather's garage', 'school')",
+  "experienceType": "type of experience (e.g., 'learning', 'relationship', 'achievement', 'loss')",
+  "challengeType": "challenge faced if any (e.g., 'bullying', 'failure', 'conflict', 'loss')",
+  "growthTheme": "growth or lesson (e.g., 'resilience', 'patience', 'self-discovery', 'courage')"
+}
+
+Question: ${input.question}
+Response: ${input.response}`;
+        
+        let metadata = {};
+        try {
+          const result = await invokeLLM({
+            messages: [{ role: "user", content: metadataPrompt }],
+          });
+          const content = result.choices[0]?.message?.content;
+          if (typeof content === 'string') {
+            const jsonMatch = content.match(/\{[^}]+\}/);
+            if (jsonMatch) {
+              metadata = JSON.parse(jsonMatch[0]);
+            }
+          }
+        } catch (e) {
+          console.error('Failed to extract metadata:', e);
+        }
+        
+        return createJournalEntry({ userId: ctx.user.id, ...input, ...metadata });
       }),
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
         const { deleteJournalEntry } = await import("./db");
         await deleteJournalEntry(input.id, ctx.user.id);
+        return { success: true };
+      }),
+    updateMetadata: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        timeContext: z.string().nullable().optional(),
+        placeContext: z.string().nullable().optional(),
+        experienceType: z.string().nullable().optional(),
+        challengeType: z.string().nullable().optional(),
+        growthTheme: z.string().nullable().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db').then(m => m.getDb());
+        if (!db) throw new Error('Database not available');
+        const { journalEntries } = await import('../drizzle/schema');
+        const { eq, and } = await import('drizzle-orm');
+        
+        const { id, ...metadata } = input;
+        await db.update(journalEntries)
+          .set(metadata)
+          .where(and(
+            eq(journalEntries.id, id),
+            eq(journalEntries.userId, ctx.user.id)
+          ));
+        
         return { success: true };
       }),
     askMrMg: protectedProcedure

@@ -9,6 +9,11 @@ interface JournalEntry {
   question: string;
   response: string;
   createdAt: string | Date;
+  timeContext?: string | null;
+  placeContext?: string | null;
+  experienceType?: string | null;
+  challengeType?: string | null;
+  growthTheme?: string | null;
 }
 
 interface LifeStoryTimelineProps {

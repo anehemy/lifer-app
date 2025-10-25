@@ -36,6 +36,12 @@ export const journalEntries = mysqlTable("journalEntries", {
   userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   question: text("question").notNull(),
   response: text("response").notNull(),
+  // Contextual metadata extracted from response
+  timeContext: text("timeContext"), // e.g., "childhood", "2010", "age 15"
+  placeContext: text("placeContext"), // e.g., "New York", "grandfather's garage"
+  experienceType: text("experienceType"), // e.g., "learning", "relationship", "achievement"
+  challengeType: text("challengeType"), // e.g., "bullying", "loss", "failure"
+  growthTheme: text("growthTheme"), // e.g., "resilience", "patience", "self-discovery"
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

@@ -23,6 +23,6 @@ export const getLoginUrl = () => {
 };
 
 // Lifer App specific constants
-export const MR_MG_AVATAR = "/mr-mg.png"; // Mr. MG character image
+export const MR_MG_AVATAR = "🎩"; // Mr. MG character emoji
 export const MR_MG_NAME = "Mr. MG";
 export const MR_MG_TITLE = "Your Life Mentor";
