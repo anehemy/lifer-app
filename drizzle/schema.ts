@@ -132,6 +132,7 @@ export const meditationSessions = mysqlTable("meditationSessions", {
   durationMinutes: int("durationMinutes").notNull(),
   script: text("script"),
   audioUrl: varchar("audioUrl", { length: 512 }),
+  voiceId: varchar("voiceId", { length: 50 }).default("rachel"),
   ambientSound: varchar("ambientSound", { length: 50 }),
   reflection: text("reflection"),
   rating: int("rating"),

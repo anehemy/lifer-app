@@ -1,0 +1,1 @@
+ALTER TABLE `meditationSessions` ADD `voiceId` varchar(50) DEFAULT 'rachel';

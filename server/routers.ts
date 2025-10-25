@@ -81,6 +81,72 @@ export const appRouter = router({
         await deleteJournalEntry(input.id, ctx.user.id);
         return { success: true };
       }),
+    askMrMg: protectedProcedure
+      .input(z.object({ 
+        question: z.string(),
+        userMessage: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { getUserJournalEntries, getUserVisionItems, getUserPrimaryAim } = await import("./db");
+        const { invokeLLM } = await import("./_core/llm");
+        const { getPatternInsights } = await import("./db");
+        
+        // Gather comprehensive user context
+        const [entries, visionItems, primaryAim, patterns] = await Promise.all([
+          getUserJournalEntries(ctx.user.id),
+          getUserVisionItems(ctx.user.id),
+          getUserPrimaryAim(ctx.user.id),
+          getPatternInsights(ctx.user.id),
+        ]);
+        
+        // Build context for Mr. MG
+        let context = `User's current question: ${input.question}\n\n`;
+        
+        if (primaryAim?.statement) {
+          context += `User's Primary Aim: ${primaryAim.statement}\n\n`;
+        }
+        
+        if (entries.length > 0) {
+          context += `Recent journal entries (${entries.length} total):\n`;
+          entries.slice(-5).forEach(e => {
+            context += `Q: ${e.question}\nA: ${e.response}\n\n`;
+          });
+        }
+        
+        if (visionItems.length > 0) {
+          context += `Vision items: ${visionItems.map(v => v.title).join(", ")}\n\n`;
+        }
+        
+        if (patterns && patterns.length > 0) {
+          context += `Identified patterns: ${patterns.join(", ")}\n\n`;
+        }
+        
+        const systemPrompt = `You are Mr. MG, a wise life mentor inspired by Michael Gerber's E-Myth principles and scientific research on personal development. Your role is to help users discover their Primary Aim - not what they want to DO, but who they want to BE and how they want to LIVE.
+
+Key principles:
+- Focus on being vs. doing: Help users understand their identity and values before actions
+- Use Socratic questioning: Ask thoughtful follow-up questions to deepen reflection
+- Draw from E-Myth wisdom: Work ON your life, not just IN it
+- Be warm, supportive, and insightful
+- Reference their past reflections and patterns when relevant
+- Help them see connections between their experiences, values, and aspirations
+- Encourage authentic self-discovery over societal expectations
+
+User Context:
+${context}
+
+Respond to their message with wisdom, empathy, and insight. Keep responses conversational (2-4 paragraphs). Ask one thoughtful follow-up question to deepen their reflection.`;
+        
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: input.userMessage },
+          ],
+        });
+        
+        const content = response.choices[0].message.content;
+        return { response: typeof content === 'string' ? content : "" };
+      }),
   }),  vision: router({
     list: protectedProcedure.query(async ({ ctx }) => {
       const { getUserVisionItems } = await import("./db");
@@ -508,6 +574,7 @@ Provide a personalized suggestion that reflects their values, aspirations, and l
         z.object({
           meditationType: z.string(),
           durationMinutes: z.number(),
+          voiceId: z.string().optional(),
           customContext: z.any().optional(),
           ambientSound: z.string().optional(),
         })
@@ -565,7 +632,10 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
         let audioUrl = "";
         if (isTTSAvailable()) {
           try {
-            audioUrl = await generateSpeechAudio({ text: script });
+            audioUrl = await generateSpeechAudio({ 
+              text: script,
+              voiceId: input.voiceId || "rachel",
+            });
           } catch (error) {
             console.error("[Meditation] Failed to generate audio:", error);
           }
@@ -578,6 +648,7 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
           durationMinutes: input.durationMinutes,
           script,
           audioUrl: audioUrl || null,
+          voiceId: input.voiceId || "rachel",
           ambientSound: input.ambientSound || "none",
         });
         

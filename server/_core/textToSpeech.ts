@@ -4,10 +4,11 @@
  */
 
 import { storagePut } from "../storage";
+import { getElevenLabsVoiceId } from "@shared/voiceOptions";
 
 interface TTSOptions {
   text: string;
-  voice?: string;
+  voiceId?: string; // Voice ID from voiceOptions
   language?: string;
 }
 
@@ -16,16 +17,16 @@ interface TTSOptions {
  * Returns the public URL of the generated audio file
  */
 export async function generateSpeechAudio(options: TTSOptions): Promise<string> {
-  const { text, voice = "female", language = "en-US" } = options;
+  const { text, voiceId = "rachel", language = "en-US" } = options;
 
   // Option 1: ElevenLabs (highest quality, most natural)
   if (process.env.ELEVENLABS_API_KEY) {
     try {
-      // Use Rachel voice (calm, soothing female voice perfect for meditation)
-      const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel
+      // Get ElevenLabs voice ID from our voice options
+      const elevenLabsVoiceId = getElevenLabsVoiceId(voiceId);
       
       const response = await fetch(
-        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+        `https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceId}`,
         {
           method: "POST",
           headers: {

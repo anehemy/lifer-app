@@ -111,7 +111,7 @@ export default function MeditationPlayer({ session, onComplete, onClose }: Medit
             <Progress value={progress} className="h-2" />
             <div className="flex justify-between text-sm text-muted-foreground">
               <span>{formatTime(currentTime)}</span>
-              <span>{formatTime(duration)}</span>
+              <span>{duration > 0 ? formatTime(duration) : `${session.durationMinutes} min`}</span>
             </div>
           </div>
 

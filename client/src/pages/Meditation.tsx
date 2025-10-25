@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Play, Clock, Star } from "lucide-react";
 import MeditationCustomizer from "@/components/MeditationCustomizer";
 import MeditationPlayer from "@/components/MeditationPlayer";
+import { VOICE_OPTIONS, DEFAULT_VOICE_ID } from "@shared/voiceOptions";
 
 const meditationTypes = [
   "Stress Release",
@@ -27,6 +28,7 @@ const durations = [1, 5, 10, 15, 20, 30];
 export default function Meditation() {
   const [selectedType, setSelectedType] = useState(meditationTypes[0]);
   const [selectedDuration, setSelectedDuration] = useState(10);
+  const [selectedVoice, setSelectedVoice] = useState(DEFAULT_VOICE_ID);
   const [showPlayer, setShowPlayer] = useState(false);
   const [currentSession, setCurrentSession] = useState<any>(null);
   const [showReflection, setShowReflection] = useState(false);
@@ -79,6 +81,7 @@ export default function Meditation() {
     generateMeditation.mutate({
       meditationType: selectedType,
       durationMinutes: selectedDuration,
+      voiceId: selectedVoice,
       customContext: selectedContext,
       ambientSound: selectedContext.ambientSound || "none",
     });
@@ -137,6 +140,24 @@ export default function Meditation() {
               <SelectContent>
                 {durations.map((dur) => (
                   <SelectItem key={dur} value={dur.toString()}>{dur} minutes</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Voice</Label>
+            <Select value={selectedVoice} onValueChange={setSelectedVoice}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {VOICE_OPTIONS.map((voice) => (
+                  <SelectItem key={voice.id} value={voice.id}>
+                    <div className="flex flex-col">
+                      <span className="font-medium">{voice.name}</span>
+                      <span className="text-xs text-muted-foreground">{voice.description}</span>
+                    </div>
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>

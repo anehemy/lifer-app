@@ -2,10 +2,13 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Trash2, RefreshCw, Mic, MicOff } from "lucide-react";
+import { Trash2, RefreshCw, Mic, MicOff, MessageCircle, Send } from "lucide-react";
+import LifeStoryTimeline from "@/components/LifeStoryTimeline";
 
 const questions = [
   "Tell me about a moment in your childhood that shaped who you are today.",
@@ -25,6 +28,9 @@ export default function Journal() {
   const [response, setResponse] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
+  const [showMrMgChat, setShowMrMgChat] = useState(false);
+  const [mrMgMessage, setMrMgMessage] = useState("");
+  const [mrMgResponse, setMrMgResponse] = useState("");
   
   // Initialize speech recognition
   useEffect(() => {
@@ -102,6 +108,15 @@ export default function Journal() {
       utils.patterns.analyze.invalidate();
     },
   });
+  
+  const askMrMg = trpc.journal.askMrMg.useMutation({
+    onSuccess: (data) => {
+      setMrMgResponse(data.response);
+    },
+    onError: () => {
+      toast.error("Failed to get response from Mr. MG");
+    },
+  });
 
   const handleNextQuestion = () => {
     const currentIndex = questions.indexOf(currentQuestion);
@@ -128,7 +143,7 @@ export default function Journal() {
       <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
         <CardHeader>
           <div className="flex items-start gap-4">
-            <div className="text-4xl">{MR_MG_AVATAR}</div>
+            <img src={MR_MG_AVATAR} alt={MR_MG_NAME} className="w-16 h-16 rounded-full object-cover" />
             <div className="flex-1">
               <CardTitle className="mb-2">{MR_MG_NAME} asks:</CardTitle>
               <p className="text-lg">{currentQuestion}</p>
@@ -136,10 +151,16 @@ export default function Journal() {
           </div>
         </CardHeader>
         <CardContent>
-          <Button onClick={handleNextQuestion} variant="outline" size="sm">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Ask Another Question
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleNextQuestion} variant="outline" size="sm">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Ask Another Question
+            </Button>
+            <Button onClick={() => setShowMrMgChat(true)} variant="default" size="sm">
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Ask Mr. MG for Guidance
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -166,16 +187,15 @@ export default function Journal() {
         </CardContent>
       </Card>
 
-      {/* Previous Entries */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Previous Entries</h2>
-        {entries.length === 0 ? (
-          <Card>
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              Your journal entries will appear here as you write them.
-            </CardContent>
-          </Card>
-        ) : (
+      {/* Timeline Visualization */}
+      {entries.length > 0 && (
+        <LifeStoryTimeline entries={entries} />
+      )}
+      
+      {/* Previous Entries - Simple List */}
+      {entries.length > 0 && (
+        <div>
+          <h2 className="text-2xl font-semibold mb-4">All Entries</h2>
           <div className="space-y-4">
             {entries.map((entry) => (
               <Card key={entry.id}>
@@ -206,8 +226,89 @@ export default function Journal() {
               </Card>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+      
+      {/* Mr. MG Chat Dialog */}
+      <Dialog open={showMrMgChat} onOpenChange={setShowMrMgChat}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <img src={MR_MG_AVATAR} alt={MR_MG_NAME} className="w-12 h-12 rounded-full object-cover" />
+              <div>
+                <DialogTitle>Ask {MR_MG_NAME}</DialogTitle>
+                <p className="text-sm text-muted-foreground">Get personalized guidance on your current question</p>
+              </div>
+            </div>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-4">
+            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+              <p className="text-sm font-medium text-purple-900 dark:text-purple-100 mb-2">Current Question:</p>
+              <p className="text-sm">{currentQuestion}</p>
+            </div>
+            
+            {mrMgResponse && (
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-4 rounded-lg">
+                <div className="flex items-start gap-3 mb-3">
+                  <img src={MR_MG_AVATAR} alt={MR_MG_NAME} className="w-8 h-8 rounded-full object-cover" />
+                  <p className="font-medium">{MR_MG_NAME} says:</p>
+                </div>
+                <p className="text-sm whitespace-pre-wrap leading-relaxed">{mrMgResponse}</p>
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="mrMgMessage">Your Message</Label>
+              <Textarea
+                id="mrMgMessage"
+                value={mrMgMessage}
+                onChange={(e) => setMrMgMessage(e.target.value)}
+                placeholder="Ask Mr. MG for guidance on this question..."
+                className="min-h-[100px]"
+              />
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowMrMgChat(false);
+                  setMrMgMessage("");
+                  setMrMgResponse("");
+                }}
+              >
+                Close
+              </Button>
+              <Button 
+                onClick={() => {
+                  if (!mrMgMessage.trim()) {
+                    toast.error("Please enter a message");
+                    return;
+                  }
+                  askMrMg.mutate({ 
+                    question: currentQuestion, 
+                    userMessage: mrMgMessage 
+                  });
+                }}
+                disabled={askMrMg.isPending}
+              >
+                {askMrMg.isPending ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Thinking...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Ask Mr. MG
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

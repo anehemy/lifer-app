@@ -50,6 +50,13 @@
       "when": 1761360290413,
       "tag": "0006_useful_whizzer",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1761390446421,
+      "tag": "0007_cool_stardust",
+      "breakpoints": true
     }
   ]
 }
