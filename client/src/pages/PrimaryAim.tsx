@@ -6,15 +6,15 @@ import { Label } from "@/components/ui/label";
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Lightbulb } from "lucide-react";
 
 const sections = [
-  { key: "personal", label: "Personal Identity", prompt: "Who do you want to be as a person? What character traits define your ideal self?" },
-  { key: "relationships", label: "Relationships", prompt: "How do you want to show up in your relationships? What kind of partner, parent, friend do you want to be?" },
-  { key: "contribution", label: "Contribution/Work", prompt: "What impact do you want to make in the world? How do you want to contribute?" },
-  { key: "health", label: "Health & Vitality", prompt: "How do you want to feel in your body? What does physical and mental wellness mean to you?" },
-  { key: "growth", label: "Growth & Learning", prompt: "What do you want to learn? How do you want to grow throughout your life?" },
-  { key: "legacy", label: "Legacy", prompt: "When you're gone, what do you want people to say about how you lived?" },
+  { key: "personal", label: "Personal Identity", prompt: "Who do you want to be as a person? What character traits define your ideal self?", icon: "👤" },
+  { key: "relationships", label: "Relationships", prompt: "How do you want to show up in your relationships? What kind of partner, parent, friend do you want to be?", icon: "❤️" },
+  { key: "contribution", label: "Contribution/Work", prompt: "What impact do you want to make in the world? How do you want to contribute?", icon: "🌍" },
+  { key: "health", label: "Health & Vitality", prompt: "How do you want to feel in your body? What does physical and mental wellness mean to you?", icon: "💪" },
+  { key: "growth", label: "Growth & Learning", prompt: "What do you want to learn? How do you want to grow throughout your life?", icon: "📚" },
+  { key: "legacy", label: "Legacy", prompt: "When you're gone, what do you want people to say about how you lived?", icon: "⭐" },
 ];
 
 export default function PrimaryAim() {
@@ -30,6 +30,8 @@ export default function PrimaryAim() {
     growth: "",
     legacy: "",
   });
+  
+  const [suggestingFor, setSuggestingFor] = useState<string | null>(null);
 
   useEffect(() => {
     if (aim) {
@@ -61,13 +63,25 @@ export default function PrimaryAim() {
       toast.error("Failed to generate statement: " + error.message);
     },
   });
+  
+  const suggestSection = trpc.primaryAim.suggestSection.useMutation({
+    onSuccess: (data) => {
+      const suggestion = typeof data.suggestion === 'string' ? data.suggestion : '';
+      setValues((prev) => ({ ...prev, [data.section]: suggestion }));
+      toast.success("AI suggestion added!");
+      setSuggestingFor(null);
+    },
+    onError: (error) => {
+      toast.error("Failed to generate suggestion: " + error.message);
+      setSuggestingFor(null);
+    },
+  });
 
   const handleSave = () => {
     upsertAim.mutate(values);
   };
 
   const handleGenerateStatement = () => {
-    // Check if at least some sections are filled
     const filledSections = sections.filter(s => values[s.key]?.trim());
     if (filledSections.length === 0) {
       toast.error("Please fill out at least one section before generating your Primary Aim Statement");
@@ -75,9 +89,14 @@ export default function PrimaryAim() {
     }
     generateStatement.mutate(values);
   };
+  
+  const handleSuggest = (sectionKey: string) => {
+    setSuggestingFor(sectionKey);
+    suggestSection.mutate({ section: sectionKey });
+  };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-6xl mx-auto">
       <div>
         <h1 className="text-4xl font-bold mb-2">Your Primary Aim</h1>
         <p className="text-muted-foreground">Life's Deeper Purpose</p>
@@ -98,92 +117,97 @@ export default function PrimaryAim() {
         </CardHeader>
       </Card>
 
-      <div className="space-y-6">
+      {/* 6 Reflection Sections in 2-column grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {sections.map((section) => (
-          <Card key={section.key}>
-            <CardHeader>
-              <CardTitle>{section.label}</CardTitle>
+          <Card key={section.key} className="hover:shadow-lg transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">{section.icon}</span>
+                  <CardTitle className="text-lg">{section.label}</CardTitle>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => handleSuggest(section.key)}
+                  disabled={suggestingFor === section.key}
+                  className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                >
+                  {suggestingFor === section.key ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Lightbulb className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
               <p className="text-sm text-muted-foreground">{section.prompt}</p>
             </CardHeader>
             <CardContent>
               <Textarea
-                value={values[section.key] || ""}
+                value={values[section.key]}
                 onChange={(e) => setValues({ ...values, [section.key]: e.target.value })}
-                placeholder="Share your thoughts..."
-                className="min-h-[120px]"
+                placeholder={`Reflect on your ${section.label.toLowerCase()}...`}
+                className="min-h-[120px] resize-none"
               />
             </CardContent>
           </Card>
         ))}
+      </div>
 
-        <Card className="border-2 border-primary/20">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Primary Aim Statement</CardTitle>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Let {MR_MG_NAME} help you synthesize your reflections and vision into a powerful Primary Aim Statement
-                </p>
-              </div>
-              <Button
-                onClick={handleGenerateStatement}
-                disabled={generateStatement.isPending}
-                variant="outline"
-                className="gap-2"
-              >
-                {generateStatement.isPending ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Crafting...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4" />
-                    Generate with AI
-                  </>
-                )}
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {generateStatement.isPending && (
-              <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200">
-                <CardContent className="pt-4">
-                  <div className="flex items-start gap-3">
-                    <div className="text-2xl">{MR_MG_AVATAR}</div>
-                    <div>
-                      <p className="text-sm font-medium mb-1">{MR_MG_NAME} is working...</p>
-                      <p className="text-sm text-muted-foreground">
-                        Analyzing your reflections, vision board, and journey to craft your unique Primary Aim Statement...
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-            <Textarea
-              value={values.statement || ""}
-              onChange={(e) => setValues({ ...values, statement: e.target.value })}
-              placeholder="Click 'Generate with AI' to have Mr. MG craft your Primary Aim Statement, or write your own..."
-              className="min-h-[200px]"
+      {/* Primary Aim Statement */}
+      <Card className="border-2 border-purple-200">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-2xl">Your Primary Aim Statement</CardTitle>
+            <Button
+              onClick={handleGenerateStatement}
               disabled={generateStatement.isPending}
-            />
-            <p className="text-xs text-muted-foreground">
-              💡 Tip: Fill out the sections above and add items to your Vision Board for the best AI-generated statement
-            </p>
-          </CardContent>
-        </Card>
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              {generateStatement.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate with AI
+                </>
+              )}
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Based on your reflections above, this is your synthesized Primary Aim—who you want to BE and how you want to LIVE.
+          </p>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            value={values.statement}
+            onChange={(e) => setValues({ ...values, statement: e.target.value })}
+            placeholder="Your Primary Aim Statement will appear here after you generate it with AI, or you can write your own..."
+            className="min-h-[200px] text-lg leading-relaxed"
+          />
+        </CardContent>
+      </Card>
 
-        <div className="flex justify-end gap-4">
-          {aim && (
-            <p className="text-sm text-muted-foreground self-center">
-              Last updated: {new Date(aim.updatedAt).toLocaleDateString()}
-            </p>
+      <div className="flex justify-end gap-4">
+        <Button
+          onClick={handleSave}
+          disabled={upsertAim.isPending}
+          size="lg"
+          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+        >
+          {upsertAim.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Saving...
+            </>
+          ) : (
+            "Save Primary Aim"
           )}
-          <Button onClick={handleSave} size="lg" disabled={upsertAim.isPending}>
-            {upsertAim.isPending ? "Saving..." : "Save Primary Aim"}
-          </Button>
-        </div>
+        </Button>
       </div>
     </div>
   );

@@ -378,6 +378,57 @@ For each section, write 2-3 thoughtful sentences that capture their essence base
       
       return sections;
     }),
+    
+    suggestSection: protectedProcedure
+      .input(z.object({ section: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const { getUserJournalEntries, getUserVisionItems, getPatternInsights } = await import("./db");
+        const { invokeLLM } = await import("./_core/llm");
+        
+        const [journalEntries, visionItems, patterns] = await Promise.all([
+          getUserJournalEntries(ctx.user.id),
+          getUserVisionItems(ctx.user.id),
+          getPatternInsights(ctx.user.id),
+        ]);
+        
+        const sectionLabels: Record<string, string> = {
+          personal: "Personal Identity",
+          relationships: "Relationships",
+          contribution: "Contribution/Work",
+          health: "Health & Vitality",
+          growth: "Growth & Learning",
+          legacy: "Legacy",
+        };
+        
+        const sectionLabel = sectionLabels[input.section] || input.section;
+        
+        const prompt = `Based on the user's journey data below, suggest a thoughtful 2-3 sentence reflection for their "${sectionLabel}" section of their Primary Aim.
+
+Journal Entries:
+${journalEntries.slice(0, 10).map((e: any) => `Q: ${e.question}\nA: ${e.response}`).join('\n\n')}
+
+Vision Board Items:
+${visionItems.map((v: any) => `${v.title}: ${v.description || ''}`).join('\n')}
+
+Recurring Patterns:
+${patterns.slice(0, 5).map((p: any) => p.pattern).join(', ')}
+
+Provide a personalized suggestion that reflects their values, aspirations, and life themes. Focus on who they want to BE, not what they want to DO.`;
+        
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "You are a life coach helping someone discover their Primary Aim. Provide thoughtful, personalized suggestions based on their life story." },
+            { role: "user", content: prompt },
+          ],
+        });
+        
+        const suggestion = response.choices[0]?.message?.content || "";
+        
+        return {
+          section: input.section,
+          suggestion,
+        };
+      }),
   }),
 
   meditation: router({
