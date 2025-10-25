@@ -21,7 +21,7 @@ const meditationTypes = [
   "Sleep Preparation",
 ];
 
-const durations = [5, 10, 15, 20, 30];
+const durations = [1, 5, 10, 15, 20, 30];
 
 export default function Meditation() {
   const [selectedType, setSelectedType] = useState(meditationTypes[0]);
