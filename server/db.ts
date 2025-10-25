@@ -344,6 +344,21 @@ export async function createMeditationSession(session: InsertMeditationSession):
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
+  // Check if user has 20+ meditations, delete oldest if needed
+  const userSessions = await db
+    .select()
+    .from(meditationSessions)
+    .where(eq(meditationSessions.userId, session.userId!))
+    .orderBy(desc(meditationSessions.createdAt));
+  
+  if (userSessions.length >= 20) {
+    // Delete the oldest meditation(s) to keep limit at 20
+    const toDelete = userSessions.slice(19); // Keep newest 19, delete rest
+    for (const old of toDelete) {
+      await db.delete(meditationSessions).where(eq(meditationSessions.id, old.id));
+    }
+  }
+  
   await db.insert(meditationSessions).values(session);
   
   // Get the most recently created session for this user

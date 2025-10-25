@@ -37,10 +37,10 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
             text,
             model_id: "eleven_monolingual_v1",
             voice_settings: {
-              stability: 0.75,
-              similarity_boost: 0.75,
+              stability: 0.85, // Higher stability for calm, consistent voice
+              similarity_boost: 0.60, // Lower for softer, more serene tone
               style: 0.0,
-              use_speaker_boost: true,
+              use_speaker_boost: false, // Disable for gentler voice
             },
           }),
         }
