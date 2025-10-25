@@ -509,6 +509,7 @@ Provide a personalized suggestion that reflects their values, aspirations, and l
           meditationType: z.string(),
           durationMinutes: z.number(),
           customContext: z.any().optional(),
+          ambientSound: z.string().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -577,6 +578,7 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
           durationMinutes: input.durationMinutes,
           script,
           audioUrl: audioUrl || null,
+          ambientSound: input.ambientSound || "none",
         });
         
         return session;

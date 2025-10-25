@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AMBIENT_SOUNDS } from "@shared/ambientSounds";
 
 interface UserContext {
   firstName: string;
@@ -26,6 +28,7 @@ export default function MeditationCustomizer({ open, onClose, onConfirm, userCon
   const [selectedVisionItems, setSelectedVisionItems] = useState<number[]>([]);
   const [includePrimaryAim, setIncludePrimaryAim] = useState(!!userContext.primaryAimStatement);
   const [selectedPatterns, setSelectedPatterns] = useState<number[]>([]);
+  const [ambientSound, setAmbientSound] = useState<string>("ocean");
 
   const handleConfirm = () => {
     const context = {
@@ -34,6 +37,7 @@ export default function MeditationCustomizer({ open, onClose, onConfirm, userCon
       visionItems: selectedVisionItems.map(i => userContext.visionItems[i]),
       primaryAim: includePrimaryAim ? userContext.primaryAimStatement : null,
       patterns: selectedPatterns.map(i => userContext.patterns[i]),
+      ambientSound,
     };
     onConfirm(context);
   };
@@ -163,6 +167,22 @@ export default function MeditationCustomizer({ open, onClose, onConfirm, userCon
               </div>
             </div>
           )}
+          {/* Ambient Sound Selection */}
+          <div>
+            <h3 className="font-semibold mb-2">Background Ambience</h3>
+            <Select value={ambientSound} onValueChange={setAmbientSound}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(AMBIENT_SOUNDS).map(([key, sound]) => (
+                  <SelectItem key={key} value={key}>
+                    {sound.name} - {sound.description}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         <div className="flex justify-end gap-2">

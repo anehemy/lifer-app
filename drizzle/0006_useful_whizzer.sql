@@ -1,0 +1,1 @@
+ALTER TABLE `meditationSessions` ADD `ambientSound` varchar(50);

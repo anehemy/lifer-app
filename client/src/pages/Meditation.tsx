@@ -79,6 +79,7 @@ export default function Meditation() {
       meditationType: selectedType,
       durationMinutes: selectedDuration,
       customContext: selectedContext,
+      ambientSound: selectedContext.ambientSound || "none",
     });
   };
   

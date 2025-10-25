@@ -43,6 +43,13 @@
       "when": 1761358639707,
       "tag": "0005_amusing_quasimodo",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1761360290413,
+      "tag": "0006_useful_whizzer",
+      "breakpoints": true
     }
   ]
 }
