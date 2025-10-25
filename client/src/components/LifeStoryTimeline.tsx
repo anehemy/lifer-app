@@ -31,7 +31,7 @@ export default function LifeStoryTimeline({ entries }: LifeStoryTimelineProps) {
     return keywords.some(keyword => lowerText.includes(keyword.toLowerCase()));
   };
 
-  // Categorize entries based on content
+  // Categorize entries based on metadata (with keyword fallback)
   const categorizeEntries = () => {
     const locationKeywords = ["city", "town", "place", "country", "home", "house", "school", "work", "office", "traveled", "moved", "lived"];
     const experienceKeywords = ["moment", "time", "experience", "event", "happened", "remember", "first", "last", "always", "never"];
@@ -39,28 +39,36 @@ export default function LifeStoryTimeline({ entries }: LifeStoryTimelineProps) {
     const growthKeywords = ["learn", "grow", "develop", "improve", "better", "understand", "realize", "discover", "change", "transform", "insight"];
 
     return {
-      locations: entries.filter(e => extractKeywords(e.response, locationKeywords)),
-      experiences: entries.filter(e => extractKeywords(e.response, experienceKeywords)),
-      challenges: entries.filter(e => extractKeywords(e.response, challengeKeywords)),
-      growth: entries.filter(e => extractKeywords(e.response, growthKeywords)),
+      locations: entries.filter(e => e.placeContext || extractKeywords(e.response, locationKeywords)),
+      experiences: entries.filter(e => e.experienceType || extractKeywords(e.response, experienceKeywords)),
+      challenges: entries.filter(e => e.challengeType || extractKeywords(e.response, challengeKeywords)),
+      growth: entries.filter(e => e.growthTheme || extractKeywords(e.response, growthKeywords)),
     };
   };
 
   const categorized = categorizeEntries();
 
-  // Group entries by year for timeline view
-  const groupByYear = (entries: JournalEntry[]) => {
+  // Group entries by story time (timeContext) for timeline view
+  const groupByStoryTime = (entries: JournalEntry[]) => {
     const grouped: Record<string, JournalEntry[]> = {};
     entries.forEach(entry => {
-      const createdDate = entry.createdAt instanceof Date ? entry.createdAt : new Date(entry.createdAt);
-      const year = createdDate.getFullYear().toString();
-      if (!grouped[year]) grouped[year] = [];
-      grouped[year].push(entry);
+      // Use timeContext if available, otherwise fall back to createdAt year
+      let timeLabel = "Unspecified Time";
+      
+      if (entry.timeContext) {
+        timeLabel = entry.timeContext;
+      } else {
+        const createdDate = entry.createdAt instanceof Date ? entry.createdAt : new Date(entry.createdAt);
+        timeLabel = createdDate.getFullYear().toString();
+      }
+      
+      if (!grouped[timeLabel]) grouped[timeLabel] = [];
+      grouped[timeLabel].push(entry);
     });
     return grouped;
   };
 
-  const timelineData = groupByYear(entries);
+  const timelineData = groupByStoryTime(entries);
 
   const renderTimelineView = () => (
     <div className="space-y-6">

@@ -2,7 +2,8 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { APP_TITLE, getLoginUrl } from "@/const";
-import { BookOpen, Brain, Home, Loader2, LogOut, Sparkles, Target, User } from "lucide-react";
+import { BookOpen, Brain, Home, Loader2, LogOut, Menu, Sparkles, Target, User, X } from "lucide-react";
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import AIChatWidget from "@/components/AIChatWidget";
 
@@ -14,6 +15,7 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
   const { user, loading, isAuthenticated, logout } = useAuth();
   const { data: tokenBalance } = trpc.tokens.getBalance.useQuery(undefined, { enabled: isAuthenticated });
   const [location] = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   if (loading) {
     return (
@@ -57,8 +59,26 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed top-4 left-4 z-50 lg:hidden bg-white dark:bg-gray-900 p-2 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800"
+      >
+        {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      </button>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-64 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-r border-gray-200 dark:border-gray-800 z-50">
+      <aside className={`fixed left-0 top-0 h-full w-64 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-r border-gray-200 dark:border-gray-800 z-50 transition-transform duration-300 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0`}>
         <div className="p-6">
           <h1 className="text-2xl font-bold text-gradient">{APP_TITLE}</h1>
           <p className="text-sm text-muted-foreground mt-1">Discover Your Purpose</p>
@@ -71,6 +91,7 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
             return (
               <Link key={item.path} href={item.path}>
                 <div
+                  onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer ${
                     isActive
                       ? "bg-primary text-primary-foreground shadow-md"
@@ -118,7 +139,7 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
       </aside>
 
       {/* Main Content */}
-      <main className="ml-64 min-h-screen">
+      <main className="lg:ml-64 min-h-screen">
         <div className="container py-8">{children}</div>
       </main>
 
