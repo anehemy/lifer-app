@@ -1,6 +1,6 @@
 /**
  * Text-to-Speech service for generating meditation audio
- * Supports multiple TTS providers (Google Cloud TTS, ElevenLabs, etc.)
+ * Supports multiple TTS providers (ElevenLabs, Google Cloud TTS)
  */
 
 import { storagePut } from "../storage";
@@ -18,7 +18,54 @@ interface TTSOptions {
 export async function generateSpeechAudio(options: TTSOptions): Promise<string> {
   const { text, voice = "female", language = "en-US" } = options;
 
-  // Option 1: Google Cloud Text-to-Speech
+  // Option 1: ElevenLabs (highest quality, most natural)
+  if (process.env.ELEVENLABS_API_KEY) {
+    try {
+      // Use Rachel voice (calm, soothing female voice perfect for meditation)
+      const voiceId = "21m00Tcm4TlvDq8ikWAM"; // Rachel
+      
+      const response = await fetch(
+        `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
+        {
+          method: "POST",
+          headers: {
+            "Accept": "audio/mpeg",
+            "Content-Type": "application/json",
+            "xi-api-key": process.env.ELEVENLABS_API_KEY,
+          },
+          body: JSON.stringify({
+            text,
+            model_id: "eleven_monolingual_v1",
+            voice_settings: {
+              stability: 0.75,
+              similarity_boost: 0.75,
+              style: 0.0,
+              use_speaker_boost: true,
+            },
+          }),
+        }
+      );
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[TTS] ElevenLabs error:", errorText);
+        throw new Error(`ElevenLabs API error: ${response.status}`);
+      }
+      
+      const audioBuffer = Buffer.from(await response.arrayBuffer());
+      
+      // Upload to S3
+      const fileName = `meditation-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.mp3`;
+      const { url } = await storagePut(`meditations/${fileName}`, audioBuffer, "audio/mpeg");
+      console.log("[TTS] Generated meditation audio with ElevenLabs:", url);
+      return url;
+    } catch (error) {
+      console.error("[TTS] ElevenLabs failed, trying fallback:", error);
+      // Continue to fallback options
+    }
+  }
+
+  // Option 2: Google Cloud Text-to-Speech (fallback)
   if (process.env.GOOGLE_CLOUD_TTS_API_KEY) {
     try {
       const response = await fetch(
@@ -54,7 +101,7 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
       // Upload to S3
       const fileName = `meditation-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.mp3`;
       const { url } = await storagePut(`meditations/${fileName}`, audioBuffer, "audio/mpeg");
-      console.log("[TTS] Generated meditation audio:", url);
+      console.log("[TTS] Generated meditation audio with Google TTS:", url);
       return url;
     } catch (error) {
       console.error("[TTS] Failed to generate audio:", error);
@@ -63,7 +110,7 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
   }
 
   // Fallback: Return empty string (will use browser TTS)
-  console.warn("[TTS] No TTS API configured. Set GOOGLE_CLOUD_TTS_API_KEY");
+  console.warn("[TTS] No TTS API configured. Set ELEVENLABS_API_KEY or GOOGLE_CLOUD_TTS_API_KEY");
   return "";
 }
 
@@ -71,5 +118,5 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
  * Check if TTS service is available
  */
 export function isTTSAvailable(): boolean {
-  return !!process.env.GOOGLE_CLOUD_TTS_API_KEY;
+  return !!(process.env.ELEVENLABS_API_KEY || process.env.GOOGLE_CLOUD_TTS_API_KEY);
 }
