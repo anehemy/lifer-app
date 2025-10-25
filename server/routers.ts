@@ -537,13 +537,15 @@ Provide a personalized suggestion that reflects their values, aspirations, and l
 IMPORTANT: Output ONLY the meditation script itself - the exact words to be spoken to the user. Do NOT include any meta-commentary, instructions, or explanations about the script.
 
 Guidelines for the meditation:
-- About ${input.durationMinutes * 100} words total (spoken at 100 words/minute)
+- About ${input.durationMinutes * 80} words total (spoken at 80 words/minute for slower, more meditative pace)
 - Use second person ("you", "your") throughout
 - Begin with grounding (breath awareness, settling in)
 - Middle section: main practice (visualization, body scan, or reflection)
 - End with gentle integration and return to awareness
 - Use calming, supportive, gentle language
-- Include natural pauses by saying "pause for a moment" or "take your time"
+- Include MANY natural pauses: use ellipsis (...) for 2-second pauses, and phrases like "pause here for three breaths" or "take a moment to simply be"
+- Add breathing cues: "breathe in... and breathe out...", "take a deep breath..."
+- Space out sentences with pauses between each instruction
 - Weave in the user's context naturally if provided
 
 Start directly with the meditation. For example: "Begin by finding a comfortable position..."`;
