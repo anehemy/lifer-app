@@ -2,7 +2,7 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Loader2, X, Mic, Volume2, VolumeX } from "lucide-react";
+import { Send, Loader2, X, Mic, Volume2, VolumeX, RotateCcw } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { MR_MG_AVATAR, MR_MG_NAME, MR_MG_TITLE } from "@/const";
@@ -37,8 +37,8 @@ export default function AIChatWidget() {
   const createSession = trpc.aiChat.createSession.useMutation({
     onSuccess: (data) => {
       setCurrentSession(data.sessionId);
-      // Save session ID to localStorage for persistence
-      localStorage.setItem('mrMgSessionId', data.sessionId.toString());
+      // Save session ID to sessionStorage (resets on browser close/logout)
+      sessionStorage.setItem('mrMgSessionId', String(data.sessionId));
     },
   });
 
@@ -99,8 +99,8 @@ export default function AIChatWidget() {
 
   const initializeMrMgSession = async () => {
     if (!currentSession && !hasGreeted) {
-      // Check if we have an existing session in localStorage
-      const savedSessionId = localStorage.getItem('mrMgSessionId');
+      // Check if we have an existing session in sessionStorage (resets on logout)
+      const savedSessionId = sessionStorage.getItem('mrMgSessionId');
       if (savedSessionId) {
         setCurrentSession(parseInt(savedSessionId, 10));
         setHasGreeted(true);
@@ -121,6 +121,22 @@ export default function AIChatWidget() {
       sessionId: currentSession,
       message: message.trim(),
     });
+  };
+
+  const handleClearChat = async () => {
+    if (!confirm("Start a new conversation? This will clear the current chat history.")) {
+      return;
+    }
+    
+    // Clear session storage
+    sessionStorage.removeItem('mrMgSessionId');
+    setCurrentSession(null);
+    setHasGreeted(false);
+    
+    // Create new session
+    await initializeMrMgSession();
+    
+    toast.success("New conversation started!");
   };
 
   const handleVoiceInput = () => {
@@ -202,9 +218,19 @@ export default function AIChatWidget() {
                   <p className="text-xs text-muted-foreground">{MR_MG_TITLE}</p>
                 </div>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-1">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleClearChat}
+                  title="Start new conversation"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardHeader>
 

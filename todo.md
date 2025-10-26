@@ -164,3 +164,10 @@
 - [x] Chat history not displaying full conversation - removed hardcoded greeting, now shows only database messages
 - [x] Initial greeting added to database when creating new session for better UX
 
+
+
+## New Features
+- [x] Add "Clear Chat" or "New Conversation" button to chat widget (🔄 icon in header)
+- [x] Make chat history session-based (reset on browser close/logout, not persistent forever)
+- [x] Keep contextual greeting that references user's data (journal, patterns, vision, etc.)
+
