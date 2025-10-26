@@ -30,9 +30,7 @@ export default function Journal() {
   const [response, setResponse] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
-  const [showMrMgChat, setShowMrMgChat] = useState(false);
-  const [mrMgMessage, setMrMgMessage] = useState("");
-  const [mrMgResponse, setMrMgResponse] = useState("");
+  // Removed custom Mr. MG chat - now using global AIChatWidget
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<number | null>(null);
   const [deletedEntry, setDeletedEntry] = useState<{id: number, question: string, response: string} | null>(null);
@@ -174,14 +172,7 @@ export default function Journal() {
     toast.success("Entry restored");
   };
   
-  const askMrMg = trpc.journal.askMrMg.useMutation({
-    onSuccess: (data) => {
-      setMrMgResponse(data.response);
-    },
-    onError: () => {
-      toast.error("Failed to get response from Mr. MG");
-    },
-  });
+  // askMrMg mutation removed - now using global AIChatWidget
 
   const handleNextQuestion = () => {
     const currentIndex = questions.indexOf(currentQuestion);
@@ -224,7 +215,7 @@ export default function Journal() {
               <span className="hidden sm:inline">Ask Another Question</span>
               <span className="sm:hidden">New Question</span>
             </Button>
-            <Button onClick={() => setShowMrMgChat(true)} variant="default" size="sm" className="flex-1 min-w-[140px]">
+            <Button onClick={() => window.dispatchEvent(new Event('openMrMgChat'))} variant="default" size="sm" className="flex-1 min-w-[140px]">
               <MessageCircle className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Ask Mr. MG for Guidance</span>
               <span className="sm:hidden">Ask Mr. MG</span>
@@ -277,90 +268,6 @@ export default function Journal() {
         </div>
       )}
       
-      {/* Mr. MG Chat Dialog */}
-      <Dialog open={showMrMgChat} onOpenChange={setShowMrMgChat}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-800 dark:to-purple-900">
-                {MR_MG_AVATAR}
-              </div>
-              <div>
-                <DialogTitle>Ask {MR_MG_NAME}</DialogTitle>
-                <p className="text-sm text-muted-foreground">Get personalized guidance on your current question</p>
-              </div>
-            </div>
-          </DialogHeader>
-          
-          <div className="space-y-4 mt-4">
-            <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
-              <p className="text-sm font-medium text-purple-900 dark:text-purple-100 mb-2">Current Question:</p>
-              <p className="text-sm">{currentQuestion}</p>
-            </div>
-            
-            {mrMgResponse && (
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-4 rounded-lg">
-                <div className="flex items-start gap-3 mb-3">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-xl bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-800 dark:to-purple-900">
-                    {MR_MG_AVATAR}
-                  </div>
-                  <p className="font-medium">{MR_MG_NAME} says:</p>
-                </div>
-                <p className="text-sm whitespace-pre-wrap leading-relaxed">{mrMgResponse}</p>
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="mrMgMessage">Your Message</Label>
-              <Textarea
-                id="mrMgMessage"
-                value={mrMgMessage}
-                onChange={(e) => setMrMgMessage(e.target.value)}
-                placeholder="Ask Mr. MG for guidance on this question..."
-                className="min-h-[100px]"
-              />
-            </div>
-            
-            <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowMrMgChat(false);
-                  setMrMgMessage("");
-                  setMrMgResponse("");
-                }}
-              >
-                Close
-              </Button>
-              <Button 
-                onClick={() => {
-                  if (!mrMgMessage.trim()) {
-                    toast.error("Please enter a message");
-                    return;
-                  }
-                  askMrMg.mutate({ 
-                    question: currentQuestion, 
-                    userMessage: mrMgMessage 
-                  });
-                }}
-                disabled={askMrMg.isPending}
-              >
-                {askMrMg.isPending ? (
-                  <>
-                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                    Thinking...
-                  </>
-                ) : (
-                  <>
-                    <Send className="h-4 w-4 mr-2" />
-                    Ask Mr. MG
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
       
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>

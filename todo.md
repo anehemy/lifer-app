@@ -314,3 +314,11 @@
 - [x] Fix "Ask Mr. MG for Guidance" button getting cut off on mobile (text too long)
 - [x] Make button text responsive - shows "Ask Mr. MG" on mobile, full text on desktop
 
+
+
+## Chat UX Consistency
+- [x] Ensure Mr. MG chat in Life Story/Journal uses same component as floating chat widget
+- [x] Make chat experience seamless across all entry points (floating button, Life Story, Journal)
+- [x] Removed custom Mr. MG dialog from Journal - now triggers global AIChatWidget
+- [x] Same voice settings, history, and features available in both contexts
+

@@ -110,6 +110,17 @@ export default function AIChatWidget() {
       initializeMrMgSession();
     }
   }, [currentSession, hasGreeted]);
+  
+  // Listen for external open requests
+  useEffect(() => {
+    const handleOpenChat = () => {
+      setIsOpen(true);
+      if (!currentSession) initializeMrMgSession();
+    };
+    
+    window.addEventListener('openMrMgChat', handleOpenChat);
+    return () => window.removeEventListener('openMrMgChat', handleOpenChat);
+  }, [currentSession]);
 
   const initializeMrMgSession = async () => {
     if (!currentSession && !hasGreeted) {
