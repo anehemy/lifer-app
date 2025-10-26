@@ -403,3 +403,13 @@ export async function updateMeditationSession(id: number, userId: number, update
   
   return updated;
 }
+
+
+export async function deleteMeditationSession(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(meditationSessions)
+    .where(and(eq(meditationSessions.id, id), eq(meditationSessions.userId, userId)));
+}
+

@@ -110,12 +110,15 @@ export function useVoiceChat() {
 
   const generateSpeech = trpc.textToSpeech.generate.useMutation();
 
-  const speak = async (text: string, voiceId: string = 'rachel') => {
+  const speak = async (text: string, voiceId: string = 'rachel', provider?: "elevenlabs" | "google" | "browser") => {
     try {
       setIsSpeaking(true);
       
+      // Get provider from localStorage if not specified
+      const selectedProvider = provider || (localStorage.getItem("voiceProvider") as "elevenlabs" | "google" | "browser") || "elevenlabs";
+      
       // Generate speech using trpc
-      const result = await generateSpeech.mutateAsync({ text, voiceId });
+      const result = await generateSpeech.mutateAsync({ text, voiceId, provider: selectedProvider });
       
       if (!result.audioUrl) {
         throw new Error('No audio URL returned');

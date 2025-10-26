@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { Play, Clock, Star } from "lucide-react";
+import { Play, Clock, Star, Trash2 } from "lucide-react";
 import MeditationCustomizer from "@/components/MeditationCustomizer";
 import MeditationPlayer from "@/components/MeditationPlayer";
 import { VOICE_OPTIONS, DEFAULT_VOICE_ID } from "@shared/voiceOptions";
@@ -64,6 +64,16 @@ export default function Meditation() {
     },
   });
   
+  const deleteMeditation = trpc.meditation.delete.useMutation({
+    onSuccess: () => {
+      toast.success("Meditation deleted");
+      utils.meditation.list.invalidate();
+    },
+    onError: () => {
+      toast.error("Failed to delete meditation");
+    },
+  });
+  
   const handleGenerate = () => {
     // Always show customizer to let user select what to include
     setUserContext(contextData || {
@@ -78,12 +88,14 @@ export default function Meditation() {
   
   const handleCustomizerConfirm = (selectedContext: any) => {
     setShowCustomizer(false);
+    const provider = (localStorage.getItem("voiceProvider") || "elevenlabs") as "elevenlabs" | "google" | "browser";
     generateMeditation.mutate({
       meditationType: selectedType,
       durationMinutes: selectedDuration,
       voiceId: selectedVoice,
       customContext: selectedContext,
       ambientSound: selectedContext.ambientSound || "none",
+      provider,
     });
   };
   
@@ -198,17 +210,30 @@ export default function Meditation() {
                       <p className="text-sm mt-2 text-muted-foreground italic">"{session.reflection}"</p>
                     )}
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      setCurrentSession(session);
-                      setShowPlayer(true);
-                    }}
-                  >
-                    <Play className="h-4 w-4 mr-1" />
-                    Replay
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        setCurrentSession(session);
+                        setShowPlayer(true);
+                      }}
+                    >
+                      <Play className="h-4 w-4 mr-1" />
+                      Replay
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => {
+                        if (confirm(`Delete this ${session.meditationType} meditation?`)) {
+                          deleteMeditation.mutate({ sessionId: session.id });
+                        }
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

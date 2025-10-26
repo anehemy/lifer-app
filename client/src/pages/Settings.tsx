@@ -7,12 +7,14 @@ import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Settings() {
   const { user } = useAuth();
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [mrMgPrompt, setMrMgPrompt] = useState("");
+  const [voiceProvider, setVoiceProvider] = useState(localStorage.getItem("voiceProvider") || "elevenlabs");
   
   // Get Mr. MG agent (ID 1)
   const { data: mrMgAgent } = trpc.aiChat.getAgent.useQuery({ agentId: 1 });
@@ -100,6 +102,34 @@ export default function Settings() {
           >
             {updatePromptMutation.isPending ? "Saving..." : "Save Instructions"}
           </Button>
+        </CardContent>
+      </Card>
+      
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Voice Settings (Admin)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="voiceProvider">Voice Provider</Label>
+            <Select value={voiceProvider} onValueChange={(value) => {
+              setVoiceProvider(value);
+              localStorage.setItem("voiceProvider", value);
+              toast.success("Voice provider updated!");
+            }}>
+              <SelectTrigger id="voiceProvider">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="elevenlabs">ElevenLabs (High Quality, Expensive)</SelectItem>
+                <SelectItem value="google">Google Cloud TTS (Good Quality, Affordable)</SelectItem>
+                <SelectItem value="browser">Browser TTS (Free, Basic Quality)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground mt-2">
+              Choose the text-to-speech provider for Mr. MG's voice and meditation audio. Changes take effect immediately.
+            </p>
+          </div>
         </CardContent>
       </Card>
       

@@ -10,6 +10,7 @@ interface TTSOptions {
   text: string;
   voiceId?: string; // Voice ID from voiceOptions
   language?: string;
+  provider?: "elevenlabs" | "google" | "browser"; // Preferred provider
 }
 
 /**
@@ -17,10 +18,10 @@ interface TTSOptions {
  * Returns the public URL of the generated audio file
  */
 export async function generateSpeechAudio(options: TTSOptions): Promise<string> {
-  const { text, voiceId = "rachel", language = "en-US" } = options;
+  const { text, voiceId = "rachel", language = "en-US", provider = "elevenlabs" } = options;
 
   // Option 1: ElevenLabs (highest quality, most natural)
-  if (process.env.ELEVENLABS_API_KEY) {
+  if (provider === "elevenlabs" && process.env.ELEVENLABS_API_KEY) {
     try {
       // If voiceId looks like an ElevenLabs ID (starts with uppercase or number), use it directly
       // Otherwise, map it from our voice options
@@ -68,7 +69,7 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
   }
 
   // Option 2: Google Cloud Text-to-Speech (fallback)
-  if (process.env.GOOGLE_CLOUD_TTS_API_KEY) {
+  if (provider === "google" && process.env.GOOGLE_CLOUD_TTS_API_KEY) {
     try {
       const response = await fetch(
         `https://texttospeech.googleapis.com/v1/text:synthesize?key=${process.env.GOOGLE_CLOUD_TTS_API_KEY}`,
@@ -112,7 +113,11 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
   }
 
   // Fallback: Return empty string (will use browser TTS)
-  console.warn("[TTS] No TTS API configured. Set ELEVENLABS_API_KEY or GOOGLE_CLOUD_TTS_API_KEY");
+  if (provider === "browser") {
+    console.log("[TTS] Browser TTS selected, returning empty string");
+    return "";
+  }
+  console.warn("[TTS] No TTS API configured or provider not available. Set ELEVENLABS_API_KEY or GOOGLE_CLOUD_TTS_API_KEY");
   return "";
 }
 

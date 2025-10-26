@@ -772,6 +772,7 @@ Provide a personalized suggestion that reflects their values, aspirations, and l
           voiceId: z.string().optional(),
           customContext: z.any().optional(),
           ambientSound: z.string().optional(),
+          provider: z.enum(["elevenlabs", "google", "browser"]).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -830,6 +831,7 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
             audioUrl = await generateSpeechAudio({ 
               text: script,
               voiceId: input.voiceId || "rachel",
+              provider: input.provider || "elevenlabs",
             });
           } catch (error) {
             console.error("[Meditation] Failed to generate audio:", error);
@@ -865,6 +867,19 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
           reflection: input.reflection,
           rating: input.rating,
         });
+      }),
+    
+    // Delete meditation session
+    delete: protectedProcedure
+      .input(
+        z.object({
+          sessionId: z.number(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const { deleteMeditationSession } = await import("./db");
+        await deleteMeditationSession(input.sessionId, ctx.user.id);
+        return { success: true };
       }),
   }),
 
@@ -909,12 +924,14 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
       .input(z.object({
         text: z.string(),
         voiceId: z.string().optional(),
+        provider: z.enum(["elevenlabs", "google", "browser"]).optional(),
       }))
       .mutation(async ({ input }) => {
         const { generateSpeechAudio } = await import('./_core/textToSpeech');
         const audioUrl = await generateSpeechAudio({
           text: input.text,
           voiceId: input.voiceId,
+          provider: input.provider || "elevenlabs",
         });
         return { audioUrl };
       }),

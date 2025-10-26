@@ -222,3 +222,18 @@
 ## CRITICAL Bugs
 - [x] Mr. MG's markdown formatting (**bold**) is being read aloud as "asterisk asterisk" in TTS - stripped markdown before TTS
 
+
+
+## Meditation Bugs & Features
+- [x] Add delete button for meditation recordings with confirmation dialog
+- [x] Fix meditation voice ID not being used from environment variables (voice IDs are passed correctly)
+- [ ] Fix background music not loading (Infinity:NaN duration) - background music is optional feature
+- [ ] Replace AI-generated background music with static ambient audio files to save tokens - background music is optional feature
+
+
+
+## Voice Provider Cost Management
+- [x] Add voice provider setting to admin Settings page (ElevenLabs, Google Cloud TTS, Browser TTS)
+- [x] Allow switching between providers to control costs
+- [x] Update textToSpeech service to respect provider setting
+
