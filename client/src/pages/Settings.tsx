@@ -16,6 +16,7 @@ export default function Settings() {
   const [mrMgPrompt, setMrMgPrompt] = useState("");
   const [voiceProvider, setVoiceProvider] = useState(localStorage.getItem("voiceProvider") || "elevenlabs");
   const [providerStatus, setProviderStatus] = useState<{provider: string, available: boolean, message: string} | null>(null);
+  const [googleVoice, setGoogleVoice] = useState(localStorage.getItem("googleVoice") || "en-US-Neural2-J");
   
   // Get Mr. MG agent (ID 1)
   const { data: mrMgAgent } = trpc.aiChat.getAgent.useQuery({ agentId: 1 });
@@ -79,32 +80,34 @@ export default function Settings() {
         </CardContent>
       </Card>
       
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Mr. MG Instructions (Admin)</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="mrMgPrompt">System Prompt</Label>
-            <Textarea
-              id="mrMgPrompt"
-              value={mrMgPrompt}
-              onChange={(e) => setMrMgPrompt(e.target.value)}
-              placeholder="Enter Mr. MG's system instructions..."
-              className="min-h-[300px] font-mono text-sm"
-            />
-            <p className="text-sm text-muted-foreground mt-2">
-              Customize how Mr. MG responds and behaves. Changes take effect immediately for new conversations.
-            </p>
-          </div>
-          <Button 
-            onClick={handleSavePrompt}
-            disabled={updatePromptMutation.isPending}
-          >
-            {updatePromptMutation.isPending ? "Saving..." : "Save Instructions"}
-          </Button>
-        </CardContent>
-      </Card>
+      {user?.role === "admin" && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Mr. MG Instructions (Admin)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <Label htmlFor="mrMgPrompt">System Prompt</Label>
+              <Textarea
+                id="mrMgPrompt"
+                value={mrMgPrompt}
+                onChange={(e) => setMrMgPrompt(e.target.value)}
+                placeholder="Enter Mr. MG's system instructions..."
+                className="min-h-[300px] font-mono text-sm"
+              />
+              <p className="text-sm text-muted-foreground mt-2">
+                Customize how Mr. MG responds and behaves. Changes take effect immediately for new conversations.
+              </p>
+            </div>
+            <Button 
+              onClick={handleSavePrompt}
+              disabled={updatePromptMutation.isPending}
+            >
+              {updatePromptMutation.isPending ? "Saving..." : "Save Instructions"}
+            </Button>
+          </CardContent>
+        </Card>
+      )}
       
       <Card className="mb-6">
         <CardHeader>
@@ -187,6 +190,34 @@ export default function Settings() {
               </div>
             )}
           </div>
+          
+          {voiceProvider === "google" && (
+            <div>
+              <Label htmlFor="googleVoice">Google Cloud TTS Voice</Label>
+              <Select value={googleVoice} onValueChange={(value) => {
+                setGoogleVoice(value);
+                localStorage.setItem("googleVoice", value);
+                toast.success("Voice updated!");
+              }}>
+                <SelectTrigger id="googleVoice">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en-US-Neural2-J">English (US) - Male (Neural2-J)</SelectItem>
+                  <SelectItem value="en-US-Neural2-C">English (US) - Female (Neural2-C)</SelectItem>
+                  <SelectItem value="en-US-Neural2-D">English (US) - Male (Neural2-D)</SelectItem>
+                  <SelectItem value="en-US-Neural2-F">English (US) - Female (Neural2-F)</SelectItem>
+                  <SelectItem value="en-GB-Neural2-B">English (UK) - Male (Neural2-B)</SelectItem>
+                  <SelectItem value="en-GB-Neural2-C">English (UK) - Female (Neural2-C)</SelectItem>
+                  <SelectItem value="en-AU-Neural2-B">English (AU) - Male (Neural2-B)</SelectItem>
+                  <SelectItem value="en-AU-Neural2-C">English (AU) - Female (Neural2-C)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground mt-2">
+                Select the voice for Google Cloud TTS. Neural2 voices provide the highest quality.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
       

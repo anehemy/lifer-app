@@ -8,9 +8,10 @@ import { getElevenLabsVoiceId } from "@shared/voiceOptions";
 
 interface TTSOptions {
   text: string;
-  voiceId?: string; // Voice ID from voiceOptions
+  voiceId?: string; // Voice ID from voiceOptions or Google voice name
   language?: string;
   provider?: "elevenlabs" | "google" | "browser"; // Preferred provider
+  googleVoice?: string; // Google Cloud TTS voice name (e.g., "en-US-Neural2-J")
 }
 
 /**
@@ -71,6 +72,9 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
   // Option 2: Google Cloud Text-to-Speech (fallback)
   if (provider === "google" && process.env.GOOGLE_CLOUD_TTS_API_KEY) {
     try {
+      const googleVoiceName = options.googleVoice || "en-US-Neural2-J";
+      const ssmlGender = googleVoiceName.includes("-C") || googleVoiceName.includes("-F") ? "FEMALE" : "MALE";
+      
       const response = await fetch(
         `https://texttospeech.googleapis.com/v1/text:synthesize?key=${process.env.GOOGLE_CLOUD_TTS_API_KEY}`,
         {
@@ -80,12 +84,12 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
             input: { text },
             voice: {
               languageCode: language,
-              name: "en-US-Neural2-F", // Female neural voice
-              ssmlGender: "FEMALE",
+              name: googleVoiceName,
+              ssmlGender,
             },
             audioConfig: {
               audioEncoding: "MP3",
-              speakingRate: 0.80, // Slower for meditation
+              speakingRate: 0.85, // Slightly slower for clarity
               pitch: 0,
             },
           }),

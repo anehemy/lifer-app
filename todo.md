@@ -267,3 +267,34 @@
 - [ ] Disable/gray out providers that don't have API keys configured (shows warning instead)
 - [x] Add "Test Voice" button to verify provider is working (automatic test on provider change)
 
+
+
+## Critical Issues - Priority
+
+### Security
+- [x] Hide Mr. MG Instructions from non-admin users (only show to admin role)
+
+### Mobile UX Bugs
+- [x] Fix vision creation submit button disappearing on mobile (added scrolling to dialog)
+- [ ] Test and fix all forms on mobile devices
+- [x] Ensure all buttons are visible and accessible on mobile
+
+### Voice Improvements
+- [x] Add Google TTS voice selection (male/female, different accents) - 8 voices available
+- [ ] Allow users to preview/test voices before selecting
+- [x] Add voice options to Settings page (shows when Google provider selected)
+
+
+
+## Chat Issues & Features
+
+### Bugs
+- [ ] Fix message not clearing from input field after send on mobile
+- [ ] Ensure textarea clears immediately after successful message send
+
+### Features
+- [ ] Add chat history view - show list of previous conversations
+- [ ] Allow users to select and continue old chat threads
+- [ ] Add "View History" or "Past Conversations" button to chat widget
+- [ ] Display conversation titles/dates in history list
+

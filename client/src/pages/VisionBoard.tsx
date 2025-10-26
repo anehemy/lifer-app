@@ -135,11 +135,11 @@ export default function VisionBoard() {
               Add Vision Item
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingItem ? "Edit" : "Add"} Vision Item</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 pb-4">
               <div>
                 <Label>Title</Label>
                 <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="My vision..." />

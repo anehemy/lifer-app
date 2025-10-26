@@ -89,6 +89,7 @@ export default function Meditation() {
   const handleCustomizerConfirm = (selectedContext: any) => {
     setShowCustomizer(false);
     const provider = (localStorage.getItem("voiceProvider") || "elevenlabs") as "elevenlabs" | "google" | "browser";
+    const googleVoice = localStorage.getItem("googleVoice") || "en-US-Neural2-J";
     generateMeditation.mutate({
       meditationType: selectedType,
       durationMinutes: selectedDuration,
@@ -96,6 +97,7 @@ export default function Meditation() {
       customContext: selectedContext,
       ambientSound: selectedContext.ambientSound || "none",
       provider,
+      googleVoice: provider === "google" ? googleVoice : undefined,
     });
   };
   

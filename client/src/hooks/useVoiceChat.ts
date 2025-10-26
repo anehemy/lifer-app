@@ -116,9 +116,15 @@ export function useVoiceChat() {
       
       // Get provider from localStorage if not specified
       const selectedProvider = provider || (localStorage.getItem("voiceProvider") as "elevenlabs" | "google" | "browser") || "elevenlabs";
+      const googleVoice = localStorage.getItem("googleVoice") || "en-US-Neural2-J";
       
       // Generate speech using trpc
-      const result = await generateSpeech.mutateAsync({ text, voiceId, provider: selectedProvider });
+      const result = await generateSpeech.mutateAsync({ 
+        text, 
+        voiceId, 
+        provider: selectedProvider,
+        googleVoice: selectedProvider === "google" ? googleVoice : undefined
+      });
       
       if (!result.audioUrl) {
         // Fallback to browser TTS when no audio URL is returned

@@ -773,6 +773,7 @@ Provide a personalized suggestion that reflects their values, aspirations, and l
           customContext: z.any().optional(),
           ambientSound: z.string().optional(),
           provider: z.enum(["elevenlabs", "google", "browser"]).optional(),
+          googleVoice: z.string().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -832,6 +833,7 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
               text: script,
               voiceId: input.voiceId || "rachel",
               provider: input.provider || "elevenlabs",
+              googleVoice: input.googleVoice,
             });
           } catch (error) {
             console.error("[Meditation] Failed to generate audio:", error);
@@ -925,6 +927,7 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
         text: z.string(),
         voiceId: z.string().optional(),
         provider: z.enum(["elevenlabs", "google", "browser"]).optional(),
+        googleVoice: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
         const { generateSpeechAudio } = await import('./_core/textToSpeech');
@@ -932,6 +935,7 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
           text: input.text,
           voiceId: input.voiceId,
           provider: input.provider || "elevenlabs",
+          googleVoice: input.googleVoice,
         });
         return { audioUrl };
       }),
