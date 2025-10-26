@@ -205,3 +205,20 @@
 - [x] Add story detection logic using LLM function calling to identify when user is sharing a life experience
 - [x] Confirm with user when a story is saved to journal
 
+
+
+## CRITICAL Bugs
+- [ ] "Cannot read properties of undefined (reading 'type')" error when sending messages in chat
+
+
+
+## Life Story Timeline Improvements
+- [x] Change page title dynamically when switching between Timeline/Places/Experiences/Challenges/Growth tabs
+- [x] Add confirmation dialog before deleting journal entries ("Are you sure you want to delete?")
+- [x] Add undo functionality for deleted entries (10-second window to undo with toast action button)
+
+
+
+## CRITICAL Bugs
+- [x] Mr. MG's markdown formatting (**bold**) is being read aloud as "asterisk asterisk" in TTS - stripped markdown before TTS
+

@@ -210,7 +210,17 @@ export const aiChatRouter = router({
         tool_choice: "auto", // Let the model decide when to use tools
       });
 
+      console.log("[AI Chat] LLM Response:", JSON.stringify(response, null, 2));
+
+      if (!response.choices || response.choices.length === 0) {
+        throw new Error("No response from LLM");
+      }
+
       const responseMessage = response.choices[0].message;
+      
+      if (!responseMessage) {
+        throw new Error("No message in LLM response");
+      }
       
       // Check if the model wants to call a function
       if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {

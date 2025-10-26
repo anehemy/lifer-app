@@ -22,6 +22,18 @@ export default function AIChatWidget() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastSpokenMessageRef = useRef<string | null>(null);
   const { isListening, isSpeaking, transcript, error: voiceError, startListening, stopListening, speak, stopSpeaking } = useVoiceChat();
+  
+  // Helper function to strip markdown formatting for TTS
+  const stripMarkdown = (text: string): string => {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '$1')  // Remove bold **text**
+      .replace(/\*(.+?)\*/g, '$1')      // Remove italic *text*
+      .replace(/\[(.+?)\]\(.+?\)/g, '$1') // Remove links [text](url)
+      .replace(/`(.+?)`/g, '$1')        // Remove inline code `text`
+      .replace(/^#+\s+/gm, '')          // Remove headers
+      .replace(/^[-*]\s+/gm, '')        // Remove list markers
+      .trim();
+  };
 
   const { data: userStats } = trpc.journal.getStats.useQuery();
   const { data: latestEntry } = trpc.journal.getLatestEntry.useQuery();
@@ -72,7 +84,9 @@ export default function AIChatWidget() {
         lastSpokenMessageRef.current = lastMessage.content;
         // Use Mr. MG custom voice ID
         const voiceId = '0QOtNhDO4bFWGkFLco6Y';
-        speak(lastMessage.content, voiceId);
+        // Strip markdown before speaking
+        const cleanText = stripMarkdown(lastMessage.content);
+        speak(cleanText, voiceId);
       }
     }
   }, [messages, voiceEnabled, isSpeaking, speak]);

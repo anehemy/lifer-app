@@ -24,6 +24,44 @@ type ViewMode = "timeline" | "locations" | "experiences" | "challenges" | "growt
 
 export default function LifeStoryTimeline({ entries }: LifeStoryTimelineProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("timeline");
+  
+  // Dynamic title based on view mode
+  const getTitleAndDescription = () => {
+    switch (viewMode) {
+      case "timeline":
+        return {
+          title: "Your Life Story Timeline",
+          description: "Explore your journey through different perspectives"
+        };
+      case "locations":
+        return {
+          title: "Places That Shaped You",
+          description: "The locations and spaces that influenced your journey"
+        };
+      case "experiences":
+        return {
+          title: "Your Life Experiences",
+          description: "The moments and events that defined who you are"
+        };
+      case "challenges":
+        return {
+          title: "Challenges You've Overcome",
+          description: "The struggles that made you stronger and wiser"
+        };
+      case "growth":
+        return {
+          title: "Your Personal Growth",
+          description: "The lessons learned and transformations experienced"
+        };
+      default:
+        return {
+          title: "Your Life Story Timeline",
+          description: "Explore your journey through different perspectives"
+        };
+    }
+  };
+  
+  const { title, description } = getTitleAndDescription();
 
   // Helper function to extract keywords from text
   const extractKeywords = (text: string, keywords: string[]): boolean => {
@@ -149,8 +187,8 @@ export default function LifeStoryTimeline({ entries }: LifeStoryTimelineProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold mb-2">Your Life Story Timeline</h2>
-        <p className="text-muted-foreground">Explore your journey through different perspectives</p>
+        <h2 className="text-2xl font-semibold mb-2">{title}</h2>
+        <p className="text-muted-foreground">{description}</p>
       </div>
 
       <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="w-full">

@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import JournalEntryCard from "@/components/JournalEntryCard";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -32,6 +33,10 @@ export default function Journal() {
   const [showMrMgChat, setShowMrMgChat] = useState(false);
   const [mrMgMessage, setMrMgMessage] = useState("");
   const [mrMgResponse, setMrMgResponse] = useState("");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState<number | null>(null);
+  const [deletedEntry, setDeletedEntry] = useState<{id: number, question: string, response: string} | null>(null);
+  const [undoTimeoutId, setUndoTimeoutId] = useState<NodeJS.Timeout | null>(null);
   
   // Initialize speech recognition
   useEffect(() => {
@@ -104,11 +109,70 @@ export default function Journal() {
   });
   const deleteEntry = trpc.journal.delete.useMutation({
     onSuccess: () => {
-      toast.success("Entry deleted");
       utils.journal.list.invalidate();
       utils.patterns.analyze.invalidate();
     },
   });
+  
+  const handleDeleteClick = (id: number) => {
+    setEntryToDelete(id);
+    setDeleteConfirmOpen(true);
+  };
+  
+  const handleDeleteConfirm = () => {
+    if (!entryToDelete) return;
+    
+    // Find the entry to store for undo
+    const entry = entries.find(e => e.id === entryToDelete);
+    if (entry) {
+      setDeletedEntry({ id: entry.id, question: entry.question, response: entry.response });
+      
+      // Clear any existing undo timeout
+      if (undoTimeoutId) {
+        clearTimeout(undoTimeoutId);
+      }
+      
+      // Set 10-second undo window
+      const timeoutId = setTimeout(() => {
+        setDeletedEntry(null);
+      }, 10000);
+      setUndoTimeoutId(timeoutId);
+      
+      // Delete the entry
+      deleteEntry.mutate({ id: entryToDelete });
+      
+      // Show undo toast
+      toast.success("Entry deleted", {
+        action: {
+          label: "Undo",
+          onClick: handleUndo,
+        },
+        duration: 10000,
+      });
+    }
+    
+    setDeleteConfirmOpen(false);
+    setEntryToDelete(null);
+  };
+  
+  const handleUndo = () => {
+    if (!deletedEntry) return;
+    
+    // Clear the undo timeout
+    if (undoTimeoutId) {
+      clearTimeout(undoTimeoutId);
+      setUndoTimeoutId(null);
+    }
+    
+    // Recreate the entry
+    createEntry.mutate({
+      question: deletedEntry.question,
+      response: deletedEntry.response,
+    });
+    
+    setDeletedEntry(null);
+    toast.success("Entry restored");
+  };
   
   const askMrMg = trpc.journal.askMrMg.useMutation({
     onSuccess: (data) => {
@@ -204,7 +268,7 @@ export default function Journal() {
               <JournalEntryCard
                 key={entry.id}
                 entry={entry}
-                onDelete={() => deleteEntry.mutate({ id: entry.id })}
+                onDelete={() => handleDeleteClick(entry.id)}
               />
             ))}
           </div>
@@ -295,6 +359,24 @@ export default function Journal() {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Journal Entry?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this entry? You'll have 10 seconds to undo this action.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
