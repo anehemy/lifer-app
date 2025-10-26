@@ -332,3 +332,10 @@
 - [x] Updated viewport meta to allow user scaling and better keyboard handling
 - [x] Added CSS to prevent body scroll when dialogs open on mobile
 
+
+
+## Chat Widget Mobile Issues
+- [x] Fix chat widget requiring scroll to see on mobile - now uses inset-0 for full viewport
+- [x] Prevent background from scrolling when chat widget is open - added body scroll lock and overlay
+- [x] Ensure chat widget is full viewport height on mobile without needing scroll - truly fixed position
+

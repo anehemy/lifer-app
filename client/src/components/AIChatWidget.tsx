@@ -121,6 +121,25 @@ export default function AIChatWidget() {
     window.addEventListener('openMrMgChat', handleOpenChat);
     return () => window.removeEventListener('openMrMgChat', handleOpenChat);
   }, [currentSession]);
+  
+  // Prevent body scroll on mobile when chat is open
+  useEffect(() => {
+    if (isOpen && window.innerWidth < 640) {
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.width = '100%';
+    } else {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    }
+    
+    return () => {
+      document.body.style.overflow = '';
+      document.body.style.position = '';
+      document.body.style.width = '';
+    };
+  }, [isOpen]);
 
   const initializeMrMgSession = async () => {
     if (!currentSession && !hasGreeted) {
@@ -240,7 +259,10 @@ export default function AIChatWidget() {
 
       {/* Mr. MG Chat Window */}
       {isOpen && (
-        <Card className="fixed inset-4 sm:inset-auto sm:bottom-6 sm:left-6 sm:w-96 sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200">
+        <>
+        {/* Mobile overlay to prevent background scroll */}
+        <div className="fixed inset-0 bg-black/20 z-40 sm:hidden" onClick={() => setIsOpen(false)} />
+        <Card className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:left-6 sm:w-96 sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200">
           <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -357,6 +379,7 @@ export default function AIChatWidget() {
             </div>
           </CardContent>
         </Card>
+        </>
       )}
     </>
   );
