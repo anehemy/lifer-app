@@ -16,6 +16,13 @@
 - [x] Story-based timeline (uses content time, not entry date)
 
 ## In Progress
+- [ ] Make Mr. MG responses more concise and action-oriented
+- [ ] Add conversation memory to Mr. MG (access past chat history)
+- [ ] Implement 3-step action protocol (highlight → confirm → execute)
+- [ ] Add delete capability to Mr. MG agent
+
+## Recently Completed
+- [x] Make journal entry cards fully editable (response text and all metadata)
 
 ## Recently Completed
 - [x] Make audio player more colorful with gradient styling

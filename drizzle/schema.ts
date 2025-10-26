@@ -48,6 +48,22 @@ export const journalEntries = mysqlTable("journalEntries", {
 });
 
 export type JournalEntry = typeof journalEntries.$inferSelect;
+
+/**
+ * Mr. MG conversation history
+ */
+export const mrMgConversations = mysqlTable("mrMgConversations", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  role: mysqlEnum("role", ["user", "assistant"]).notNull(), // user or Mr. MG
+  content: text("content").notNull(),
+  actionType: varchar("actionType", { length: 64 }), // navigate, create, delete, query, chat
+  actionTarget: varchar("actionTarget", { length: 255 }), // target resource
+  actionStatus: mysqlEnum("actionStatus", ["pending", "confirmed", "executed", "cancelled"]), // for 3-step workflow
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type MrMgConversation = typeof mrMgConversations.$inferSelect;
 export type InsertJournalEntry = typeof journalEntries.$inferInsert;
 
 /**

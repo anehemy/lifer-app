@@ -214,6 +214,40 @@ Response: ${input.response}`;
         await deleteJournalEntry(input.id, ctx.user.id);
         return { success: true };
       }),
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        response: z.string(),
+        timeContext: z.string().nullable().optional(),
+        placeContext: z.string().nullable().optional(),
+        experienceType: z.string().nullable().optional(),
+        challengeType: z.string().nullable().optional(),
+        growthTheme: z.string().nullable().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db').then(m => m.getDb());
+        if (!db) throw new Error('Database not available');
+        
+        const { journalEntries } = await import('../drizzle/schema');
+        const { eq, and } = await import('drizzle-orm');
+        
+        await db.update(journalEntries)
+          .set({
+            response: input.response,
+            timeContext: input.timeContext,
+            placeContext: input.placeContext,
+            experienceType: input.experienceType,
+            challengeType: input.challengeType,
+            growthTheme: input.growthTheme,
+            updatedAt: new Date(),
+          })
+          .where(and(
+            eq(journalEntries.id, input.id),
+            eq(journalEntries.userId, ctx.user.id)
+          ));
+        
+        return { success: true };
+      }),
     updateMetadata: protectedProcedure
       .input(z.object({
         id: z.number(),

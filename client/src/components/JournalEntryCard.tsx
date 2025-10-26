@@ -33,6 +33,7 @@ export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardPr
     challengeType: entry.challengeType || "",
     growthTheme: entry.growthTheme || "",
   });
+  const [responseText, setResponseText] = useState(entry.response);
 
   const utils = trpc.useUtils();
   const updateMetadata = trpc.journal.updateMetadata.useMutation({
@@ -46,9 +47,21 @@ export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardPr
     },
   });
 
+  const updateEntry = trpc.journal.update.useMutation({
+    onSuccess: () => {
+      utils.journal.list.invalidate();
+      toast.success("Entry updated");
+      setIsEditing(false);
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update entry");
+    },
+  });
+
   const handleSave = () => {
-    updateMetadata.mutate({
+    updateEntry.mutate({
       id: entry.id,
+      response: responseText,
       timeContext: metadata.timeContext || null,
       placeContext: metadata.placeContext || null,
       experienceType: metadata.experienceType || null,
@@ -65,6 +78,7 @@ export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardPr
       challengeType: entry.challengeType || "",
       growthTheme: entry.growthTheme || "",
     });
+    setResponseText(entry.response);
     setIsEditing(false);
   };
 
@@ -83,7 +97,16 @@ export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardPr
             <p className="font-medium text-purple-600 dark:text-purple-400 mb-2">
               {entry.question}
             </p>
-            <p className="text-base whitespace-pre-wrap mb-4">{entry.response}</p>
+            {isEditing ? (
+              <textarea
+                value={responseText}
+                onChange={(e) => setResponseText(e.target.value)}
+                className="w-full p-3 border rounded-md text-base min-h-[100px] mb-4"
+                placeholder="Enter your response..."
+              />
+            ) : (
+              <p className="text-base whitespace-pre-wrap mb-4">{entry.response}</p>
+            )}
 
             {/* Metadata Section */}
             <div className="border-t pt-4 mt-4">
