@@ -88,7 +88,17 @@ export default function StartHereGuide() {
                     src="/mr-mg-intro.wav"
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
-                    onEnded={() => setIsPlaying(false)}
+                    onEnded={() => {
+                      setIsPlaying(false);
+                      // Auto-navigate to Life Story after audio finishes for first-time users
+                      if (!hasSeenGuide) {
+                        setTimeout(() => {
+                          setShowGuide(false);
+                          markWelcomeSeen.mutate();
+                          window.location.href = '/journal';
+                        }, 1000);
+                      }
+                    }}
                     onLoadedMetadata={() => {
                       if (audioRef.current) {
                         audioRef.current.playbackRate = playbackSpeed;
