@@ -144,9 +144,16 @@ export default function AIChatWidget() {
       // Stop listening and keep the transcript
       stopListening();
     } else {
-      // Start fresh recording
-      setMessage('');
-      startListening();
+      // Check if there's existing text to append to
+      const hasExistingText = message.trim().length > 0;
+      if (hasExistingText) {
+        // Append mode - keep existing text and add to it
+        startListening(true);
+      } else {
+        // Fresh start - clear and begin
+        setMessage('');
+        startListening(false);
+      }
     }
   };
 

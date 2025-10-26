@@ -192,3 +192,9 @@
 ## CRITICAL Bugs
 - [x] Voice input STILL duplicating even after v2 fix - disabled interim results (text appears after pauses, no real-time display)
 
+
+
+## Voice Input Improvements
+- [x] Add 10-second silence timer before auto-stopping voice input (prevent interrupting long thoughts)
+- [x] Make voice input append to existing text instead of replacing it (build message in segments)
+

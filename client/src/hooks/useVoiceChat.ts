@@ -9,6 +9,8 @@ export function useVoiceChat() {
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const finalTranscriptRef = useRef('');
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const previousTranscriptRef = useRef(''); // Store previous text for append mode
 
   useEffect(() => {
     // Initialize Web Speech API
@@ -23,6 +25,11 @@ export function useVoiceChat() {
         recognitionRef.current.maxAlternatives = 1;
 
         recognitionRef.current.onresult = (event: any) => {
+          // Clear any existing silence timer
+          if (silenceTimerRef.current) {
+            clearTimeout(silenceTimerRef.current);
+          }
+
           // With interim results disabled, we only get final results
           let finalText = '';
 
@@ -36,8 +43,19 @@ export function useVoiceChat() {
           // Update and display the final transcript
           if (finalText.trim()) {
             finalTranscriptRef.current = finalText.trim();
-            setTranscript(finalTranscriptRef.current);
+            // Combine with previous transcript (append mode)
+            const combinedText = previousTranscriptRef.current 
+              ? previousTranscriptRef.current + ' ' + finalTranscriptRef.current
+              : finalTranscriptRef.current;
+            setTranscript(combinedText);
           }
+
+          // Set 10-second silence timer to auto-stop
+          silenceTimerRef.current = setTimeout(() => {
+            if (recognitionRef.current && isListening) {
+              recognitionRef.current.stop();
+            }
+          }, 10000); // 10 seconds
         };
 
         recognitionRef.current.onerror = (event: any) => {
@@ -61,9 +79,16 @@ export function useVoiceChat() {
     };
   }, []);
 
-  const startListening = () => {
+  const startListening = (appendMode: boolean = false) => {
     if (recognitionRef.current && !isListening) {
-      setTranscript('');
+      if (!appendMode) {
+        // Clear everything if not in append mode
+        setTranscript('');
+        previousTranscriptRef.current = '';
+      } else {
+        // Store current transcript to append to
+        previousTranscriptRef.current = transcript;
+      }
       finalTranscriptRef.current = '';
       setError(null);
       recognitionRef.current.start();
@@ -73,6 +98,11 @@ export function useVoiceChat() {
 
   const stopListening = () => {
     if (recognitionRef.current && isListening) {
+      // Clear silence timer
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+        silenceTimerRef.current = null;
+      }
       recognitionRef.current.stop();
       setIsListening(false);
     }
