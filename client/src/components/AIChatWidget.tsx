@@ -220,7 +220,7 @@ export default function AIChatWidget() {
             setIsOpen(true);
             if (!currentSession) initializeMrMgSession();
           }}
-          className="fixed bottom-4 right-4 h-14 w-14 sm:h-16 sm:w-16 sm:bottom-6 sm:right-6 rounded-full shadow-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 z-50 text-2xl sm:text-3xl"
+          className="fixed bottom-4 left-4 h-14 w-14 sm:h-16 sm:w-16 sm:bottom-6 sm:left-6 rounded-full shadow-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 z-50 text-2xl sm:text-3xl"
           size="icon"
         >
           {MR_MG_AVATAR}
@@ -229,7 +229,7 @@ export default function AIChatWidget() {
 
       {/* Mr. MG Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-4 right-4 w-[calc(100vw-2rem)] sm:w-96 h-[calc(100vh-2rem)] sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200 sm:bottom-6 sm:right-6">
+        <Card className="fixed bottom-4 left-4 w-[calc(100vw-2rem)] sm:w-96 h-[calc(100vh-2rem)] sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200 sm:bottom-6 sm:left-6">
           <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

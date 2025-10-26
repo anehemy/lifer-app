@@ -298,3 +298,8 @@
 - [ ] Add "View History" or "Past Conversations" button to chat widget
 - [ ] Display conversation titles/dates in history list
 
+
+
+## UI/UX Issues
+- [x] Move chat button to bottom left to avoid interfering with Manus alert (bottom right)
+
