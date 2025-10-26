@@ -182,3 +182,8 @@
 ## CRITICAL Bugs
 - [x] Voice input repeating/looping text continuously - fixed by tracking processed result indices
 
+
+
+## CRITICAL Bugs
+- [x] Voice input STILL duplicating on mobile - fixed by rebuilding transcript from scratch instead of accumulating
+

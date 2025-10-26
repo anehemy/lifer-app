@@ -9,7 +9,6 @@ export function useVoiceChat() {
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const finalTranscriptRef = useRef('');
-  const lastProcessedIndexRef = useRef(0);
 
   useEffect(() => {
     // Initialize Web Speech API
@@ -24,29 +23,29 @@ export function useVoiceChat() {
         recognitionRef.current.maxAlternatives = 1;
 
         recognitionRef.current.onresult = (event: any) => {
-          let interimTranscript = '';
-          let newFinalTranscript = '';
+          // Rebuild the entire transcript from all results
+          let finalText = '';
+          let interimText = '';
 
-          // Only process results we haven't seen before
-          const startIndex = Math.max(event.resultIndex, lastProcessedIndexRef.current);
-          
-          for (let i = startIndex; i < event.results.length; i++) {
+          // Process ALL results from the beginning each time
+          for (let i = 0; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
-              newFinalTranscript += transcript + ' ';
-              lastProcessedIndexRef.current = i + 1; // Mark this result as processed
+              finalText += transcript + ' ';
             } else {
-              interimTranscript += transcript;
+              // Only use the LAST interim result to avoid duplication
+              interimText = transcript;
             }
           }
 
-          // Append final results to our accumulated final transcript
-          if (newFinalTranscript) {
-            finalTranscriptRef.current = (finalTranscriptRef.current + ' ' + newFinalTranscript).trim();
+          // Update the final transcript ref
+          if (finalText.trim()) {
+            finalTranscriptRef.current = finalText.trim();
           }
 
-          // Display: accumulated final + current interim
-          setTranscript((finalTranscriptRef.current + ' ' + interimTranscript).trim());
+          // Display: final + current interim
+          const displayText = (finalTranscriptRef.current + ' ' + interimText).trim();
+          setTranscript(displayText);
         };
 
         recognitionRef.current.onerror = (event: any) => {
@@ -74,7 +73,6 @@ export function useVoiceChat() {
     if (recognitionRef.current && !isListening) {
       setTranscript('');
       finalTranscriptRef.current = '';
-      lastProcessedIndexRef.current = 0; // Reset processed index
       setError(null);
       recognitionRef.current.start();
       setIsListening(true);
