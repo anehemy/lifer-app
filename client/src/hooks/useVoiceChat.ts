@@ -17,35 +17,27 @@ export function useVoiceChat() {
       
       if (SpeechRecognition) {
         recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = true; // Keep listening until user stops manually
-        recognitionRef.current.interimResults = true;
+        recognitionRef.current.continuous = true;
+        recognitionRef.current.interimResults = false; // Disabled to prevent duplication on mobile
         recognitionRef.current.lang = 'en-US';
         recognitionRef.current.maxAlternatives = 1;
 
         recognitionRef.current.onresult = (event: any) => {
-          // Rebuild the entire transcript from all results
+          // With interim results disabled, we only get final results
           let finalText = '';
-          let interimText = '';
 
           // Process ALL results from the beginning each time
           for (let i = 0; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
-              finalText += transcript + ' ';
-            } else {
-              // Only use the LAST interim result to avoid duplication
-              interimText = transcript;
+              finalText += event.results[i][0].transcript + ' ';
             }
           }
 
-          // Update the final transcript ref
+          // Update and display the final transcript
           if (finalText.trim()) {
             finalTranscriptRef.current = finalText.trim();
+            setTranscript(finalTranscriptRef.current);
           }
-
-          // Display: final + current interim
-          const displayText = (finalTranscriptRef.current + ' ' + interimText).trim();
-          setTranscript(displayText);
         };
 
         recognitionRef.current.onerror = (event: any) => {

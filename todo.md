@@ -187,3 +187,8 @@
 ## CRITICAL Bugs
 - [x] Voice input STILL duplicating on mobile - fixed by rebuilding transcript from scratch instead of accumulating
 
+
+
+## CRITICAL Bugs
+- [x] Voice input STILL duplicating even after v2 fix - disabled interim results (text appears after pauses, no real-time display)
+
