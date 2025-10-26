@@ -9,6 +9,7 @@ export function useVoiceChat() {
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const finalTranscriptRef = useRef('');
+  const lastProcessedIndexRef = useRef(0);
 
   useEffect(() => {
     // Initialize Web Speech API
@@ -26,10 +27,14 @@ export function useVoiceChat() {
           let interimTranscript = '';
           let newFinalTranscript = '';
 
-          for (let i = event.resultIndex; i < event.results.length; i++) {
+          // Only process results we haven't seen before
+          const startIndex = Math.max(event.resultIndex, lastProcessedIndexRef.current);
+          
+          for (let i = startIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
               newFinalTranscript += transcript + ' ';
+              lastProcessedIndexRef.current = i + 1; // Mark this result as processed
             } else {
               interimTranscript += transcript;
             }
@@ -69,6 +74,7 @@ export function useVoiceChat() {
     if (recognitionRef.current && !isListening) {
       setTranscript('');
       finalTranscriptRef.current = '';
+      lastProcessedIndexRef.current = 0; // Reset processed index
       setError(null);
       recognitionRef.current.start();
       setIsListening(true);

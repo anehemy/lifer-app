@@ -177,3 +177,8 @@
 - [x] Replace generic meditation voice env vars with specific voice names (Rachel, Antoni, Josh, Bella, Elli, Domi)
 - [x] Updated voiceOptions.ts to read from environment variables with fallbacks
 
+
+
+## CRITICAL Bugs
+- [x] Voice input repeating/looping text continuously - fixed by tracking processed result indices
+
