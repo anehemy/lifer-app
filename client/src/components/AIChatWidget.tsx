@@ -90,22 +90,12 @@ export default function AIChatWidget() {
     }
   }, [messages]);
 
-  // Auto-open and greet returning users
+  // Initialize session without auto-opening
   useEffect(() => {
-    if (userStats && !hasGreeted && !isOpen) {
-      const hasContent = (userStats.journalEntries || 0) > 0 || 
-                        (userStats.meditations || 0) > 0 || 
-                        (userStats.visionItems || 0) > 0;
-      
-      if (hasContent) {
-        // Delay opening to avoid interrupting page load
-        setTimeout(() => {
-          setIsOpen(true);
-          initializeMrMgSession();
-        }, 2000);
-      }
+    if (!currentSession && !hasGreeted) {
+      initializeMrMgSession();
     }
-  }, [userStats, hasGreeted, isOpen]);
+  }, [currentSession, hasGreeted]);
 
   const initializeMrMgSession = async () => {
     if (!currentSession && !hasGreeted) {

@@ -153,3 +153,8 @@
 - [x] Check if there are hardcoded prompts overriding the Settings system prompt - FOUND: Chat widget uses executeAction (hardcoded) instead of sendMessage (database prompt)
 - [x] Fix: Change chat widget to use sendMessage endpoint instead of executeAction - Mr. MG now uses ONLY the database system prompt from Settings
 
+
+
+## UI Improvements
+- [x] Disable auto-open for Mr. MG chat widget - users must click to open
+
