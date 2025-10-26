@@ -24,6 +24,20 @@ export default function StartHereGuide() {
     }
   }, [user]);
 
+  // Auto-play audio when dialog opens for first-time users
+  useEffect(() => {
+    if (showGuide && !hasSeenGuide && audioRef.current) {
+      // Small delay to ensure audio element is ready
+      const timer = setTimeout(() => {
+        audioRef.current?.play().catch(err => {
+          // Browser may block auto-play, that's okay
+          console.log('Auto-play prevented:', err);
+        });
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [showGuide, hasSeenGuide]);
+
   const handleClose = () => {
     setShowGuide(false);
     markWelcomeSeen.mutate();
