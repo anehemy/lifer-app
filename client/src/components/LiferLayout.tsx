@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { APP_TITLE, getLoginUrl } from "@/const";
-import { BookOpen, Brain, Home, Loader2, LogOut, Menu, Sparkles, Target, User, X } from "lucide-react";
+import { BookOpen, Brain, Home, Loader2, LogOut, Menu, Settings, Sparkles, Target, User, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import AIChatWidget from "@/components/AIChatWidget";
@@ -55,6 +55,7 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
     { path: "/vision", icon: Sparkles, label: "Vision Board" },
     { path: "/meditation", icon: User, label: "Meditation" },
     { path: "/primary-aim", icon: Target, label: "Primary Aim" },
+    { path: "/settings", icon: Settings, label: "Settings" },
   ];
 
   return (

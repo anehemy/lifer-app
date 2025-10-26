@@ -100,3 +100,8 @@
 ## Recently Completed
 - [x] Updated Mr. MG intro audio to MichaelMrMGIntroV1.mp3
 
+
+
+## New Features
+- [x] Add ElevenLabs voice ID input in settings for Mr. MG chat voice customization
+
