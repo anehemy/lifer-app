@@ -147,3 +147,9 @@
 - [x] Add meditation voice ID environment variables (VITE_MEDITATION_VOICE_MALE, VITE_MEDITATION_VOICE_FEMALE, VITE_MEDITATION_VOICE_NEUTRAL)
 - [ ] Allow user to select meditation voice in UI (voice IDs ready, need UI implementation)
 
+
+
+## Investigation
+- [x] Check if there are hardcoded prompts overriding the Settings system prompt - FOUND: Chat widget uses executeAction (hardcoded) instead of sendMessage (database prompt)
+- [x] Fix: Change chat widget to use sendMessage endpoint instead of executeAction - Mr. MG now uses ONLY the database system prompt from Settings
+

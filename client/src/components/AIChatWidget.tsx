@@ -42,44 +42,14 @@ export default function AIChatWidget() {
     },
   });
 
-  const executeAction = trpc.aiChat.executeAction.useMutation({
-    onSuccess: (action) => {
+  // Use sendMessage for regular chat (uses database system prompt)
+  const sendMessageMutation = trpc.aiChat.sendMessage.useMutation({
+    onSuccess: () => {
       refetchMessages();
       setMessage("");
-      
-      // Handle navigation actions
-      if (action.type === 'navigate') {
-        const routeMap: Record<string, string> = {
-          'dashboard': '/',
-          'life-story': '/journal',
-          'journal': '/journal',
-          'patterns': '/patterns',
-          'vision-board': '/vision',
-          'meditation': '/meditation',
-          'primary-aim': '/primary-aim',
-        };
-        
-        const route = routeMap[action.target || ''];
-        if (route) {
-          setTimeout(() => {
-            window.location.href = route;
-          }, 500);
-        }
-      }
-      
-      // Handle create actions
-      if (action.type === 'create') {
-        if (action.target === 'journal-entry') {
-          window.location.href = '/journal';
-        } else if (action.target === 'meditation') {
-          window.location.href = '/meditation';
-        } else if (action.target === 'vision-item') {
-          window.location.href = '/vision';
-        }
-      }
     },
     onError: (error) => {
-      toast.error("Failed to process request: " + error.message);
+      toast.error("Failed to send message: " + error.message);
     },
   });
 
@@ -156,8 +126,8 @@ export default function AIChatWidget() {
   const handleSendMessage = () => {
     if (!message.trim() || !currentSession) return;
     
-    // Use executeAction for Mr. MG agent
-    executeAction.mutate({
+    // Use sendMessage to respect database system prompt
+    sendMessageMutation.mutate({
       sessionId: currentSession,
       message: message.trim(),
     });
@@ -287,7 +257,7 @@ export default function AIChatWidget() {
                     </div>
                   </div>
                 ))}
-                {executeAction.isPending && (
+                {sendMessageMutation.isPending && (
                   <div className="flex justify-start">
                     <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg p-3">
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -330,11 +300,11 @@ export default function AIChatWidget() {
                   }}
                   placeholder="Share your thoughts with Mr. MG..."
                   className="min-h-[60px] resize-none"
-                  disabled={executeAction.isPending || isListening}
+                  disabled={sendMessageMutation.isPending || isListening}
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!message.trim() || executeAction.isPending}
+                  disabled={!message.trim() || sendMessageMutation.isPending}
                   size="icon"
                   className="flex-shrink-0 bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >
