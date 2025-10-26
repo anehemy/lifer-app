@@ -17,9 +17,10 @@ export function useVoiceChat() {
       
       if (SpeechRecognition) {
         recognitionRef.current = new SpeechRecognition();
-        recognitionRef.current.continuous = true;
+        recognitionRef.current.continuous = true; // Keep listening until user stops manually
         recognitionRef.current.interimResults = true;
         recognitionRef.current.lang = 'en-US';
+        recognitionRef.current.maxAlternatives = 1;
 
         recognitionRef.current.onresult = (event: any) => {
           let interimTranscript = '';
@@ -34,7 +35,13 @@ export function useVoiceChat() {
             }
           }
 
-          setTranscript(finalTranscript || interimTranscript);
+          // Update with interim results while speaking, or final when pausing
+          setTranscript((prev) => {
+            if (finalTranscript) {
+              return (prev + ' ' + finalTranscript).trim();
+            }
+            return interimTranscript;
+          });
         };
 
         recognitionRef.current.onerror = (event: any) => {

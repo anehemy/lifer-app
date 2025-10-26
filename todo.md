@@ -75,3 +75,23 @@
 - [ ] Export/share functionality for insights and meditations
 - [ ] Voice chat for Life Story page (dedicated voice journaling interface)
 
+
+
+## Bugs to Fix
+- [x] Voice chat: Fix duplicate useVoiceChat hook call (line 19 and 100 in AIChatWidget)
+- [ ] Voice chat: Keep listening continuously, only stop when user clicks mic button or 10 seconds of silence
+- [x] Voice chat: Transcript not being captured and sent to Mr. MG
+
+## Feature Improvements Needed
+- [ ] Make Mr. MG more proactive and conversational (like example conversation)
+- [ ] Add meditation voice preference selection in conversation flow
+- [ ] Add post-meditation reflection and rating capture
+- [ ] Mr. MG should guide users through meditation creation process
+- [ ] Mr. MG should offer to navigate and take actions proactively
+- [ ] Add ability for Mr. MG to update journal entries and patterns based on conversation
+
+
+
+## Voice Improvements
+- [x] Use custom Mr. MG voice from ElevenLabs (ID: VQypEoV1u8Wo9oGgDmW0) for chat responses
+

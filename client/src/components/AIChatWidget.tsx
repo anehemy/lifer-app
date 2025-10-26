@@ -16,7 +16,7 @@ export default function AIChatWidget() {
   const [hasGreeted, setHasGreeted] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { isListening, isSpeaking, error: voiceError, startListening, stopListening, speak, stopSpeaking } = useVoiceChat();
+  const { isListening, isSpeaking, transcript, error: voiceError, startListening, stopListening, speak, stopSpeaking } = useVoiceChat();
 
   const { data: userStats } = trpc.journal.getStats.useQuery();
   const { data: latestEntry } = trpc.journal.getLatestEntry.useQuery();
@@ -91,15 +91,15 @@ export default function AIChatWidget() {
     if (voiceEnabled && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'assistant' && !isSpeaking) {
-        speak(lastMessage.content, 'rachel');
+        // Use custom Mr. MG voice from ElevenLabs
+        speak(lastMessage.content, 'VQypEoV1u8Wo9oGgDmW0');
       }
     }
   }, [messages, voiceEnabled]);
 
-  // Update message when transcript changes
-  const { transcript } = useVoiceChat();
+  // Update message with live transcript while listening
   useEffect(() => {
-    if (transcript && !isListening) {
+    if (isListening && transcript) {
       setMessage(transcript);
     }
   }, [transcript, isListening]);
@@ -148,8 +148,11 @@ export default function AIChatWidget() {
 
   const handleVoiceInput = () => {
     if (isListening) {
+      // Stop listening and keep the transcript
       stopListening();
     } else {
+      // Start fresh recording
+      setMessage('');
       startListening();
     }
   };
