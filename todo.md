@@ -95,3 +95,8 @@
 ## Voice Improvements
 - [x] Use custom Mr. MG voice from ElevenLabs (ID: VQypEoV1u8Wo9oGgDmW0) for chat responses
 
+
+
+## Recently Completed
+- [x] Updated Mr. MG intro audio to MichaelMrMGIntroV1.mp3
+
