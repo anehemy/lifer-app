@@ -105,3 +105,10 @@
 ## New Features
 - [x] Add ElevenLabs voice ID input in settings for Mr. MG chat voice customization
 
+
+
+## Recently Completed
+- [x] Move Mr. MG voice ID from localStorage to environment variable (VITE_MR_MG_VOICE_ID)
+- [x] Remove voice ID input from Settings page
+- [x] Add VITE_MR_MG_VOICE_ID to secrets configuration
+

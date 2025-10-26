@@ -11,41 +11,11 @@ export default function Settings() {
   const { user } = useAuth();
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
-  const [mrMgVoiceId, setMrMgVoiceId] = useState(
-    localStorage.getItem('mrMgVoiceId') || 'VQypEoV1u8Wo9oGgDmW0'
-  );
-  
-  const handleSaveVoiceId = () => {
-    localStorage.setItem('mrMgVoiceId', mrMgVoiceId);
-    toast.success('Mr. MG voice ID saved! It will be used for chat responses.');
-  };
+
   
   return (
     <div className="container max-w-4xl py-8">
       <h1 className="text-4xl font-bold mb-8">Settings</h1>
-      
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Voice Settings</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="mrMgVoiceId">Mr. MG ElevenLabs Voice ID</Label>
-            <div className="flex gap-2">
-              <Input
-                id="mrMgVoiceId"
-                value={mrMgVoiceId}
-                onChange={(e) => setMrMgVoiceId(e.target.value)}
-                placeholder="VQypEoV1u8Wo9oGgDmW0"
-              />
-              <Button onClick={handleSaveVoiceId}>Save</Button>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              Enter your custom ElevenLabs voice ID for Mr. MG's chat responses. Get voice IDs from your ElevenLabs account.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
       
       <Card className="mb-6">
         <CardHeader>

@@ -91,8 +91,8 @@ export default function AIChatWidget() {
     if (voiceEnabled && messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'assistant' && !isSpeaking) {
-        // Use custom Mr. MG voice from localStorage (or default)
-        const voiceId = localStorage.getItem('mrMgVoiceId') || 'VQypEoV1u8Wo9oGgDmW0';
+        // Use Mr. MG voice ID from environment variable
+        const voiceId = import.meta.env.VITE_MR_MG_VOICE_ID || 'VQypEoV1u8Wo9oGgDmW0';
         speak(lastMessage.content, voiceId);
       }
     }
