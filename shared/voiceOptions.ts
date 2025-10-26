@@ -10,42 +10,50 @@ export interface VoiceOption {
   elevenLabsId: string;
 }
 
+// Get voice IDs from environment variables, with fallbacks to ElevenLabs default voices
+const getEnvVoiceId = (envVar: string, fallback: string) => {
+  if (typeof import.meta !== 'undefined' && import.meta.env) {
+    return import.meta.env[envVar] || fallback;
+  }
+  return fallback;
+};
+
 export const VOICE_OPTIONS: VoiceOption[] = [
   {
     id: "rachel",
     name: "Rachel",
     description: "Calm, soothing female voice - perfect for meditation",
-    elevenLabsId: "21m00Tcm4TlvDq8ikWAM",
+    elevenLabsId: getEnvVoiceId('VITE_MEDITATION_VOICE_RACHEL', '21m00Tcm4TlvDq8ikWAM'),
   },
   {
     id: "bella",
     name: "Bella",
     description: "Soft, gentle female voice - warm and comforting",
-    elevenLabsId: "EXAVITQu4vr4xnSDxMaL",
+    elevenLabsId: getEnvVoiceId('VITE_MEDITATION_VOICE_BELLA', 'EXAVITQu4vr4xnSDxMaL'),
   },
   {
     id: "antoni",
     name: "Antoni",
     description: "Deep, calming male voice - grounding and peaceful",
-    elevenLabsId: "ErXwobaYiN019PkySvjV",
+    elevenLabsId: getEnvVoiceId('VITE_MEDITATION_VOICE_ANTONI', 'ErXwobaYiN019PkySvjV'),
   },
   {
     id: "elli",
     name: "Elli",
     description: "Clear, serene female voice - mindful and present",
-    elevenLabsId: "MF3mGyEYCl7XYWbV9V6O",
+    elevenLabsId: getEnvVoiceId('VITE_MEDITATION_VOICE_ELLI', 'MF3mGyEYCl7XYWbV9V6O'),
   },
   {
     id: "josh",
     name: "Josh",
     description: "Warm, reassuring male voice - steady and supportive",
-    elevenLabsId: "TxGEqnHWrfWFTfGW9XjX",
+    elevenLabsId: getEnvVoiceId('VITE_MEDITATION_VOICE_JOSH', 'TxGEqnHWrfWFTfGW9XjX'),
   },
   {
     id: "domi",
     name: "Domi",
     description: "Gentle, nurturing female voice - compassionate and kind",
-    elevenLabsId: "AZnzlk1XvdvUeBnXmlld",
+    elevenLabsId: getEnvVoiceId('VITE_MEDITATION_VOICE_DOMI', 'AZnzlk1XvdvUeBnXmlld'),
   },
 ];
 

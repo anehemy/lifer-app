@@ -171,3 +171,9 @@
 - [x] Make chat history session-based (reset on browser close/logout, not persistent forever)
 - [x] Keep contextual greeting that references user's data (journal, patterns, vision, etc.)
 
+
+
+## Updates
+- [x] Replace generic meditation voice env vars with specific voice names (Rachel, Antoni, Josh, Bella, Elli, Domi)
+- [x] Updated voiceOptions.ts to read from environment variables with fallbacks
+
