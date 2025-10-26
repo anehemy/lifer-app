@@ -237,3 +237,8 @@
 - [x] Allow switching between providers to control costs
 - [x] Update textToSpeech service to respect provider setting
 
+
+
+## Bugs
+- [x] Fix "No audio URL returned" error when Browser TTS is selected - added browser-based speech synthesis fallback
+

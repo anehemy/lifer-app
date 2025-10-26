@@ -121,10 +121,25 @@ export function useVoiceChat() {
       const result = await generateSpeech.mutateAsync({ text, voiceId, provider: selectedProvider });
       
       if (!result.audioUrl) {
-        throw new Error('No audio URL returned');
+        // Fallback to browser TTS when no audio URL is returned
+        console.log('[TTS] No audio URL, using browser speech synthesis');
+        if ('speechSynthesis' in window) {
+          const utterance = new SpeechSynthesisUtterance(text);
+          utterance.rate = 0.9; // Slightly slower for better clarity
+          utterance.pitch = 1.0;
+          utterance.onend = () => setIsSpeaking(false);
+          utterance.onerror = () => {
+            setError('Browser TTS failed');
+            setIsSpeaking(false);
+          };
+          window.speechSynthesis.speak(utterance);
+        } else {
+          throw new Error('No TTS available');
+        }
+        return;
       }
 
-      // Play audio
+      // Play audio from URL
       if (audioRef.current) {
         audioRef.current.pause();
       }
