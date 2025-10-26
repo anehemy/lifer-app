@@ -137,3 +137,13 @@
 - [x] Add Mr. MG system prompt editor in Settings (admin only)
 - [x] Allow editing of chat instructions without code changes
 
+
+
+## Bugs
+- [ ] Mr. MG not responding contextually to user questions - system prompt incomplete in database (needs manual update via Settings)
+- [x] Chat history lost between sessions - fixed by persisting session ID in localStorage
+
+## New Features
+- [x] Add meditation voice ID environment variables (VITE_MEDITATION_VOICE_MALE, VITE_MEDITATION_VOICE_FEMALE, VITE_MEDITATION_VOICE_NEUTRAL)
+- [ ] Allow user to select meditation voice in UI (voice IDs ready, need UI implementation)
+

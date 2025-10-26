@@ -11,7 +11,11 @@ import { useVoiceChat } from "@/hooks/useVoiceChat";
 
 export default function AIChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentSession, setCurrentSession] = useState<number | null>(null);
+  const [currentSession, setCurrentSession] = useState<number | null>(() => {
+    // Load session from localStorage on mount
+    const saved = localStorage.getItem('mrMgSessionId');
+    return saved ? parseInt(saved, 10) : null;
+  });
   const [message, setMessage] = useState("");
   const [hasGreeted, setHasGreeted] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
@@ -33,6 +37,8 @@ export default function AIChatWidget() {
   const createSession = trpc.aiChat.createSession.useMutation({
     onSuccess: (data) => {
       setCurrentSession(data.sessionId);
+      // Save session ID to localStorage for persistence
+      localStorage.setItem('mrMgSessionId', data.sessionId.toString());
     },
   });
 
@@ -133,10 +139,17 @@ export default function AIChatWidget() {
 
   const initializeMrMgSession = async () => {
     if (!currentSession && !hasGreeted) {
-      // Find or create Mr. MG agent session
-      const mrMgAgent = { id: 1, name: MR_MG_NAME, avatar: MR_MG_AVATAR, role: "Life Mentor" };
-      createSession.mutate({ agentId: mrMgAgent.id });
-      setHasGreeted(true);
+      // Check if we have an existing session in localStorage
+      const savedSessionId = localStorage.getItem('mrMgSessionId');
+      if (savedSessionId) {
+        setCurrentSession(parseInt(savedSessionId, 10));
+        setHasGreeted(true);
+      } else {
+        // Create new session if none exists
+        const mrMgAgent = { id: 1, name: MR_MG_NAME, avatar: MR_MG_AVATAR, role: "Life Mentor" };
+        createSession.mutate({ agentId: mrMgAgent.id });
+        setHasGreeted(true);
+      }
     }
   };
 
