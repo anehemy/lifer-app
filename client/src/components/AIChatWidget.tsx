@@ -2,14 +2,18 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Loader2, X, Mic, Volume2, VolumeX, RotateCcw } from "lucide-react";
+import { Send, Loader2, X, Mic, Volume2, VolumeX, RotateCcw, MessageSquare } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { MR_MG_AVATAR, MR_MG_NAME, MR_MG_TITLE } from "@/const";
 import { useVoiceChat } from "@/hooks/useVoiceChat";
 
 
-export default function AIChatWidget() {
+interface AIChatWidgetProps {
+  sidebarOpen?: boolean;
+}
+
+export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentSession, setCurrentSession] = useState<number | null>(() => {
     // Load session from localStorage on mount
@@ -19,6 +23,7 @@ export default function AIChatWidget() {
   const [message, setMessage] = useState("");
   const [hasGreeted, setHasGreeted] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [showConversations, setShowConversations] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastSpokenMessageRef = useRef<string | null>(null);
   const { isListening, isSpeaking, transcript, error: voiceError, startListening, stopListening, speak, stopSpeaking } = useVoiceChat();
@@ -44,6 +49,12 @@ export default function AIChatWidget() {
   const { data: messages = [], refetch: refetchMessages } = trpc.aiChat.getMessages.useQuery(
     { sessionId: currentSession! },
     { enabled: !!currentSession }
+  );
+  
+  // Get list of all user's chat sessions
+  const { data: sessions = [], refetch: refetchSessions } = trpc.aiChat.listSessions.useQuery(
+    { agentId: 1 }, // Mr. MG agent ID
+    { enabled: showConversations }
   );
 
   const createSession = trpc.aiChat.createSession.useMutation({
@@ -244,7 +255,7 @@ export default function AIChatWidget() {
   return (
     <>
       {/* Floating Mr. MG Button */}
-      {!isOpen && (
+      {!isOpen && !sidebarOpen && (
         <Button
           onClick={() => {
             setIsOpen(true);
@@ -276,6 +287,14 @@ export default function AIChatWidget() {
                 <Button 
                   variant="ghost" 
                   size="icon" 
+                  onClick={() => setShowConversations(!showConversations)}
+                  title="View conversations"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
                   onClick={handleClearChat}
                   title="Start new conversation"
                 >
@@ -287,6 +306,40 @@ export default function AIChatWidget() {
               </div>
             </div>
           </CardHeader>
+          
+          {/* Conversations List */}
+          {showConversations && (
+            <div className="border-b bg-gray-50 p-4 max-h-64 overflow-y-auto">
+              <h3 className="font-semibold text-sm mb-2">Your Conversations</h3>
+              <div className="space-y-2">
+                {sessions.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">No previous conversations</p>
+                ) : (
+                  sessions.map((session: any) => (
+                    <button
+                      key={session.id}
+                      onClick={() => {
+                        setCurrentSession(session.id);
+                        sessionStorage.setItem('mrMgSessionId', String(session.id));
+                        setShowConversations(false);
+                        refetchMessages();
+                      }}
+                      className={`w-full text-left p-2 rounded hover:bg-gray-100 text-xs ${
+                        session.id === currentSession ? 'bg-purple-100 border border-purple-300' : 'bg-white border'
+                      }`}
+                    >
+                      <div className="font-medium truncate">
+                        {session.title || 'Conversation'}
+                      </div>
+                      <div className="text-muted-foreground text-[10px]">
+                        {new Date(session.createdAt).toLocaleDateString()}
+                      </div>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
 
           <CardContent className="flex-1 p-0 flex flex-col min-h-0">
             {/* Chat Messages */}

@@ -145,7 +145,7 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
       </main>
 
       {/* AI Chat Widget */}
-      <AIChatWidget />
+      <AIChatWidget sidebarOpen={sidebarOpen} />
     </div>
   );
 }

@@ -339,3 +339,20 @@
 - [x] Prevent background from scrolling when chat widget is open - added body scroll lock and overlay
 - [x] Ensure chat widget is full viewport height on mobile without needing scroll - truly fixed position
 
+
+
+## Conversation History Feature
+- [x] Add "Conversations" button to chat header to view conversation list (MessageSquare icon)
+- [x] Create conversation list UI showing past sessions with date/preview
+- [x] Allow users to switch between conversations (click to load)
+- [x] Highlight current active conversation (purple background)
+- [x] Load messages when switching conversations (refetchMessages)
+- [x] Backend endpoint already exists (listSessions)
+- [x] Show conversation preview (title and date)
+- [x] Mobile-friendly (slide-in panel with max-height)
+
+
+
+## Mobile Menu Issues
+- [x] Hide Mr. MG chat button when mobile menu is open (added sidebarOpen prop check)
+
