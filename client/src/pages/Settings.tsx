@@ -109,6 +109,7 @@ export default function Settings() {
         </Card>
       )}
       
+      {user?.role === "admin" && (
       <Card className="mb-6">
         <CardHeader>
           <CardTitle>Voice Settings (Admin)</CardTitle>
@@ -220,6 +221,7 @@ export default function Settings() {
           )}
         </CardContent>
       </Card>
+      )}
       
       <Card>
         <CardHeader>

@@ -218,14 +218,16 @@ export default function Journal() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2">
-            <Button onClick={handleNextQuestion} variant="outline" size="sm">
+          <div className="flex gap-2 flex-wrap">
+            <Button onClick={handleNextQuestion} variant="outline" size="sm" className="flex-1 min-w-[140px]">
               <RefreshCw className="h-4 w-4 mr-2" />
-              Ask Another Question
+              <span className="hidden sm:inline">Ask Another Question</span>
+              <span className="sm:hidden">New Question</span>
             </Button>
-            <Button onClick={() => setShowMrMgChat(true)} variant="default" size="sm">
+            <Button onClick={() => setShowMrMgChat(true)} variant="default" size="sm" className="flex-1 min-w-[140px]">
               <MessageCircle className="h-4 w-4 mr-2" />
-              Ask Mr. MG for Guidance
+              <span className="hidden sm:inline">Ask Mr. MG for Guidance</span>
+              <span className="sm:hidden">Ask Mr. MG</span>
             </Button>
           </div>
         </CardContent>

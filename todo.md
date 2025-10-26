@@ -303,3 +303,14 @@
 ## UI/UX Issues
 - [x] Move chat button to bottom left to avoid interfering with Manus alert (bottom right)
 
+
+
+## Security Issues
+- [x] Hide Voice Settings from non-admin users (only show to admin role)
+
+
+
+## Mobile UI Bugs
+- [x] Fix "Ask Mr. MG for Guidance" button getting cut off on mobile (text too long)
+- [x] Make button text responsive - shows "Ask Mr. MG" on mobile, full text on desktop
+
