@@ -4,25 +4,26 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { BookOpen, X, Sparkles, Brain, Target, User, BookMarked } from "lucide-react";
 import { useState, useEffect } from "react";
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 export default function StartHereGuide() {
+  const { user } = useAuth();
   const [showGuide, setShowGuide] = useState(false);
-  const [hasSeenGuide, setHasSeenGuide] = useState(false);
+  const hasSeenGuide = user?.hasSeenWelcome || false;
+
+  const markWelcomeSeen = trpc.user.markWelcomeSeen.useMutation();
 
   useEffect(() => {
-    // Check if user has seen the guide before
-    const seen = localStorage.getItem("lifer-guide-seen");
-    if (!seen) {
+    // Show guide if user hasn't seen it
+    if (user && !user.hasSeenWelcome) {
       setShowGuide(true);
-    } else {
-      setHasSeenGuide(true);
     }
-  }, []);
+  }, [user]);
 
   const handleClose = () => {
     setShowGuide(false);
-    localStorage.setItem("lifer-guide-seen", "true");
-    setHasSeenGuide(true);
+    markWelcomeSeen.mutate();
   };
 
   return (

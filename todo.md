@@ -18,6 +18,10 @@
 ## In Progress
 
 ## Recently Completed
+- [x] Fix welcome dialog to show for new users on first login (now uses database instead of localStorage)
+- [x] Create Mr. MG audio introduction script for first-time users
+
+## Recently Completed
 - [x] Transform Mr. MG into AI Agent with navigation and action capabilities
 - [x] Add intent detection to understand user commands (navigate, create, update, delete)
 - [x] Implement action handlers for common tasks (journal entries, meditations, vision items)

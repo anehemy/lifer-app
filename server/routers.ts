@@ -8,6 +8,19 @@ import { z } from "zod";
 export const appRouter = router({
   system: systemRouter,
   
+  user: router({
+    markWelcomeSeen: protectedProcedure.mutation(async ({ ctx }) => {
+      const db = await import('./db').then(m => m.getDb());
+      if (!db) throw new Error('Database not available');
+      const { users } = await import('../drizzle/schema');
+      const { eq } = await import('drizzle-orm');
+      await db.update(users)
+        .set({ hasSeenWelcome: true })
+        .where(eq(users.id, ctx.user.id));
+      return { success: true };
+    }),
+  }),
+
   tokens: router({
     getBalance: protectedProcedure.query(async ({ ctx }) => {
       const { getUserTokens } = await import("./_core/tokens");
