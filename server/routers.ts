@@ -68,6 +68,35 @@ export const appRouter = router({
       const { getUserJournalEntries } = await import("./db");
       return getUserJournalEntries(ctx.user.id);
     }),
+    getStats: protectedProcedure.query(async ({ ctx }) => {
+      const db = await import('./db').then(m => m.getDb());
+      if (!db) return { journalEntries: 0, meditations: 0, visionItems: 0, patterns: 0 };
+      
+      const { journalEntries, meditationSessions, visionItems } = await import('../drizzle/schema');
+      const { eq, count } = await import('drizzle-orm');
+      const { getPatternInsights } = await import("./db");
+      
+      const [journalCount] = await db.select({ count: count() })
+        .from(journalEntries)
+        .where(eq(journalEntries.userId, ctx.user.id));
+      
+      const [meditationCount] = await db.select({ count: count() })
+        .from(meditationSessions)
+        .where(eq(meditationSessions.userId, ctx.user.id));
+      
+      const [visionCount] = await db.select({ count: count() })
+        .from(visionItems)
+        .where(eq(visionItems.userId, ctx.user.id));
+      
+      const patterns = await getPatternInsights(ctx.user.id);
+      
+      return {
+        journalEntries: journalCount?.count || 0,
+        meditations: meditationCount?.count || 0,
+        visionItems: visionCount?.count || 0,
+        patterns: patterns?.length || 0,
+      };
+    }),
     create: protectedProcedure
       .input(z.object({ question: z.string(), response: z.string() }))
       .mutation(async ({ ctx, input }) => {
