@@ -356,3 +356,10 @@
 ## Mobile Menu Issues
 - [x] Hide Mr. MG chat button when mobile menu is open (added sidebarOpen prop check)
 
+
+
+## Critical Mobile Chat Input Issue
+- [x] Fix keyboard covering textarea on mobile - added scrollIntoView on focus
+- [x] Scroll textarea into view when focused on mobile (300ms delay for keyboard animation)
+- [x] Adjust chat layout to account for virtual keyboard height (max-h-screen)
+

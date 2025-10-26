@@ -25,6 +25,7 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [showConversations, setShowConversations] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastSpokenMessageRef = useRef<string | null>(null);
   const { isListening, isSpeaking, transcript, error: voiceError, startListening, stopListening, speak, stopSpeaking } = useVoiceChat();
   
@@ -273,7 +274,7 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
         <>
         {/* Mobile overlay to prevent background scroll */}
         <div className="fixed inset-0 bg-black/20 z-40 sm:hidden" onClick={() => setIsOpen(false)} />
-        <Card className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:left-6 sm:w-96 sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200">
+        <Card className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:left-6 sm:w-96 sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200 max-h-screen">
           <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -402,8 +403,17 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
               </div>
               <div className="flex gap-2">
                 <Textarea
+                  ref={textareaRef}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
+                  onFocus={(e) => {
+                    // On mobile, scroll textarea into view when keyboard appears
+                    if (window.innerWidth < 640) {
+                      setTimeout(() => {
+                        e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 300); // Delay to let keyboard animation finish
+                    }
+                  }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
