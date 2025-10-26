@@ -213,18 +213,6 @@ export default function AIChatWidget() {
             <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
               <div className="space-y-4">
                 {/* Initial greeting */}
-                {messages.length === 0 && (
-                  <div className="flex justify-start">
-                    <div className="max-w-[85%] rounded-lg p-4 bg-gradient-to-br from-purple-100 to-pink-100">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-2xl">{MR_MG_AVATAR}</span>
-                        <span className="text-xs font-medium">{MR_MG_NAME}</span>
-                      </div>
-                      <p className="text-sm whitespace-pre-wrap">{getContextualGreeting()}</p>
-                    </div>
-                  </div>
-                )}
-                
                 {messages.map((msg) => (
                   <div
                     key={msg.id}

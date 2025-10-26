@@ -41,6 +41,27 @@ export const aiChatRouter = router({
         input.agentId,
         input.title
       );
+      
+      // Add initial greeting message from Mr. MG
+      const agent = await db.getAgentById(input.agentId);
+      if (agent) {
+        // Get journal entries count for contextual greeting
+        const journalEntries = await db.getUserJournalEntries(ctx.user.id);
+        const entryCount = journalEntries.length;
+        
+        let greeting = "Welcome! I'm Mr. MG, your life mentor. ";
+        
+        if (entryCount === 0) {
+          greeting += "I see you haven't started your Life Story yet. Shall we begin by exploring a formative moment from your past?";
+        } else if (entryCount > 0 && entryCount < 3) {
+          greeting += `Good to see you! You've shared ${entryCount} ${entryCount === 1 ? 'story' : 'stories'} so far. Would you like to continue exploring your life experiences, or shall we look at the patterns emerging?`;
+        } else {
+          greeting += `Welcome back! You've documented ${entryCount} meaningful moments. How can I support your journey today?`;
+        }
+        
+        await db.addChatMessage(sessionId, "assistant", greeting);
+      }
+      
       return { sessionId };
     }),
 

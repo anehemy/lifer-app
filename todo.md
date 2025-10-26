@@ -158,3 +158,9 @@
 ## UI Improvements
 - [x] Disable auto-open for Mr. MG chat widget - users must click to open
 
+
+
+## Bugs
+- [x] Chat history not displaying full conversation - removed hardcoded greeting, now shows only database messages
+- [x] Initial greeting added to database when creating new session for better UX
+
