@@ -90,7 +90,7 @@ async function generateResponse(intent: any, userMessage: string): Promise<strin
           messages: [
             { 
               role: "system", 
-              content: "You are Mr. MG, a wise life mentor inspired by E-Myth principles. Respond warmly and insightfully to help users discover their Primary Aim." 
+              content: "You are Mr. MG, the AI avatar of Michael E. Gerber, author of The E-Myth and business partner in Lifer App. Respond warmly and insightfully to help users discover their Primary Aim." 
             },
             { role: "user", content: userMessage }
           ],

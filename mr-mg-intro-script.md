@@ -10,7 +10,11 @@
 
 Hello, my friend. Welcome to Lifer App.
 
-My name is Mr. MG, and I'm going to be your guide on this journey.
+My name is Mr. MG... and I'm the AI avatar of Michael E. Gerber.
+
+[pause]
+
+Yes, that Michael Gerber. The author of The E-Myth. And I'm here as your guide on this journey.
 
 [pause]
 

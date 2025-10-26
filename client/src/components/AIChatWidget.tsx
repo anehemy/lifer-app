@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Send, Loader2, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
-import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
+import { MR_MG_AVATAR, MR_MG_NAME, MR_MG_TITLE } from "@/const";
 
 
 export default function AIChatWidget() {
@@ -183,7 +183,7 @@ export default function AIChatWidget() {
                 <span className="text-4xl">{MR_MG_AVATAR}</span>
                 <div>
                   <CardTitle className="text-lg">{MR_MG_NAME}</CardTitle>
-                  <p className="text-xs text-muted-foreground">Your Life Mentor</p>
+                  <p className="text-xs text-muted-foreground">{MR_MG_TITLE}</p>
                 </div>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>

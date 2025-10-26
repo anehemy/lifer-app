@@ -60,8 +60,8 @@ export default function StartHereGuide() {
             <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200">
               <CardContent className="pt-6">
                 <p className="text-lg leading-relaxed">
-                  Hi, I'm <strong>{MR_MG_NAME}</strong>, your life mentor. I'm here to help you discover your <strong>Primary Aim</strong> - 
-                  not what you want to DO, but who you want to BE and how you want to LIVE.
+                  Hi, I'm <strong>{MR_MG_NAME}</strong> — the AI avatar of <strong>Michael E. Gerber</strong>, author of The E-Myth and our business partner. 
+                  I'm here to help you discover your <strong>Primary Aim</strong> - not what you want to DO, but who you want to BE and how you want to LIVE.
                 </p>
               </CardContent>
             </Card>

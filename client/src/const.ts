@@ -25,4 +25,4 @@ export const getLoginUrl = () => {
 // Lifer App specific constants
 export const MR_MG_AVATAR = "🎩"; // Mr. MG character emoji
 export const MR_MG_NAME = "Mr. MG";
-export const MR_MG_TITLE = "Your Life Mentor";
+export const MR_MG_TITLE = "AI Avatar of Michael E. Gerber";
