@@ -220,7 +220,7 @@ export default function AIChatWidget() {
             setIsOpen(true);
             if (!currentSession) initializeMrMgSession();
           }}
-          className="fixed bottom-6 right-6 h-16 w-16 rounded-full shadow-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 z-50 text-3xl"
+          className="fixed bottom-4 right-4 h-14 w-14 sm:h-16 sm:w-16 sm:bottom-6 sm:right-6 rounded-full shadow-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 z-50 text-2xl sm:text-3xl"
           size="icon"
         >
           {MR_MG_AVATAR}
@@ -229,7 +229,7 @@ export default function AIChatWidget() {
 
       {/* Mr. MG Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-6 right-6 w-96 h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200">
+        <Card className="fixed bottom-4 right-4 w-[calc(100vw-2rem)] sm:w-96 h-[calc(100vh-2rem)] sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200 sm:bottom-6 sm:right-6">
           <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -299,7 +299,7 @@ export default function AIChatWidget() {
                   onClick={handleVoiceInput}
                   variant={isListening ? "default" : "outline"}
                   size="icon"
-                  className={isListening ? "bg-red-500 hover:bg-red-600 animate-pulse" : ""}
+                  className={`min-h-[44px] min-w-[44px] ${isListening ? "bg-red-500 hover:bg-red-600 animate-pulse" : ""}`}
                   title={isListening ? "Stop recording" : "Start voice input"}
                 >
                   <Mic className="h-4 w-4" />
@@ -308,6 +308,7 @@ export default function AIChatWidget() {
                   onClick={toggleVoice}
                   variant="outline"
                   size="icon"
+                  className="min-h-[44px] min-w-[44px]"
                   title={voiceEnabled ? "Disable voice responses" : "Enable voice responses"}
                 >
                   {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
@@ -324,14 +325,14 @@ export default function AIChatWidget() {
                     }
                   }}
                   placeholder="Share your thoughts with Mr. MG..."
-                  className="min-h-[60px] resize-none"
+                  className="min-h-[60px] sm:min-h-[80px] resize-none text-base"
                   disabled={sendMessageMutation.isPending || isListening}
                 />
                 <Button
                   onClick={handleSendMessage}
                   disabled={!message.trim() || sendMessageMutation.isPending}
                   size="icon"
-                  className="flex-shrink-0 bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  className="flex-shrink-0 min-h-[44px] min-w-[44px] bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >
                   <Send className="h-4 w-4" />
                 </Button>

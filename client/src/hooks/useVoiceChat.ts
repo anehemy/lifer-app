@@ -128,13 +128,15 @@ export function useVoiceChat() {
           utterance.rate = 0.9; // Slightly slower for better clarity
           utterance.pitch = 1.0;
           utterance.onend = () => setIsSpeaking(false);
-          utterance.onerror = () => {
-            setError('Browser TTS failed');
+          utterance.onerror = (event) => {
+            console.error('[TTS] Browser TTS error:', event);
+            // Don't show error to user for browser TTS - it's expected on some mobile browsers
             setIsSpeaking(false);
           };
           window.speechSynthesis.speak(utterance);
         } else {
-          throw new Error('No TTS available');
+          console.warn('[TTS] Speech synthesis not available');
+          setIsSpeaking(false);
         }
         return;
       }

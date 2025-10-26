@@ -249,3 +249,12 @@
 - [x] Fix mute button - now stops both audio URL playback and browser TTS (speechSynthesis.cancel)
 - [ ] Add Google Cloud TTS API key to environment variables documentation
 
+
+
+## Mobile Optimization Issues
+- [x] Fix "Browser TTS failed" error on mobile devices (suppressed error, it's expected on some mobile browsers)
+- [ ] Fix "Cannot read properties of undefined (reading 'type')" error when sending messages (needs investigation)
+- [x] Optimize chat widget layout for mobile screens (full-screen on mobile, card on desktop)
+- [ ] Test voice input/output on mobile Safari and Chrome
+- [ ] Improve responsive design for all pages on mobile devices
+
