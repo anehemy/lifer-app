@@ -240,7 +240,7 @@ export default function AIChatWidget() {
 
       {/* Mr. MG Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-4 left-4 w-[calc(100vw-2rem)] sm:w-96 h-[calc(100vh-2rem)] sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200 sm:bottom-6 sm:left-6">
+        <Card className="fixed inset-4 sm:inset-auto sm:bottom-6 sm:left-6 sm:w-96 sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200">
           <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

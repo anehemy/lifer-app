@@ -177,3 +177,32 @@
     }
   }
 }
+
+/* Mobile keyboard handling */
+@layer utilities {
+  /* Ensure inputs scroll into view on mobile when keyboard appears */
+  @media (max-width: 640px) {
+    input:focus,
+    textarea:focus,
+    select:focus {
+      scroll-margin-top: 100px;
+      scroll-margin-bottom: 100px;
+    }
+    
+    /* Prevent body scroll when dialogs are open on mobile */
+    body:has(dialog[open]),
+    body:has([role="dialog"]) {
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+    
+    /* Ensure dialog content is scrollable */
+    [role="dialog"] {
+      max-height: 100vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+  }
+}
+

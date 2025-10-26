@@ -322,3 +322,13 @@
 - [x] Removed custom Mr. MG dialog from Journal - now triggers global AIChatWidget
 - [x] Same voice settings, history, and features available in both contexts
 
+
+
+## Critical Mobile UX Issues
+- [x] Fix keyboard blocking text input on mobile - added scroll-margin and focus handling
+- [x] Fix chat widget being larger than mobile screen - now uses inset-4 for proper full-screen on mobile
+- [x] Add auto-scroll to keep focused input visible when keyboard appears (scroll-margin CSS)
+- [x] Reduce dialog padding/margins on mobile - VisionBoard dialog now has px-1 on mobile
+- [x] Updated viewport meta to allow user scaling and better keyboard handling
+- [x] Added CSS to prevent body scroll when dialogs open on mobile
+
