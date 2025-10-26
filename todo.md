@@ -198,3 +198,10 @@
 - [x] Add 10-second silence timer before auto-stopping voice input (prevent interrupting long thoughts)
 - [x] Make voice input append to existing text instead of replacing it (build message in segments)
 
+
+
+## New Features
+- [x] Integrate Mr. MG chat with journal - automatically save life stories shared in chat to Life Story journal
+- [x] Add story detection logic using LLM function calling to identify when user is sharing a life experience
+- [x] Confirm with user when a story is saved to journal
+

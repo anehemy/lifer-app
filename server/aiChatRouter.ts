@@ -178,12 +178,87 @@ export const aiChatRouter = router({
         }
       });
 
-      // Get AI response
+      // Define tools for Mr. MG to use
+      const tools: any[] = [
+        {
+          type: "function",
+          function: {
+            name: "save_journal_entry",
+            description: "Save a life story or significant experience shared by the user to their journal. Use this when the user shares a meaningful life experience, memory, or story that should be documented.",
+            parameters: {
+              type: "object",
+              properties: {
+                question: {
+                  type: "string",
+                  description: "A reflective question that prompted this story (e.g., 'Tell me about a time when you overcame a challenge')",
+                },
+                response: {
+                  type: "string",
+                  description: "The user's story or experience in their own words",
+                },
+              },
+              required: ["question", "response"],
+            },
+          },
+        },
+      ];
+
+      // Get AI response with function calling
       const response = await invokeLLM({
         messages: llmMessages,
+        tools,
+        tool_choice: "auto", // Let the model decide when to use tools
       });
 
-      const content = response.choices[0].message.content;
+      const responseMessage = response.choices[0].message;
+      
+      // Check if the model wants to call a function
+      if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
+        const toolCall = responseMessage.tool_calls[0];
+        
+        if (toolCall.function.name === "save_journal_entry") {
+          // Parse function arguments
+          const args = JSON.parse(toolCall.function.arguments);
+          
+          // Save to journal
+          await db.createJournalEntry({
+            userId: ctx.user.id,
+            question: args.question,
+            response: args.response,
+          });
+          
+          // Generate a confirmation message
+          const confirmationMessages = [
+            ...llmMessages,
+            responseMessage,
+            {
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ success: true, message: "Journal entry saved successfully" }),
+            },
+          ];
+          
+          // Get final response from the model
+          const finalResponse = await invokeLLM({
+            messages: confirmationMessages,
+          });
+          
+          const assistantMessage = typeof finalResponse.choices[0].message.content === 'string' 
+            ? finalResponse.choices[0].message.content 
+            : "I've saved your story to your journal!";
+          
+          // Save assistant message
+          await db.addChatMessage(input.sessionId, "assistant", assistantMessage);
+          
+          return {
+            message: assistantMessage,
+            journalEntrySaved: true,
+          };
+        }
+      }
+      
+      // No function call - regular response
+      const content = responseMessage.content;
       const assistantMessage = typeof content === 'string' ? content : "I apologize, I couldn't generate a response.";
 
       // Save assistant message
@@ -191,6 +266,7 @@ export const aiChatRouter = router({
 
       return {
         message: assistantMessage,
+        journalEntrySaved: false,
       };
     }),
 
