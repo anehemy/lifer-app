@@ -16,6 +16,7 @@ export default function AIChatWidget() {
   const [hasGreeted, setHasGreeted] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastSpokenMessageRef = useRef<string | null>(null);
   const { isListening, isSpeaking, transcript, error: voiceError, startListening, stopListening, speak, stopSpeaking } = useVoiceChat();
 
   const { data: userStats } = trpc.journal.getStats.useQuery();
@@ -88,15 +89,17 @@ export default function AIChatWidget() {
 
   // Speak Mr. MG's responses when voice is enabled
   useEffect(() => {
-    if (voiceEnabled && messages.length > 0) {
+    if (voiceEnabled && messages.length > 0 && !isSpeaking) {
       const lastMessage = messages[messages.length - 1];
-      if (lastMessage.role === 'assistant' && !isSpeaking) {
-        // Use Mr. MG voice ID from environment variable
-        const voiceId = import.meta.env.VITE_MR_MG_VOICE_ID || '0QOtNhDO4bFWGkFLco6Y';
+      // Only speak if it's an assistant message and we haven't spoken it yet
+      if (lastMessage.role === 'assistant' && lastMessage.content !== lastSpokenMessageRef.current) {
+        lastSpokenMessageRef.current = lastMessage.content;
+        // Use Mr. MG custom voice ID
+        const voiceId = '0QOtNhDO4bFWGkFLco6Y';
         speak(lastMessage.content, voiceId);
       }
     }
-  }, [messages, voiceEnabled]);
+  }, [messages, voiceEnabled, isSpeaking, speak]);
 
   // Update message with live transcript while listening
   useEffect(() => {

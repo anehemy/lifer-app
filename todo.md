@@ -122,3 +122,9 @@
 ## Bugs
 - [x] Voice input duplicating text (capturing both interim and final results) - fixed by separating final and interim transcripts
 
+
+
+## CRITICAL Bugs
+- [x] Voice chat using wrong voice (woman's voice instead of Mr. MG custom voice) - fixed by hardcoding voice ID
+- [x] Voice chat audio looping infinitely - draining ElevenLabs tokens - fixed by tracking last spoken message
+
