@@ -66,7 +66,25 @@ async function generateResponse(intent: any, userMessage: string): Promise<strin
   
   switch (type) {
     case 'navigate':
-      return `I'll take you to your ${target?.replace('-', ' ')} right away!`;
+      // Generate contextual follow-up based on destination
+      const destination = target?.replace('-', ' ') || 'page';
+      let contextualMessage = '';
+      
+      if (target === 'meditation') {
+        contextualMessage = "Here you are in your meditations. Would you like help creating a new meditation, or would you prefer to replay one you've already done?";
+      } else if (target === 'life-story' || target === 'journal') {
+        contextualMessage = "Welcome to your Life Story. Would you like to answer a new question, or would you like me to help you explore the patterns in your responses?";
+      } else if (target === 'patterns') {
+        contextualMessage = "Here are the patterns I've discovered in your story. Would you like me to explain any of them, or help you see how they connect to your Primary Aim?";
+      } else if (target === 'vision-board') {
+        contextualMessage = "Welcome to your Vision Board. Would you like to add a new vision, or explore how your current visions align with who you are?";
+      } else if (target === 'primary-aim') {
+        contextualMessage = "This is where we synthesize everything into your Primary Aim. Would you like me to help you craft it, or review what you've discovered so far?";
+      } else {
+        contextualMessage = `Here we are at your ${destination}. How can I help you here?`;
+      }
+      
+      return contextualMessage;
     
     case 'create':
       if (target === 'journal-entry') {

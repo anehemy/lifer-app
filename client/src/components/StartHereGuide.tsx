@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { BookOpen, X, Sparkles, Brain, Target, User, BookMarked } from "lucide-react";
-import { useState, useEffect } from "react";
+import { BookOpen, X, Sparkles, Brain, Target, User, BookMarked, Play, Pause, RotateCcw } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -11,6 +11,8 @@ export default function StartHereGuide() {
   const { user } = useAuth();
   const [showGuide, setShowGuide] = useState(false);
   const hasSeenGuide = user?.hasSeenWelcome || false;
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   const markWelcomeSeen = trpc.user.markWelcomeSeen.useMutation();
 
@@ -58,11 +60,48 @@ export default function StartHereGuide() {
 
           <div className="space-y-6 py-4">
             <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-purple-200">
-              <CardContent className="pt-6">
+              <CardContent className="pt-6 space-y-4">
                 <p className="text-lg leading-relaxed">
                   Hi, I'm <strong>{MR_MG_NAME}</strong> — the AI avatar of <strong>Michael E. Gerber</strong>, author of The E-Myth and our business partner. 
                   I'm here to help you answer two fundamental questions: <strong>Who am I?</strong> and <strong>What do I want?</strong> Together, these answers form your <strong>Primary Aim</strong>.
                 </p>
+                
+                {/* Audio Player */}
+                <div className="flex items-center gap-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                  <audio 
+                    ref={audioRef} 
+                    src="/mr-mg-intro.wav"
+                    onPlay={() => setIsPlaying(true)}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => setIsPlaying(false)}
+                  />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      if (isPlaying) {
+                        audioRef.current?.pause();
+                      } else {
+                        audioRef.current?.play();
+                      }
+                    }}
+                  >
+                    {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (audioRef.current) {
+                        audioRef.current.currentTime = 0;
+                        audioRef.current.play();
+                      }
+                    }}
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">Listen to Mr. MG's introduction</span>
+                </div>
               </CardContent>
             </Card>
 
