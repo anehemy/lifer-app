@@ -112,3 +112,13 @@
 - [x] Remove voice ID input from Settings page
 - [x] Add VITE_MR_MG_VOICE_ID to secrets configuration
 
+
+
+## Bugs
+- [x] VITE_MR_MG_VOICE_ID not being read correctly from environment - using wrong voice (fixed: updated fallback to match user's voice ID)
+
+
+
+## Bugs
+- [x] Voice input duplicating text (capturing both interim and final results) - fixed by separating final and interim transcripts
+

@@ -3,12 +3,12 @@ import { trpc } from '@/lib/trpc';
 
 export function useVoiceChat() {
   const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
   const recognitionRef = useRef<any>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const finalTranscriptRef = useRef('');
 
   useEffect(() => {
     // Initialize Web Speech API
@@ -24,24 +24,24 @@ export function useVoiceChat() {
 
         recognitionRef.current.onresult = (event: any) => {
           let interimTranscript = '';
-          let finalTranscript = '';
+          let newFinalTranscript = '';
 
           for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal) {
-              finalTranscript += transcript + ' ';
+              newFinalTranscript += transcript + ' ';
             } else {
               interimTranscript += transcript;
             }
           }
 
-          // Update with interim results while speaking, or final when pausing
-          setTranscript((prev) => {
-            if (finalTranscript) {
-              return (prev + ' ' + finalTranscript).trim();
-            }
-            return interimTranscript;
-          });
+          // Append final results to our accumulated final transcript
+          if (newFinalTranscript) {
+            finalTranscriptRef.current = (finalTranscriptRef.current + ' ' + newFinalTranscript).trim();
+          }
+
+          // Display: accumulated final + current interim
+          setTranscript((finalTranscriptRef.current + ' ' + interimTranscript).trim());
         };
 
         recognitionRef.current.onerror = (event: any) => {
@@ -68,6 +68,7 @@ export function useVoiceChat() {
   const startListening = () => {
     if (recognitionRef.current && !isListening) {
       setTranscript('');
+      finalTranscriptRef.current = '';
       setError(null);
       recognitionRef.current.start();
       setIsListening(true);

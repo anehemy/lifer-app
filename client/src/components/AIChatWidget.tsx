@@ -92,7 +92,7 @@ export default function AIChatWidget() {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage.role === 'assistant' && !isSpeaking) {
         // Use Mr. MG voice ID from environment variable
-        const voiceId = import.meta.env.VITE_MR_MG_VOICE_ID || 'VQypEoV1u8Wo9oGgDmW0';
+        const voiceId = import.meta.env.VITE_MR_MG_VOICE_ID || '0QOtNhDO4bFWGkFLco6Y';
         speak(lastMessage.content, voiceId);
       }
     }
