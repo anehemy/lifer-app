@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { trpc } from '@/lib/trpc';
 
 export function useVoiceChat() {
@@ -110,7 +110,7 @@ export function useVoiceChat() {
 
   const generateSpeech = trpc.textToSpeech.generate.useMutation();
 
-  const speak = async (text: string, voiceId: string = 'rachel', provider?: "elevenlabs" | "google" | "browser") => {
+  const speak = useCallback(async (text: string, voiceId: string = 'rachel', provider?: "elevenlabs" | "google" | "browser") => {
     try {
       setIsSpeaking(true);
       
@@ -157,14 +157,19 @@ export function useVoiceChat() {
       setError('Failed to generate speech');
       setIsSpeaking(false);
     }
-  };
+  }, [generateSpeech]);
 
   const stopSpeaking = () => {
+    // Stop audio URL playback
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
-      setIsSpeaking(false);
     }
+    // Stop browser TTS
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setIsSpeaking(false);
   };
 
   return {

@@ -242,3 +242,10 @@
 ## Bugs
 - [x] Fix "No audio URL returned" error when Browser TTS is selected - added browser-based speech synthesis fallback
 
+
+
+## Critical Audio Bugs
+- [x] Fix audio looping - messages playing repeatedly (wrapped speak in useCallback to stabilize reference)
+- [x] Fix mute button - now stops both audio URL playback and browser TTS (speechSynthesis.cancel)
+- [ ] Add Google Cloud TTS API key to environment variables documentation
+
