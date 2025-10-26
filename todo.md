@@ -18,6 +18,7 @@
 ## In Progress
 
 ## Recently Completed
+- [x] Refine Mr. MG's proactive messages to ask insightful questions based on latest journal entry
 - [x] Transform AI chat widget into Mr. MG-only interface
 - [x] Add proactive greeting for returning users based on their progress
 - [x] Make Mr. MG suggest next actions contextually

@@ -68,6 +68,66 @@ export const appRouter = router({
       const { getUserJournalEntries } = await import("./db");
       return getUserJournalEntries(ctx.user.id);
     }),
+    getLatestEntry: protectedProcedure.query(async ({ ctx }) => {
+      const db = await import('./db').then(m => m.getDb());
+      if (!db) return null;
+      
+      const { journalEntries } = await import('../drizzle/schema');
+      const { eq, desc } = await import('drizzle-orm');
+      
+      const entries = await db.select()
+        .from(journalEntries)
+        .where(eq(journalEntries.userId, ctx.user.id))
+        .orderBy(desc(journalEntries.createdAt))
+        .limit(1);
+      
+      return entries[0] || null;
+    }),
+    generateInsightfulQuestion: protectedProcedure
+      .input(z.object({ entryId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const db = await import('./db').then(m => m.getDb());
+        if (!db) return "What would you like to explore today?";
+        
+        const { journalEntries } = await import('../drizzle/schema');
+        const { eq, and } = await import('drizzle-orm');
+        const { invokeLLM } = await import("./_core/llm");
+        
+        const [entry] = await db.select()
+          .from(journalEntries)
+          .where(and(
+            eq(journalEntries.id, input.entryId),
+            eq(journalEntries.userId, ctx.user.id)
+          ));
+        
+        if (!entry) return "What would you like to explore today?";
+        
+        // Generate insightful question based on the entry
+        const prompt = `You are Mr. MG, a wise life mentor inspired by E-Myth principles. A user just shared this journal entry:
+
+Question: ${entry.question}
+Response: ${entry.response}
+
+Generate ONE thoughtful, personalized follow-up question (2-3 sentences max) that:
+1. Acknowledges something specific from their response
+2. Encourages deeper reflection on how this experience connects to their values or purpose
+3. Feels warm, insightful, and genuinely curious
+
+Do NOT summarize their progress. Focus on THIS specific entry and ask a question that helps them discover more about themselves.
+
+Return ONLY the question, nothing else.`;
+        
+        try {
+          const result = await invokeLLM({
+            messages: [{ role: "user", content: prompt }],
+          });
+          const question = result.choices[0]?.message?.content;
+          return typeof question === 'string' ? question.trim() : "What would you like to explore today?";
+        } catch (e) {
+          console.error('Failed to generate insightful question:', e);
+          return "What would you like to explore today?";
+        }
+      }),
     getStats: protectedProcedure.query(async ({ ctx }) => {
       const db = await import('./db').then(m => m.getDb());
       if (!db) return { journalEntries: 0, meditations: 0, visionItems: 0, patterns: 0 };

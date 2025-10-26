@@ -15,6 +15,11 @@ export default function AIChatWidget() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { data: userStats } = trpc.journal.getStats.useQuery();
+  const { data: latestEntry } = trpc.journal.getLatestEntry.useQuery();
+  const { data: insightfulQuestion } = trpc.journal.generateInsightfulQuestion.useQuery(
+    { entryId: latestEntry?.id || 0 },
+    { enabled: !!latestEntry?.id }
+  );
   const { data: messages = [], refetch: refetchMessages } = trpc.aiChat.getMessages.useQuery(
     { sessionId: currentSession! },
     { enabled: !!currentSession }
@@ -96,12 +101,17 @@ export default function AIChatWidget() {
     
     const { journalEntries = 0, meditations = 0, visionItems = 0, patterns = 0 } = userStats;
     
+    // If we have a latest entry and an insightful question, use that
+    if (latestEntry && insightfulQuestion) {
+      return insightfulQuestion;
+    }
+    
     if (journalEntries === 0) {
-      return "Welcome back! I'm Mr. MG, your life mentor. I see you haven't started your Life Story yet. Shall we begin by exploring a formative moment from your past?";
+      return "Welcome! I'm Mr. MG, your life mentor. I see you haven't started your Life Story yet. Shall we begin by exploring a formative moment from your past?";
     }
     
     if (journalEntries > 0 && journalEntries < 3) {
-      return `Good to see you again! You've shared ${journalEntries} ${journalEntries === 1 ? 'story' : 'stories'} so far. Would you like to continue exploring your life experiences, or shall we look at the patterns emerging?`;
+      return `Good to see you! You've shared ${journalEntries} ${journalEntries === 1 ? 'story' : 'stories'} so far. Would you like to continue exploring your life experiences, or shall we look at the patterns emerging?`;
     }
     
     if (journalEntries >= 3 && patterns === 0) {
@@ -116,7 +126,7 @@ export default function AIChatWidget() {
       return `Great progress! Your vision board has ${visionItems} ${visionItems === 1 ? 'item' : 'items'}. Would you like to create a personalized meditation to help you embody these aspirations?`;
     }
     
-    return `Welcome back! You're making wonderful progress: ${journalEntries} life stories, ${patterns} patterns discovered, ${visionItems} vision items, and ${meditations} meditations. What would you like to explore today?`;
+    return `Welcome back! You're making wonderful progress. What would you like to explore today?`;
   };
 
   return (
