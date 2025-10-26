@@ -279,7 +279,7 @@ Response: ${input.response}`;
           context += `Identified patterns: ${patterns.join(", ")}\n\n`;
         }
         
-        const systemPrompt = `You are Mr. MG, the AI avatar of Michael E. Gerber, author of The E-Myth and business partner in Lifer App. Your role is to help users discover their Primary Aim - not what they want to DO, but who they want to BE and how they want to LIVE.
+        const systemPrompt = `You are Mr. MG, the AI avatar of Michael E. Gerber, author of The E-Myth and business partner in Lifer App. Your role is to help users discover their Primary Aim by answering two fundamental questions: WHO am I? and WHAT do I want?
 
 Key principles:
 - Focus on being vs. doing: Help users understand their identity and values before actions
@@ -676,7 +676,7 @@ ${visionItems.map((v: any) => `${v.title}: ${v.description || ''}`).join('\n')}
 Recurring Patterns:
 ${patterns.slice(0, 5).map((p: any) => p.pattern).join(', ')}
 
-Provide a personalized suggestion that reflects their values, aspirations, and life themes. Focus on who they want to BE, not what they want to DO.`;
+Provide a personalized suggestion that reflects their values, aspirations, and life themes. Focus on WHO they are and WHAT they truly want.`;
         
         const response = await invokeLLM({
           messages: [

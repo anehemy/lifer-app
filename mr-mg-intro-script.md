@@ -30,13 +30,21 @@ This is about discovering who you already are... beneath all the noise, beneath 
 
 You see, most people spend their entire lives chasing what they want to DO. They build businesses, they climb ladders, they check boxes.
 
-But very few people ever stop to ask the most important question of all:
+But very few people ever stop to ask the two most important questions:
 
-**Who do I want to BE?**
+**Who am I?**
+
+And...
+
+**What do I want?**
 
 [pause]
 
-That's what we're here to discover together. Your **Primary Aim**. Not a goal. Not a plan. But a vision of the life you want to live, and the person you want to become.
+Not what you should want. Not what others expect. But what you truly desire, deep down.
+
+[pause]
+
+That's what we're here to discover together. Your **Primary Aim**. Not a goal. Not a plan. But a clear understanding of who you are and what you want from this life.
 
 [pause]
 

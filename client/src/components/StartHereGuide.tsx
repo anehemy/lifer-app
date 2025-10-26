@@ -61,7 +61,7 @@ export default function StartHereGuide() {
               <CardContent className="pt-6">
                 <p className="text-lg leading-relaxed">
                   Hi, I'm <strong>{MR_MG_NAME}</strong> — the AI avatar of <strong>Michael E. Gerber</strong>, author of The E-Myth and our business partner. 
-                  I'm here to help you discover your <strong>Primary Aim</strong> - not what you want to DO, but who you want to BE and how you want to LIVE.
+                  I'm here to help you answer two fundamental questions: <strong>Who am I?</strong> and <strong>What do I want?</strong> Together, these answers form your <strong>Primary Aim</strong>.
                 </p>
               </CardContent>
             </Card>

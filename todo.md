@@ -18,6 +18,7 @@
 ## In Progress
 
 ## Recently Completed
+- [x] Update core questions to "Who am I?" and "What do I want?"
 - [x] Rebrand Mr. MG as the AI Avatar of Michael E. Gerber
 - [x] Fix welcome dialog to show for new users on first login (now uses database instead of localStorage)
 - [x] Create Mr. MG audio introduction script for first-time users

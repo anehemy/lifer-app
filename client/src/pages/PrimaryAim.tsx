@@ -179,7 +179,7 @@ export default function PrimaryAim() {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
-            Based on your reflections above, this is your synthesized Primary Aim—who you want to BE and how you want to LIVE.
+            Based on your reflections above, this is your synthesized Primary Aim—answering WHO you are and WHAT you want.
           </p>
         </CardHeader>
         <CardContent>
