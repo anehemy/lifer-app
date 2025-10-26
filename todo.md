@@ -128,3 +128,12 @@
 - [x] Voice chat using wrong voice (woman's voice instead of Mr. MG custom voice) - fixed by hardcoding voice ID
 - [x] Voice chat audio looping infinitely - draining ElevenLabs tokens - fixed by tracking last spoken message
 
+
+
+## CRITICAL Bugs
+- [x] Voice chat STILL using woman's voice despite hardcoded voice ID - fixed regex to handle voice IDs starting with numbers
+
+## New Features
+- [x] Add Mr. MG system prompt editor in Settings (admin only)
+- [x] Allow editing of chat instructions without code changes
+

@@ -22,9 +22,9 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
   // Option 1: ElevenLabs (highest quality, most natural)
   if (process.env.ELEVENLABS_API_KEY) {
     try {
-      // If voiceId looks like an ElevenLabs ID (starts with uppercase), use it directly
+      // If voiceId looks like an ElevenLabs ID (starts with uppercase or number), use it directly
       // Otherwise, map it from our voice options
-      const elevenLabsVoiceId = /^[A-Z]/.test(voiceId) ? voiceId : getElevenLabsVoiceId(voiceId);
+      const elevenLabsVoiceId = /^[A-Z0-9]/.test(voiceId) ? voiceId : getElevenLabsVoiceId(voiceId);
       
       const response = await fetch(
         `https://api.elevenlabs.io/v1/text-to-speech/${elevenLabsVoiceId}`,

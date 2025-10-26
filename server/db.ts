@@ -280,6 +280,15 @@ export async function getAgentById(agentId: number) {
   return result.length > 0 ? result[0] : null;
 }
 
+export async function updateAgentSystemPrompt(agentId: number, systemPrompt: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(aiAgents)
+    .set({ systemPrompt })
+    .where(eq(aiAgents.id, agentId));
+  return true;
+}
+
 export async function createChatSession(userId: number, agentId: number, title?: string, context?: any) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

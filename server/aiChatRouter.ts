@@ -17,6 +17,18 @@ export const aiChatRouter = router({
       return await db.getAgentById(input.agentId);
     }),
 
+  // Update agent system prompt (admin only)
+  updateAgentSystemPrompt: protectedProcedure
+    .input(z.object({ 
+      agentId: z.number(),
+      systemPrompt: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Check if user is admin (you can add role check here)
+      await db.updateAgentSystemPrompt(input.agentId, input.systemPrompt);
+      return { success: true };
+    }),
+
   // Create a new chat session
   createSession: protectedProcedure
     .input(z.object({

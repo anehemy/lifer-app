@@ -1,16 +1,40 @@
-import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { trpc } from "@/lib/trpc";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function Settings() {
   const { user } = useAuth();
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
+  const [mrMgPrompt, setMrMgPrompt] = useState("");
+  
+  // Get Mr. MG agent (ID 1)
+  const { data: mrMgAgent } = trpc.aiChat.getAgent.useQuery({ agentId: 1 });
+  const updatePromptMutation = trpc.aiChat.updateAgentSystemPrompt.useMutation();
+  
+  useEffect(() => {
+    if (mrMgAgent?.systemPrompt) {
+      setMrMgPrompt(mrMgAgent.systemPrompt);
+    }
+  }, [mrMgAgent]);
+  
+  const handleSavePrompt = async () => {
+    try {
+      await updatePromptMutation.mutateAsync({
+        agentId: 1,
+        systemPrompt: mrMgPrompt,
+      });
+      toast.success("Mr. MG instructions updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update instructions");
+    }
+  };
 
   
   return (
@@ -49,6 +73,33 @@ export default function Settings() {
             <Label>Role</Label>
             <Input value={user?.role || "user"} disabled />
           </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Mr. MG Instructions (Admin)</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="mrMgPrompt">System Prompt</Label>
+            <Textarea
+              id="mrMgPrompt"
+              value={mrMgPrompt}
+              onChange={(e) => setMrMgPrompt(e.target.value)}
+              placeholder="Enter Mr. MG's system instructions..."
+              className="min-h-[300px] font-mono text-sm"
+            />
+            <p className="text-sm text-muted-foreground mt-2">
+              Customize how Mr. MG responds and behaves. Changes take effect immediately for new conversations.
+            </p>
+          </div>
+          <Button 
+            onClick={handleSavePrompt}
+            disabled={updatePromptMutation.isPending}
+          >
+            {updatePromptMutation.isPending ? "Saving..." : "Save Instructions"}
+          </Button>
         </CardContent>
       </Card>
       
