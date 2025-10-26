@@ -258,3 +258,12 @@
 - [ ] Test voice input/output on mobile Safari and Chrome
 - [ ] Improve responsive design for all pages on mobile devices
 
+
+
+## Voice Provider UX Issues
+- [x] Add validation to check if API keys exist before allowing provider selection (tests on change)
+- [x] Show warning message when selected provider's API key is missing (toast + status box)
+- [x] Display actual active provider vs selected provider (status box shows "API key missing or invalid. Falling back to Browser TTS")
+- [ ] Disable/gray out providers that don't have API keys configured (shows warning instead)
+- [x] Add "Test Voice" button to verify provider is working (automatic test on provider change)
+

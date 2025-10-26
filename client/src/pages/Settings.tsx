@@ -15,6 +15,7 @@ export default function Settings() {
   const [email, setEmail] = useState(user?.email || "");
   const [mrMgPrompt, setMrMgPrompt] = useState("");
   const [voiceProvider, setVoiceProvider] = useState(localStorage.getItem("voiceProvider") || "elevenlabs");
+  const [providerStatus, setProviderStatus] = useState<{provider: string, available: boolean, message: string} | null>(null);
   
   // Get Mr. MG agent (ID 1)
   const { data: mrMgAgent } = trpc.aiChat.getAgent.useQuery({ agentId: 1 });
@@ -112,10 +113,54 @@ export default function Settings() {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="voiceProvider">Voice Provider</Label>
-            <Select value={voiceProvider} onValueChange={(value) => {
+            <Select value={voiceProvider} onValueChange={async (value) => {
               setVoiceProvider(value);
               localStorage.setItem("voiceProvider", value);
-              toast.success("Voice provider updated!");
+              
+              // Test the provider by making a test call
+              try {
+                const testResult = await fetch('/api/trpc/textToSpeech.generate', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    text: "Test",
+                    provider: value,
+                  }),
+                });
+                
+                if (value === "browser") {
+                  setProviderStatus({
+                    provider: value,
+                    available: true,
+                    message: "Browser TTS is always available (free, no API key needed)"
+                  });
+                  toast.success("Voice provider updated to Browser TTS!");
+                } else {
+                  const data = await testResult.json();
+                  if (data.result?.data?.audioUrl || testResult.ok) {
+                    setProviderStatus({
+                      provider: value,
+                      available: true,
+                      message: `${value === 'elevenlabs' ? 'ElevenLabs' : 'Google Cloud TTS'} is configured and working`
+                    });
+                    toast.success("Voice provider updated!");
+                  } else {
+                    setProviderStatus({
+                      provider: value,
+                      available: false,
+                      message: `API key missing or invalid. Falling back to Browser TTS. Add ${value === 'elevenlabs' ? 'ELEVENLABS_API_KEY' : 'GOOGLE_CLOUD_TTS_API_KEY'} in Manus Settings → Secrets.`
+                    });
+                    toast.warning(`${value === 'elevenlabs' ? 'ElevenLabs' : 'Google Cloud TTS'} API key not configured. Using Browser TTS instead.`);
+                  }
+                }
+              } catch (error) {
+                setProviderStatus({
+                  provider: value,
+                  available: false,
+                  message: `Failed to verify provider. Falling back to Browser TTS.`
+                });
+                toast.warning("Could not verify provider. Using Browser TTS.");
+              }
             }}>
               <SelectTrigger id="voiceProvider">
                 <SelectValue />
@@ -129,6 +174,18 @@ export default function Settings() {
             <p className="text-sm text-muted-foreground mt-2">
               Choose the text-to-speech provider for Mr. MG's voice and meditation audio. Changes take effect immediately.
             </p>
+            {providerStatus && (
+              <div className={`mt-3 p-3 rounded-md border ${
+                providerStatus.available 
+                  ? 'bg-green-50 border-green-200 text-green-800' 
+                  : 'bg-yellow-50 border-yellow-200 text-yellow-800'
+              }`}>
+                <p className="text-sm font-medium">
+                  {providerStatus.available ? '✓ ' : '⚠ '}
+                  {providerStatus.message}
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
