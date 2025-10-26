@@ -13,22 +13,24 @@ export async function detectIntent(userMessage: string, userId: number): Promise
 Available actions:
 1. NAVIGATE - Go to a page (dashboard, life-story, patterns, vision-board, meditation, primary-aim)
 2. CREATE - Create new content (journal-entry, vision-item, meditation)
-3. QUERY - Get information (show entries, list meditations, view patterns)
-4. CHAT - Just have a conversation (no specific action needed)
+3. DELETE - Delete content (journal-entry, vision-item, meditation)
+4. QUERY - Get information (show entries, list meditations, view patterns)
+5. CHAT - Just have a conversation (no specific action needed)
 
 User message: "${userMessage}"
 
 Return ONLY a JSON object with this structure:
 {
-  "type": "navigate|create|query|chat",
+  "type": "navigate|create|delete|query|chat",
   "target": "page-name or resource-type (if applicable)",
-  "data": {any extracted data for create operations},
+  "data": {any extracted data including id for delete operations},
   "intent": "brief description of what user wants"
 }
 
 Examples:
 - "Take me to my life story" → {"type": "navigate", "target": "life-story", "intent": "navigate to journal"}
 - "Create a journal entry about my childhood" → {"type": "create", "target": "journal-entry", "data": {"topic": "childhood"}, "intent": "create journal entry"}
+- "Delete my last journal entry" → {"type": "delete", "target": "journal-entry", "data": {"which": "last"}, "intent": "delete most recent entry"}
 - "Show me my patterns" → {"type": "navigate", "target": "patterns", "intent": "view patterns"}
 - "What should I do next?" → {"type": "chat", "intent": "seeking guidance"}`;
 
@@ -98,6 +100,18 @@ async function generateResponse(intent: any, userMessage: string): Promise<strin
       }
       return `I'll help you create that.`;
     
+    case 'delete':
+      if (target === 'journal-entry') {
+        return `I can help you delete that journal entry. Just to confirm - which entry would you like me to remove?`;
+      }
+      if (target === 'vision-item') {
+        return `I can help you remove that from your vision board. Which item would you like to delete?`;
+      }
+      if (target === 'meditation') {
+        return `I can delete that meditation session. Which one would you like me to remove?`;
+      }
+      return `I can help you delete that. Can you be more specific about what you'd like to remove?`;
+    
     case 'query':
       return `Let me show you that information.`;
     
@@ -108,7 +122,19 @@ async function generateResponse(intent: any, userMessage: string): Promise<strin
           messages: [
             { 
               role: "system", 
-              content: "You are Mr. MG, the AI avatar of Michael E. Gerber, author of The E-Myth and business partner in Lifer App. Respond warmly and insightfully to help users discover their Primary Aim." 
+              content: `You are Mr. MG, the AI avatar of Michael E. Gerber, author of The E-Myth and business partner in Lifer App.
+
+Your role: Guide users to discover their Primary Aim through thoughtful questions and reflection.
+
+Communication style:
+- Be warm, direct, and conversational (2-3 sentences max)
+- Ask ONE specific question at a time
+- Focus on WHO they are and WHAT they truly want
+- Avoid philosophical tangents - stay action-oriented
+- Connect insights to their actual life experiences
+- When appropriate, suggest concrete next steps
+
+Remember: You're a guide, not a lecturer. Listen more than you speak.` 
             },
             { role: "user", content: userMessage }
           ],

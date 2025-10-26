@@ -2,10 +2,11 @@ import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Send, Loader2, X } from "lucide-react";
+import { Send, Loader2, X, Mic, Volume2, VolumeX } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { MR_MG_AVATAR, MR_MG_NAME, MR_MG_TITLE } from "@/const";
+import { useVoiceChat } from "@/hooks/useVoiceChat";
 
 
 export default function AIChatWidget() {
@@ -13,7 +14,9 @@ export default function AIChatWidget() {
   const [currentSession, setCurrentSession] = useState<number | null>(null);
   const [message, setMessage] = useState("");
   const [hasGreeted, setHasGreeted] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { isListening, isSpeaking, error: voiceError, startListening, stopListening, speak, stopSpeaking } = useVoiceChat();
 
   const { data: userStats } = trpc.journal.getStats.useQuery();
   const { data: latestEntry } = trpc.journal.getLatestEntry.useQuery();
@@ -83,6 +86,24 @@ export default function AIChatWidget() {
     },
   });
 
+  // Speak Mr. MG's responses when voice is enabled
+  useEffect(() => {
+    if (voiceEnabled && messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage.role === 'assistant' && !isSpeaking) {
+        speak(lastMessage.content, 'rachel');
+      }
+    }
+  }, [messages, voiceEnabled]);
+
+  // Update message when transcript changes
+  const { transcript } = useVoiceChat();
+  useEffect(() => {
+    if (transcript && !isListening) {
+      setMessage(transcript);
+    }
+  }, [transcript, isListening]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -123,6 +144,21 @@ export default function AIChatWidget() {
       sessionId: currentSession,
       message: message.trim(),
     });
+  };
+
+  const handleVoiceInput = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
+  const toggleVoice = () => {
+    if (voiceEnabled) {
+      stopSpeaking();
+    }
+    setVoiceEnabled(!voiceEnabled);
   };
 
   const getContextualGreeting = () => {
@@ -243,6 +279,25 @@ export default function AIChatWidget() {
 
             {/* Message Input */}
             <div className="p-4 border-t flex-shrink-0 bg-gradient-to-r from-purple-50/30 to-pink-50/30">
+              <div className="flex gap-2 mb-2">
+                <Button
+                  onClick={handleVoiceInput}
+                  variant={isListening ? "default" : "outline"}
+                  size="icon"
+                  className={isListening ? "bg-red-500 hover:bg-red-600 animate-pulse" : ""}
+                  title={isListening ? "Stop recording" : "Start voice input"}
+                >
+                  <Mic className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={toggleVoice}
+                  variant="outline"
+                  size="icon"
+                  title={voiceEnabled ? "Disable voice responses" : "Enable voice responses"}
+                >
+                  {voiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                </Button>
+              </div>
               <div className="flex gap-2">
                 <Textarea
                   value={message}
@@ -255,7 +310,7 @@ export default function AIChatWidget() {
                   }}
                   placeholder="Share your thoughts with Mr. MG..."
                   className="min-h-[60px] resize-none"
-                  disabled={executeAction.isPending}
+                  disabled={executeAction.isPending || isListening}
                 />
                 <Button
                   onClick={handleSendMessage}
@@ -267,8 +322,11 @@ export default function AIChatWidget() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
-                Press Enter to send, Shift+Enter for new line
+                {isListening ? "Listening... speak now" : "Press Enter to send, Shift+Enter for new line"}
               </p>
+              {voiceError && (
+                <p className="text-xs text-red-500 mt-1">{voiceError}</p>
+              )}
             </div>
           </CardContent>
         </Card>

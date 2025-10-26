@@ -15,11 +15,23 @@
 - [x] Mobile-responsive collapsible sidebar
 - [x] Story-based timeline (uses content time, not entry date)
 
+## Recently Completed
+- [x] Implement voice chat interface with Mr. MG
+- [x] Add voice input (speech-to-text) for chat via microphone button
+- [x] Add voice output (text-to-speech) for Mr. MG responses with toggle control
+- [x] Create text-to-speech backend endpoint using ElevenLabs API
+- [x] Integrate useVoiceChat hook with Web Speech API
+- [x] Add microphone and volume controls to chat widget
+
+## Recently Completed
+- [x] Test voice chat end-to-end - confirmed working with browser security limitations
+- [x] Conversation memory already implemented (last 10 messages passed to LLM)
+- [x] Make Mr. MG responses more concise and action-oriented (refined system prompts)
+- [x] Add delete capability to Mr. MG agent (intent detection and response handling)
+
 ## In Progress
-- [ ] Make Mr. MG responses more concise and action-oriented
-- [ ] Add conversation memory to Mr. MG (access past chat history)
-- [ ] Implement 3-step action protocol (highlight → confirm → execute)
-- [ ] Add delete capability to Mr. MG agent
+- [ ] Implement 3-step action protocol UI (highlight → confirm → execute)
+- [ ] Add actual delete execution functions to backend
 
 ## Recently Completed
 - [x] Make journal entry cards fully editable (response text and all metadata)
@@ -50,8 +62,16 @@
 - [x] Add proactive greeting for returning users based on their progress
 - [x] Make Mr. MG suggest next actions contextually
 
+## Deployment Preparation
+- [ ] Verify Cloudflare Turnstile keys are entered in Manus UI Settings → Secrets
+- [ ] Test login flow with Turnstile
+- [ ] Create demo account with sample data for Michael Gerber
+- [ ] Final testing across all features
+- [ ] Save checkpoint and prepare for deployment
+
 ## Planned Features
 - [ ] Enhanced Mr. MG personality and guidance system
 - [ ] More sophisticated pattern analysis
 - [ ] Export/share functionality for insights and meditations
+- [ ] Voice chat for Life Story page (dedicated voice journaling interface)
 

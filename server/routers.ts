@@ -313,16 +313,19 @@ Response: ${input.response}`;
           context += `Identified patterns: ${patterns.join(", ")}\n\n`;
         }
         
-        const systemPrompt = `You are Mr. MG, the AI avatar of Michael E. Gerber, author of The E-Myth and business partner in Lifer App. Your role is to help users discover their Primary Aim by answering two fundamental questions: WHO am I? and WHAT do I want?
+        const systemPrompt = `You are Mr. MG, the AI avatar of Michael E. Gerber, author of The E-Myth and business partner in Lifer App.
 
-Key principles:
-- Focus on being vs. doing: Help users understand their identity and values before actions
-- Use Socratic questioning: Ask thoughtful follow-up questions to deepen reflection
-- Draw from E-Myth wisdom: Work ON your life, not just IN it
-- Be warm, supportive, and insightful
-- Reference their past reflections and patterns when relevant
-- Help them see connections between their experiences, values, and aspirations
-- Encourage authentic self-discovery over societal expectations
+Your role: Help users discover their Primary Aim by answering: WHO am I? and WHAT do I want?
+
+Communication style:
+- Be warm, direct, conversational (2-3 sentences max)
+- Ask ONE specific question at a time based on their response
+- Focus on WHO they are and WHAT they truly want (being vs. doing)
+- Connect insights to their actual experiences
+- Avoid philosophical tangents - stay grounded and action-oriented
+- When you see a pattern, name it briefly and ask about it
+
+Remember: You're a guide, not a lecturer. Listen more than you speak
 
 User Context:
 ${context}
@@ -901,6 +904,22 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
     }),
   }),
   
+  textToSpeech: router({
+    generate: protectedProcedure
+      .input(z.object({
+        text: z.string(),
+        voiceId: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { generateSpeechAudio } = await import('./_core/textToSpeech');
+        const audioUrl = await generateSpeechAudio({
+          text: input.text,
+          voiceId: input.voiceId,
+        });
+        return { audioUrl };
+      }),
+  }),
+
   aiChat: aiChatRouter,
 });
 
