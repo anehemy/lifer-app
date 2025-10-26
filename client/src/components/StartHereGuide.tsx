@@ -12,6 +12,7 @@ export default function StartHereGuide() {
   const [showGuide, setShowGuide] = useState(false);
   const hasSeenGuide = user?.hasSeenWelcome || false;
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const markWelcomeSeen = trpc.user.markWelcomeSeen.useMutation();
@@ -67,40 +68,65 @@ export default function StartHereGuide() {
                 </p>
                 
                 {/* Audio Player */}
-                <div className="flex items-center gap-3 p-4 bg-white/50 dark:bg-gray-800/50 rounded-lg">
+                <div className="p-4 bg-gradient-to-r from-purple-100 via-pink-100 to-blue-100 dark:from-purple-900/30 dark:via-pink-900/30 dark:to-blue-900/30 rounded-lg border-2 border-purple-300 dark:border-purple-700">
                   <audio 
                     ref={audioRef} 
                     src="/mr-mg-intro.wav"
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onEnded={() => setIsPlaying(false)}
-                  />
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => {
-                      if (isPlaying) {
-                        audioRef.current?.pause();
-                      } else {
-                        audioRef.current?.play();
-                      }
-                    }}
-                  >
-                    {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
+                    onLoadedMetadata={() => {
                       if (audioRef.current) {
-                        audioRef.current.currentTime = 0;
-                        audioRef.current.play();
+                        audioRef.current.playbackRate = playbackSpeed;
                       }
                     }}
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm text-muted-foreground">Listen to Mr. MG's introduction</span>
+                  />
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="bg-white/80 hover:bg-white dark:bg-gray-800/80 dark:hover:bg-gray-800"
+                      onClick={() => {
+                        if (isPlaying) {
+                          audioRef.current?.pause();
+                        } else {
+                          audioRef.current?.play();
+                        }
+                      }}
+                    >
+                      {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="hover:bg-white/50 dark:hover:bg-gray-800/50"
+                      onClick={() => {
+                        if (audioRef.current) {
+                          audioRef.current.currentTime = 0;
+                          audioRef.current.play();
+                        }
+                      }}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                    <span className="text-sm font-medium flex-1">Listen to Mr. MG's introduction</span>
+                    <select
+                      value={playbackSpeed}
+                      onChange={(e) => {
+                        const speed = parseFloat(e.target.value);
+                        setPlaybackSpeed(speed);
+                        if (audioRef.current) {
+                          audioRef.current.playbackRate = speed;
+                        }
+                      }}
+                      className="px-3 py-1 text-sm rounded-md border border-purple-300 bg-white/80 dark:bg-gray-800/80 dark:border-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                      <option value="0.75">0.75x</option>
+                      <option value="1">1x</option>
+                      <option value="1.25">1.25x</option>
+                      <option value="1.5">1.5x</option>
+                    </select>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -18,6 +18,10 @@
 ## In Progress
 
 ## Recently Completed
+- [x] Make audio player more colorful with gradient styling
+- [x] Add playback speed options (0.75x, 1x, 1.25x, 1.5x) to audio player
+
+## Recently Completed
 - [x] Add Mr. MG voice intro audio to Start Here Guide with play/pause/replay controls
 - [x] Fix Mr. MG post-navigation messages to be contextual and conversational
 
