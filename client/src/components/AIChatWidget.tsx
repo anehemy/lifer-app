@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 
+
 export default function AIChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [currentSession, setCurrentSession] = useState<number | null>(null);
@@ -28,6 +29,47 @@ export default function AIChatWidget() {
   const createSession = trpc.aiChat.createSession.useMutation({
     onSuccess: (data) => {
       setCurrentSession(data.sessionId);
+    },
+  });
+
+  const executeAction = trpc.aiChat.executeAction.useMutation({
+    onSuccess: (action) => {
+      refetchMessages();
+      setMessage("");
+      
+      // Handle navigation actions
+      if (action.type === 'navigate') {
+        const routeMap: Record<string, string> = {
+          'dashboard': '/',
+          'life-story': '/journal',
+          'journal': '/journal',
+          'patterns': '/patterns',
+          'vision-board': '/vision',
+          'meditation': '/meditation',
+          'primary-aim': '/primary-aim',
+        };
+        
+        const route = routeMap[action.target || ''];
+        if (route) {
+          setTimeout(() => {
+            window.location.href = route;
+          }, 500);
+        }
+      }
+      
+      // Handle create actions
+      if (action.type === 'create') {
+        if (action.target === 'journal-entry') {
+          window.location.href = '/journal';
+        } else if (action.target === 'meditation') {
+          window.location.href = '/meditation';
+        } else if (action.target === 'vision-item') {
+          window.location.href = '/vision';
+        }
+      }
+    },
+    onError: (error) => {
+      toast.error("Failed to process request: " + error.message);
     },
   });
 
@@ -74,26 +116,13 @@ export default function AIChatWidget() {
   };
 
   const handleSendMessage = () => {
-    if (!message.trim()) return;
+    if (!message.trim() || !currentSession) return;
     
-    if (!currentSession) {
-      // Create session if it doesn't exist
-      initializeMrMgSession();
-      // Wait for session creation before sending
-      setTimeout(() => {
-        if (currentSession) {
-          sendMessage.mutate({
-            sessionId: currentSession,
-            message: message.trim(),
-          });
-        }
-      }, 500);
-    } else {
-      sendMessage.mutate({
-        sessionId: currentSession,
-        message: message.trim(),
-      });
-    }
+    // Use executeAction for Mr. MG agent
+    executeAction.mutate({
+      sessionId: currentSession,
+      message: message.trim(),
+    });
   };
 
   const getContextualGreeting = () => {
@@ -202,7 +231,7 @@ export default function AIChatWidget() {
                     </div>
                   </div>
                 ))}
-                {sendMessage.isPending && (
+                {executeAction.isPending && (
                   <div className="flex justify-start">
                     <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg p-3">
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -226,11 +255,11 @@ export default function AIChatWidget() {
                   }}
                   placeholder="Share your thoughts with Mr. MG..."
                   className="min-h-[60px] resize-none"
-                  disabled={sendMessage.isPending}
+                  disabled={executeAction.isPending}
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!message.trim() || sendMessage.isPending}
+                  disabled={!message.trim() || executeAction.isPending}
                   size="icon"
                   className="flex-shrink-0 bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >

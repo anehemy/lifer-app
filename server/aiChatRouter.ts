@@ -2,6 +2,7 @@ import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import * as db from "./db";
+import { detectIntent } from "./mrMgAgent";
 
 export const aiChatRouter = router({
   // Get all available AI agents
@@ -158,5 +159,30 @@ export const aiChatRouter = router({
       return {
         message: assistantMessage,
       };
+    }),
+
+  // Mr. MG Agent Actions
+  executeAction: protectedProcedure
+    .input(z.object({
+      sessionId: z.number(),
+      message: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      // Verify session belongs to user
+      const session = await db.getChatSession(input.sessionId, ctx.user.id);
+      if (!session) {
+        throw new Error("Session not found");
+      }
+
+      // Save user message
+      await db.addChatMessage(input.sessionId, "user", input.message);
+
+      // Detect intent and get action
+      const action = await detectIntent(input.message, ctx.user.id);
+
+      // Save assistant message
+      await db.addChatMessage(input.sessionId, "assistant", action.message);
+
+      return action;
     }),
 });

@@ -18,6 +18,12 @@
 ## In Progress
 
 ## Recently Completed
+- [x] Transform Mr. MG into AI Agent with navigation and action capabilities
+- [x] Add intent detection to understand user commands (navigate, create, update, delete)
+- [x] Implement action handlers for common tasks (journal entries, meditations, vision items)
+- [x] Enable Mr. MG to execute actions and provide feedback
+
+## Recently Completed
 - [x] Refine Mr. MG's proactive messages to ask insightful questions based on latest journal entry
 - [x] Transform AI chat widget into Mr. MG-only interface
 - [x] Add proactive greeting for returning users based on their progress
