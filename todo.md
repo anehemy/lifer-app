@@ -136,3 +136,11 @@
 - [x] Summary captures key insights, reflections, and action items from the conversation
 - [ ] Update Mr. MG's system prompt in Settings to include guidance about offering summaries
 
+
+
+## New Feature Request - Message Limit Notification
+- [x] Mr. MG should proactively notify user when approaching message limit (15-18 messages)
+- [x] Offer to save conversation summary before limit is reached
+- [x] Suggest starting a fresh conversation to continue the discussion
+- [x] Update Mr. MG's system prompt with this guidance (automatic at 15+ messages)
+

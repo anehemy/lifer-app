@@ -168,11 +168,17 @@ export const aiChatRouter = router({
         }
       }
 
+      // Check message count and add warning if approaching limit
+      const messageCount = messages.length;
+      const approachingLimit = messageCount >= 15;
+      
       // Build messages for LLM
       const llmMessages: any[] = [
         {
           role: "system",
-          content: agent.systemPrompt + (contextData ? "\n\nCurrent user data:" + contextData : ""),
+          content: agent.systemPrompt + 
+            (contextData ? "\n\nCurrent user data:" + contextData : "") +
+            (approachingLimit ? `\n\n⚠️ IMPORTANT: This conversation has ${messageCount} messages and is approaching the limit (20 messages). After your next response, proactively tell the user: "We've had a rich conversation with many insights. Would you like me to save a summary of our discussion to your journal? Then we can start a fresh conversation to continue exploring these ideas." Use the create_conversation_summary tool if they agree.` : ""),
         },
       ];
       
