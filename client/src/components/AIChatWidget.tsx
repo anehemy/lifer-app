@@ -179,36 +179,16 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
       if (savedSessionId) {
         setCurrentSession(parseInt(savedSessionId, 10));
         setHasGreeted(true);
-        // If we have an initial question, send it after session is set
-        if (initialQuestion) {
-          setTimeout(() => {
-            sendMessageMutation.mutate({
-              sessionId: parseInt(savedSessionId, 10),
-              message: initialQuestion,
-            });
-          }, 100);
-        }
+        // Note: If there's an initial question, it will be added by the backend as an assistant message
       } else {
         // Create new session if none exists
         const mrMgAgent = { id: 1, name: MR_MG_NAME, avatar: MR_MG_AVATAR, role: "Life Mentor" };
         createSession.mutate({ 
           agentId: mrMgAgent.id,
-          title: initialQuestion ? initialQuestion.substring(0, 50) + "..." : "New Conversation"
+          title: initialQuestion ? initialQuestion.substring(0, 50) + "..." : "New Conversation",
+          initialQuestion: initialQuestion // Pass the question to backend
         });
         setHasGreeted(true);
-        // If we have an initial question, send it after session is created
-        if (initialQuestion) {
-          // Wait for session to be created, then send the question
-          setTimeout(() => {
-            const sessionId = parseInt(sessionStorage.getItem('mrMgSessionId') || '0', 10);
-            if (sessionId) {
-              sendMessageMutation.mutate({
-                sessionId,
-                message: initialQuestion,
-              });
-            }
-          }, 500);
-        }
       }
     }
   };

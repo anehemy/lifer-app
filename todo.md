@@ -1,6 +1,12 @@
 # Lifer App TODO
 
 ## CRITICAL BUGS - Fix Immediately
+- [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
+
+## New Feature Requests
+- [x] Dynamic voice dropdowns: Read ElevenLabs voices from secret keys instead of hardcoding
+
+## Fixed Bugs
 - [x] STOP auto-playing voice responses (wasting API money)
 - [x] Mute button must cancel ongoing TTS API requests
 - [x] Prevent voice loops - only play once per message (already implemented with lastSpokenMessageRef)

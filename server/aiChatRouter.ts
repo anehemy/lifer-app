@@ -29,11 +29,12 @@ export const aiChatRouter = router({
       return { success: true };
     }),
 
-  // Create a new chat session (no greeting - only saves if user sends message)
+  // Create a new chat session with optional initial question from Mr. MG
   createSession: protectedProcedure
     .input(z.object({
       agentId: z.number(),
       title: z.string().optional(),
+      initialQuestion: z.string().optional(), // Question from journal to start conversation
     }))
     .mutation(async ({ ctx, input }) => {
       const sessionId = await db.createChatSession(
@@ -41,6 +42,11 @@ export const aiChatRouter = router({
         input.agentId,
         input.title || "New Conversation"
       );
+      
+      // If there's an initial question, add it as an assistant message
+      if (input.initialQuestion) {
+        await db.addChatMessage(sessionId, "assistant", input.initialQuestion);
+      }
       
       return { sessionId };
     }),

@@ -20,6 +20,17 @@ export default function Settings() {
   const [googleVoice, setGoogleVoice] = useState(localStorage.getItem("googleVoice") || "en-US-Neural2-J");
   const [elevenLabsVoice, setElevenLabsVoice] = useState(localStorage.getItem("elevenLabsVoice") || "VQypEoV1u8Wo9oGgDmW0");
   
+  // Dynamically get ElevenLabs voices from environment variables
+  const elevenLabsVoices = Object.entries(import.meta.env)
+    .filter(([key]) => key.startsWith('VITE_MEDITATION_VOICE_') || key === 'VITE_MR_MG_VOICE_ID')
+    .map(([key, value]) => {
+      // Extract voice name from key (e.g., VITE_MEDITATION_VOICE_ANTONI -> Antoni)
+      const name = key.replace('VITE_MEDITATION_VOICE_', '').replace('VITE_MR_MG_VOICE_ID', 'MR_MG')
+        .split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ');
+      return { id: value as string, name };
+    })
+    .filter(voice => voice.id && voice.id !== '0'); // Filter out placeholder voices
+  
   // Get Mr. MG agent (ID 1)
   const { data: mrMgAgent } = trpc.aiChat.getAgent.useQuery({ agentId: 1 });
   const updatePromptMutation = trpc.aiChat.updateAgentSystemPrompt.useMutation();
@@ -282,9 +293,11 @@ export default function Settings() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="VQypEoV1u8Wo9oGgDmW0">Mr MG (Energetic, Stage Presence)</SelectItem>
-                  <SelectItem value="0QOtNhDO4bFWGkFLco6Y">Mr MG Chatbot (Warm, Private Setting)</SelectItem>
-                  <SelectItem value="t6gecKelSC4gjlZUEZ82">Alan Nehemy (Your Voice Clone)</SelectItem>
+                  {elevenLabsVoices.map(voice => (
+                    <SelectItem key={voice.id} value={voice.id}>
+                      {voice.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground mt-2">
