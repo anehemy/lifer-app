@@ -20,7 +20,11 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     const saved = localStorage.getItem('mrMgSessionId');
     return saved ? parseInt(saved, 10) : null;
   });
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(() => {
+    // Restore draft message from localStorage if exists
+    const draft = localStorage.getItem('mrMgDraftMessage');
+    return draft || "";
+  });
   const [hasGreeted, setHasGreeted] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false); // Default to OFF to prevent auto-play
   const [showConversations, setShowConversations] = useState(false);
@@ -81,9 +85,13 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     onSuccess: () => {
       refetchMessages();
       setMessage("");
+      // Clear draft from localStorage on successful send
+      localStorage.removeItem('mrMgDraftMessage');
     },
     onError: (error) => {
-      toast.error("Failed to send message: " + error.message);
+      // Keep message in input so user doesn't lose it
+      toast.error("Message failed to send. Your text has been preserved. Error: " + error.message);
+      // Message stays in the textarea, user can retry
     },
   });
 
@@ -91,9 +99,13 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     onSuccess: () => {
       refetchMessages();
       setMessage("");
+      // Clear draft from localStorage on successful send
+      localStorage.removeItem('mrMgDraftMessage');
     },
     onError: (error) => {
-      toast.error("Failed to send message: " + error.message);
+      // Keep message in input so user doesn't lose it
+      toast.error("Message failed to send. Your text has been preserved. Error: " + error.message);
+      // Message stays in the textarea, user can retry
     },
   });
   
@@ -129,6 +141,15 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
       setMessage(transcript);
     }
   }, [isListening, transcript]);
+
+  // Auto-save draft message to localStorage as user types
+  useEffect(() => {
+    if (message.trim()) {
+      localStorage.setItem('mrMgDraftMessage', message);
+    } else {
+      localStorage.removeItem('mrMgDraftMessage');
+    }
+  }, [message]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {

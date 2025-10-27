@@ -155,3 +155,14 @@
   - Growth: Insights, realizations, or learning mentioned
 - [x] Update journal entry creation to use LLM for context extraction (added to all 3 Mr. MG tools)
 
+
+
+## CRITICAL BUGS - Chat Message Loss & Errors
+- [x] Messages disappear when chat errors occur - user loses everything they typed (FIXED)
+- [x] Add client-side message persistence (localStorage) to prevent message loss (DONE)
+- [x] Increase message limit from 20 to 50 messages for longer conversations (DONE - now 50 messages, warns at 40)
+- [x] Add better error handling with retry logic (message preserved on error, user can retry)
+- [x] Show user-friendly error messages with option to retry (improved error messages)
+- [ ] Chat communication errors happening frequently - investigate root cause
+- [ ] Add retry button in error toast for failed messages
+

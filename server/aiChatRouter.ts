@@ -170,7 +170,7 @@ export const aiChatRouter = router({
 
       // Check message count and add warning if approaching limit
       const messageCount = messages.length;
-      const approachingLimit = messageCount >= 15;
+      const approachingLimit = messageCount >= 40; // Warn at 40 out of 50 messages
       
       // Build messages for LLM
       const llmMessages: any[] = [
@@ -178,13 +178,13 @@ export const aiChatRouter = router({
           role: "system",
           content: agent.systemPrompt + 
             (contextData ? "\n\nCurrent user data:" + contextData : "") +
-            (approachingLimit ? `\n\n⚠️ IMPORTANT: This conversation has ${messageCount} messages and is approaching the limit (20 messages). After your next response, proactively tell the user: "We've had a rich conversation with many insights. Would you like me to save a summary of our discussion to your journal? Then we can start a fresh conversation to continue exploring these ideas." Use the create_conversation_summary tool if they agree.` : ""),
+            (approachingLimit ? `\n\n⚠️ IMPORTANT: This conversation has ${messageCount} messages and is approaching the limit (50 messages). After your next response, proactively tell the user: "We've had a rich conversation with many insights. Would you like me to save a summary of our discussion to your journal? Then we can start a fresh conversation to continue exploring these ideas." Use the create_conversation_summary tool if they agree.` : ""),
         },
       ];
       
-      // Add conversation history (last 20 messages to keep context manageable, but trim if too long)
+      // Add conversation history (last 50 messages to keep context manageable, but trim if too long)
       // Keep more history to maintain conversation flow
-      const recentMessages = messages.slice(-20);
+      const recentMessages = messages.slice(-50);
       recentMessages.forEach((msg) => {
         if (msg.role !== "system") {
           llmMessages.push({
