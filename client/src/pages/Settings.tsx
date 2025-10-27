@@ -18,6 +18,7 @@ export default function Settings() {
   const [voiceProvider, setVoiceProvider] = useState(localStorage.getItem("voiceProvider") || "elevenlabs");
   const [providerStatus, setProviderStatus] = useState<{provider: string, available: boolean, message: string} | null>(null);
   const [googleVoice, setGoogleVoice] = useState(localStorage.getItem("googleVoice") || "en-US-Neural2-J");
+  const [elevenLabsVoice, setElevenLabsVoice] = useState(localStorage.getItem("elevenLabsVoice") || "VQypEoV1u8Wo9oGgDmW0");
   
   // Get Mr. MG agent (ID 1)
   const { data: mrMgAgent } = trpc.aiChat.getAgent.useQuery({ agentId: 1 });
@@ -260,11 +261,67 @@ export default function Settings() {
               </Button>
             </div>
           )}
+          
+          {voiceProvider === "elevenlabs" && (
+            <div>
+              <Label htmlFor="elevenLabsVoice">ElevenLabs Voice</Label>
+              <Select value={elevenLabsVoice} onValueChange={(value) => {
+                setElevenLabsVoice(value);
+                localStorage.setItem("elevenLabsVoice", value);
+                toast.success("Voice updated!");
+              }}>
+                <SelectTrigger id="elevenLabsVoice">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="VQypEoV1u8Wo9oGgDmW0">Mr MG (Energetic, Stage Presence)</SelectItem>
+                  <SelectItem value="0QOtNhDO4bFWGkFLco6Y">Mr MG Chatbot (Warm, Private Setting)</SelectItem>
+                  <SelectItem value="t6gecKelSC4gjlZUEZ82">Alan Nehemy (Your Voice Clone)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground mt-2">
+                Select from your custom ElevenLabs voices.
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="mt-2"
+                disabled={testVoiceMutation.isPending}
+                onClick={() => {
+                  const testText = "Hello! This is a preview of the selected voice.";
+                  const selectedVoice = elevenLabsVoice;
+                  
+                  toast.info("Generating voice preview...");
+                  testVoiceMutation.mutate({
+                    text: testText,
+                    provider: "elevenlabs",
+                    voiceId: selectedVoice
+                  }, {
+                    onSuccess: (result) => {
+                      if (result.audioUrl) {
+                        const audio = new Audio(result.audioUrl);
+                        audio.play();
+                        toast.success("Playing voice preview!");
+                      } else {
+                        toast.error("Could not generate preview. Check your ElevenLabs API key.");
+                      }
+                    },
+                    onError: (error) => {
+                      console.error("Voice preview error:", error);
+                      toast.error("Failed to generate voice preview.");
+                    }
+                  });
+                }}
+              >
+                🔊 {testVoiceMutation.isPending ? "Generating..." : "Test Voice"}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
       )}
       
-      {user?.role === "admin" && (
+      {user?.role === "admin" && false && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>API Key Diagnostics (Admin)</CardTitle>

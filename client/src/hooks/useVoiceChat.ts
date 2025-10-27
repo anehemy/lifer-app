@@ -117,11 +117,15 @@ export function useVoiceChat() {
       // Get provider from localStorage if not specified
       const selectedProvider = provider || (localStorage.getItem("voiceProvider") as "elevenlabs" | "google" | "browser") || "elevenlabs";
       const googleVoice = localStorage.getItem("googleVoice") || "en-US-Neural2-J";
+      const elevenLabsVoice = localStorage.getItem("elevenLabsVoice") || "VQypEoV1u8Wo9oGgDmW0";
+      
+      // Use selected voice for ElevenLabs, or fallback to provided voiceId
+      const effectiveVoiceId = selectedProvider === "elevenlabs" ? elevenLabsVoice : voiceId;
       
       // Generate speech using trpc
       const result = await generateSpeech.mutateAsync({ 
         text, 
-        voiceId, 
+        voiceId: effectiveVoiceId, 
         provider: selectedProvider,
         googleVoice: selectedProvider === "google" ? googleVoice : undefined
       });

@@ -405,3 +405,18 @@
 - [x] Add expand/collapse functionality for long text areas in Settings
 - [x] Added API diagnostics with links to regenerate keys
 
+
+
+## API Key Troubleshooting
+- [ ] Test ElevenLabs API key directly from server
+- [ ] Test Google Cloud TTS API key directly from server
+- [ ] Check if API keys are being read correctly at runtime
+- [ ] Verify API request format and headers
+
+
+
+## Voice Settings Improvements
+- [x] Add ElevenLabs voice selector and test button (show custom voices: Mr MG, Mr MG Chatbot, Alan Nehemy)
+- [x] Remove API Key Diagnostics section from Settings (hidden with && false)
+- [x] ElevenLabs voice selection now works in chat and meditation
+
