@@ -89,7 +89,7 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
             },
             audioConfig: {
               audioEncoding: "MP3",
-              speakingRate: 0.85, // Slightly slower for clarity
+              speakingRate: 1.1, // Faster rate - user requested speed increase (was 0.85)
               pitch: 0,
             },
           }),

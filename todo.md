@@ -1,6 +1,19 @@
 # Lifer App TODO
 
-## Current Sprint - Journal Mr. MG Improvements
+## CRITICAL BUGS - Fix Immediately
+- [x] STOP auto-playing voice responses (wasting API money)
+- [x] Mute button must cancel ongoing TTS API requests
+- [x] Prevent voice loops - only play once per message (already implemented with lastSpokenMessageRef)
+
+## Current Sprint - New Feature Requests
+- [x] Chat continuity: When clicking "Chat with Mr. MG" from journal, open chat with the same question as first message
+- [x] Conversation history: Only save conversations where user sent at least one message
+- [x] Conversation history: Add delete button for each conversation
+- [x] Conversation history: Auto-name conversations based on topic discussed (AI-generated titles)
+- [x] Add faster Google TTS voice options (increased speed to 1.1, added 16 voices)
+- [x] Enable Mr. MG to merge similar/short journal entries upon request (function calling tool)
+
+## Recently Completed
 - [x] Make journal Mr. MG contextual like chat Mr. MG (analyze user data for questions)
 - [x] Change "Ask Mr. MG for Guidance" button to "Chat with Mr. MG"
 - [x] Auto-save journal entries from chat conversations (already implemented)

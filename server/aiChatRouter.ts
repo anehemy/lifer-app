@@ -29,7 +29,7 @@ export const aiChatRouter = router({
       return { success: true };
     }),
 
-  // Create a new chat session
+  // Create a new chat session (no greeting - only saves if user sends message)
   createSession: protectedProcedure
     .input(z.object({
       agentId: z.number(),
@@ -39,28 +39,8 @@ export const aiChatRouter = router({
       const sessionId = await db.createChatSession(
         ctx.user.id,
         input.agentId,
-        input.title
+        input.title || "New Conversation"
       );
-      
-      // Add initial greeting message from Mr. MG
-      const agent = await db.getAgentById(input.agentId);
-      if (agent) {
-        // Get journal entries count for contextual greeting
-        const journalEntries = await db.getUserJournalEntries(ctx.user.id);
-        const entryCount = journalEntries.length;
-        
-        let greeting = "Welcome! I'm Mr. MG, your life mentor. ";
-        
-        if (entryCount === 0) {
-          greeting += "I see you haven't started your Life Story yet. Shall we begin by exploring a formative moment from your past?";
-        } else if (entryCount > 0 && entryCount < 3) {
-          greeting += `Good to see you! You've shared ${entryCount} ${entryCount === 1 ? 'story' : 'stories'} so far. Would you like to continue exploring your life experiences, or shall we look at the patterns emerging?`;
-        } else {
-          greeting += `Welcome back! You've documented ${entryCount} meaningful moments. How can I support your journey today?`;
-        }
-        
-        await db.addChatMessage(sessionId, "assistant", greeting);
-      }
       
       return { sessionId };
     }),
@@ -109,16 +89,26 @@ export const aiChatRouter = router({
       // Get conversation history
       const messages = await db.getChatMessages(input.sessionId);
       
-      // Auto-generate title from first user message if session has no title
+      // Auto-generate title from conversation topic using AI
       if (!session.title || session.title === "New Conversation") {
         const userMessages = messages.filter(m => m.role === "user");
         if (userMessages.length === 1) {
-          // This is the first user message - generate a title
-          const firstMessage = input.message;
-          const title = firstMessage.length > 50 
-            ? firstMessage.substring(0, 47) + "..." 
-            : firstMessage;
-          await db.updateChatSessionTitle(input.sessionId, title);
+          // This is the first user message - generate a topic-based title
+          try {
+            const titlePrompt = `Generate a short, descriptive title (3-6 words max) for a conversation that starts with this question/message: "${input.message}". Return ONLY the title, nothing else.`;
+            const titleResult = await invokeLLM({
+              messages: [{ role: "user", content: titlePrompt }],
+            });
+            const aiTitle = titleResult.choices[0]?.message?.content;
+            const title = typeof aiTitle === 'string' ? aiTitle.trim().replace(/^["']|["']$/g, '') : input.message.substring(0, 50);
+            await db.updateChatSessionTitle(input.sessionId, title);
+          } catch (e) {
+            // Fallback to simple truncation
+            const title = input.message.length > 50 
+              ? input.message.substring(0, 47) + "..." 
+              : input.message;
+            await db.updateChatSessionTitle(input.sessionId, title);
+          }
         }
       }
       
@@ -214,6 +204,32 @@ export const aiChatRouter = router({
             },
           },
         },
+        {
+          type: "function",
+          function: {
+            name: "merge_journal_entries",
+            description: "Merge multiple journal entries into a single, cohesive entry. Use this when the user requests to combine similar or short entries, or when doing housekeeping on their journal.",
+            parameters: {
+              type: "object",
+              properties: {
+                entryIds: {
+                  type: "array",
+                  items: { type: "number" },
+                  description: "Array of journal entry IDs to merge",
+                },
+                mergedQuestion: {
+                  type: "string",
+                  description: "The combined question that encompasses all merged entries",
+                },
+                mergedResponse: {
+                  type: "string",
+                  description: "The combined response that integrates all the stories/experiences from the entries being merged",
+                },
+              },
+              required: ["entryIds", "mergedQuestion", "mergedResponse"],
+            },
+          },
+        },
       ];
 
       // Get AI response with function calling
@@ -278,6 +294,55 @@ export const aiChatRouter = router({
             journalEntrySaved: true,
           };
         }
+        
+        if (toolCall.function.name === "merge_journal_entries") {
+          // Parse function arguments
+          const args = JSON.parse(toolCall.function.arguments);
+          const { entryIds, mergedQuestion, mergedResponse } = args;
+          
+          // Create the merged entry
+          await db.createJournalEntry({
+            userId: ctx.user.id,
+            question: mergedQuestion,
+            response: mergedResponse,
+          });
+          
+          // Delete the old entries
+          for (const entryId of entryIds) {
+            await db.deleteJournalEntry(entryId, ctx.user.id);
+          }
+          
+          // Generate a confirmation message
+          const confirmationMessages = [
+            ...llmMessages,
+            responseMessage,
+            {
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ 
+                success: true, 
+                message: `Merged ${entryIds.length} entries successfully` 
+              }),
+            },
+          ];
+          
+          // Get final response from the model
+          const finalResponse = await invokeLLM({
+            messages: confirmationMessages,
+          });
+          
+          const assistantMessage = typeof finalResponse.choices[0].message.content === 'string' 
+            ? finalResponse.choices[0].message.content 
+            : `I've merged ${entryIds.length} entries into one cohesive story!`;
+          
+          // Save assistant message
+          await db.addChatMessage(input.sessionId, "assistant", assistantMessage);
+          
+          return {
+            message: assistantMessage,
+            journalEntriesMerged: true,
+          };
+        }
       }
       
       // No function call - regular response
@@ -291,6 +356,22 @@ export const aiChatRouter = router({
         message: assistantMessage,
         journalEntrySaved: false,
       };
+    }),
+
+  // Delete a chat session
+  deleteSession: protectedProcedure
+    .input(z.object({ sessionId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      // Verify session belongs to user
+      const session = await db.getChatSession(input.sessionId, ctx.user.id);
+      if (!session) {
+        throw new Error("Session not found");
+      }
+      
+      // Delete the session (this should cascade delete messages)
+      await db.deleteChatSession(input.sessionId, ctx.user.id);
+      
+      return { success: true };
     }),
 
   // Mr. MG Agent Actions

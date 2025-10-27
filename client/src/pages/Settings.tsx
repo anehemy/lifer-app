@@ -214,14 +214,22 @@ export default function Settings() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="en-US-Neural2-J">English (US) - Male (Neural2-J)</SelectItem>
-                  <SelectItem value="en-US-Neural2-C">English (US) - Female (Neural2-C)</SelectItem>
-                  <SelectItem value="en-US-Neural2-D">English (US) - Male (Neural2-D)</SelectItem>
-                  <SelectItem value="en-US-Neural2-F">English (US) - Female (Neural2-F)</SelectItem>
-                  <SelectItem value="en-GB-Neural2-B">English (UK) - Male (Neural2-B)</SelectItem>
-                  <SelectItem value="en-GB-Neural2-C">English (UK) - Female (Neural2-C)</SelectItem>
-                  <SelectItem value="en-AU-Neural2-B">English (AU) - Male (Neural2-B)</SelectItem>
-                  <SelectItem value="en-AU-Neural2-C">English (AU) - Female (Neural2-C)</SelectItem>
+                  <SelectItem value="en-US-Neural2-J">🇺🇸 Male - Neural2-J (Warm)</SelectItem>
+                  <SelectItem value="en-US-Neural2-D">🇺🇸 Male - Neural2-D (Clear)</SelectItem>
+                  <SelectItem value="en-US-Neural2-A">🇺🇸 Male - Neural2-A (Deep)</SelectItem>
+                  <SelectItem value="en-US-Neural2-I">🇺🇸 Male - Neural2-I (Energetic)</SelectItem>
+                  <SelectItem value="en-US-Neural2-C">🇺🇸 Female - Neural2-C (Friendly)</SelectItem>
+                  <SelectItem value="en-US-Neural2-F">🇺🇸 Female - Neural2-F (Professional)</SelectItem>
+                  <SelectItem value="en-US-Neural2-E">🇺🇸 Female - Neural2-E (Calm)</SelectItem>
+                  <SelectItem value="en-US-Neural2-G">🇺🇸 Female - Neural2-G (Confident)</SelectItem>
+                  <SelectItem value="en-US-Neural2-H">🇺🇸 Female - Neural2-H (Warm)</SelectItem>
+                  <SelectItem value="en-GB-Neural2-B">🇬🇧 Male - Neural2-B (British)</SelectItem>
+                  <SelectItem value="en-GB-Neural2-C">🇬🇧 Female - Neural2-C (British)</SelectItem>
+                  <SelectItem value="en-GB-Neural2-D">🇬🇧 Male - Neural2-D (British Clear)</SelectItem>
+                  <SelectItem value="en-GB-Neural2-F">🇬🇧 Female - Neural2-F (British Warm)</SelectItem>
+                  <SelectItem value="en-AU-Neural2-B">🇦🇺 Male - Neural2-B (Australian)</SelectItem>
+                  <SelectItem value="en-AU-Neural2-C">🇦🇺 Female - Neural2-C (Australian)</SelectItem>
+                  <SelectItem value="en-AU-Neural2-D">🇦🇺 Male - Neural2-D (Australian Clear)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-sm text-muted-foreground mt-2">

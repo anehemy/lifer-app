@@ -224,7 +224,12 @@ export default function Journal() {
               <span className="hidden sm:inline">{isLoadingQuestion ? 'Generating...' : 'Ask Another Question'}</span>
               <span className="sm:hidden">{isLoadingQuestion ? 'Loading...' : 'New Question'}</span>
             </Button>
-            <Button onClick={() => window.dispatchEvent(new Event('openMrMgChat'))} variant="default" size="sm" className="flex-1 min-w-[140px]">
+            <Button onClick={() => {
+              const event = new CustomEvent('openMrMgChat', { 
+                detail: { question: currentQuestion } 
+              });
+              window.dispatchEvent(event);
+            }} variant="default" size="sm" className="flex-1 min-w-[140px]">
               <MessageCircle className="h-4 w-4 mr-2" />
               <span className="hidden sm:inline">Chat with Mr. MG</span>
               <span className="sm:hidden">Chat Mr. MG</span>

@@ -11,6 +11,7 @@ export function useVoiceChat() {
   const finalTranscriptRef = useRef('');
   const silenceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const previousTranscriptRef = useRef(''); // Store previous text for append mode
+  const abortControllerRef = useRef<AbortController | null>(null); // To cancel ongoing TTS requests
 
   useEffect(() => {
     // Initialize Web Speech API
@@ -112,6 +113,14 @@ export function useVoiceChat() {
 
   const speak = useCallback(async (text: string, voiceId: string = 'rachel', provider?: "elevenlabs" | "google" | "browser") => {
     try {
+      // Cancel any previous ongoing request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      
+      // Create new abort controller for this request
+      abortControllerRef.current = new AbortController();
+      
       setIsSpeaking(true);
       
       // Get provider from localStorage if not specified
@@ -172,15 +181,23 @@ export function useVoiceChat() {
   }, [generateSpeech]);
 
   const stopSpeaking = () => {
+    // Abort any ongoing TTS API request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    
     // Stop audio URL playback
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
+    
     // Stop browser TTS
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
+    
     setIsSpeaking(false);
   };
 

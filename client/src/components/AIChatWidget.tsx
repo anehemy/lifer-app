@@ -22,7 +22,7 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   });
   const [message, setMessage] = useState("");
   const [hasGreeted, setHasGreeted] = useState(false);
-  const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [voiceEnabled, setVoiceEnabled] = useState(false); // Default to OFF to prevent auto-play
   const [showConversations, setShowConversations] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -86,6 +86,16 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
       toast.error("Failed to send message: " + error.message);
     },
   });
+  
+  const deleteSessionMutation = trpc.aiChat.deleteSession.useMutation({
+    onSuccess: () => {
+      refetchSessions();
+      toast.success("Conversation deleted");
+    },
+    onError: (error) => {
+      toast.error("Failed to delete conversation: " + error.message);
+    },
+  });
 
   // Speak Mr. MG's responses when voice is enabled
   useEffect(() => {
@@ -123,11 +133,20 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     }
   }, [currentSession, hasGreeted]);
   
-  // Listen for external open requests
+  // Listen for external open requests with optional initial question
   useEffect(() => {
-    const handleOpenChat = () => {
+    const handleOpenChat = (event: any) => {
       setIsOpen(true);
-      if (!currentSession) initializeMrMgSession();
+      const initialQuestion = event.detail?.question;
+      if (!currentSession) {
+        initializeMrMgSession(initialQuestion);
+      } else if (initialQuestion) {
+        // If session exists but we have an initial question, send it immediately
+        sendMessageMutation.mutate({
+          sessionId: currentSession,
+          message: initialQuestion,
+        });
+      }
     };
     
     window.addEventListener('openMrMgChat', handleOpenChat);
@@ -153,18 +172,43 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     };
   }, [isOpen]);
 
-  const initializeMrMgSession = async () => {
+  const initializeMrMgSession = async (initialQuestion?: string) => {
     if (!currentSession && !hasGreeted) {
       // Check if we have an existing session in sessionStorage (resets on logout)
       const savedSessionId = sessionStorage.getItem('mrMgSessionId');
       if (savedSessionId) {
         setCurrentSession(parseInt(savedSessionId, 10));
         setHasGreeted(true);
+        // If we have an initial question, send it after session is set
+        if (initialQuestion) {
+          setTimeout(() => {
+            sendMessageMutation.mutate({
+              sessionId: parseInt(savedSessionId, 10),
+              message: initialQuestion,
+            });
+          }, 100);
+        }
       } else {
         // Create new session if none exists
         const mrMgAgent = { id: 1, name: MR_MG_NAME, avatar: MR_MG_AVATAR, role: "Life Mentor" };
-        createSession.mutate({ agentId: mrMgAgent.id });
+        createSession.mutate({ 
+          agentId: mrMgAgent.id,
+          title: initialQuestion ? initialQuestion.substring(0, 50) + "..." : "New Conversation"
+        });
         setHasGreeted(true);
+        // If we have an initial question, send it after session is created
+        if (initialQuestion) {
+          // Wait for session to be created, then send the question
+          setTimeout(() => {
+            const sessionId = parseInt(sessionStorage.getItem('mrMgSessionId') || '0', 10);
+            if (sessionId) {
+              sendMessageMutation.mutate({
+                sessionId,
+                message: initialQuestion,
+              });
+            }
+          }, 500);
+        }
       }
     }
   };
@@ -326,25 +370,48 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
                   <p className="text-xs text-muted-foreground">No previous conversations</p>
                 ) : (
                   sessions.map((session: any) => (
-                    <button
+                    <div
                       key={session.id}
-                      onClick={() => {
-                        setCurrentSession(session.id);
-                        sessionStorage.setItem('mrMgSessionId', String(session.id));
-                        setShowConversations(false);
-                        refetchMessages();
-                      }}
-                      className={`w-full text-left p-2 rounded hover:bg-gray-100 text-xs ${
+                      className={`flex items-center gap-2 p-2 rounded text-xs ${
                         session.id === currentSession ? 'bg-purple-100 border border-purple-300' : 'bg-white border'
                       }`}
                     >
-                      <div className="font-medium truncate">
-                        {session.title || 'Conversation'}
-                      </div>
-                      <div className="text-muted-foreground text-[10px]">
-                        {new Date(session.createdAt).toLocaleDateString()}
-                      </div>
-                    </button>
+                      <button
+                        onClick={() => {
+                          setCurrentSession(session.id);
+                          sessionStorage.setItem('mrMgSessionId', String(session.id));
+                          setShowConversations(false);
+                          refetchMessages();
+                        }}
+                        className="flex-1 text-left hover:opacity-80"
+                      >
+                        <div className="font-medium truncate">
+                          {session.title || 'Conversation'}
+                        </div>
+                        <div className="text-muted-foreground text-[10px]">
+                          {new Date(session.createdAt).toLocaleDateString()}
+                        </div>
+                      </button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('Delete this conversation?')) {
+                            deleteSessionMutation.mutate({ sessionId: session.id });
+                            // If deleting current session, clear it
+                            if (session.id === currentSession) {
+                              sessionStorage.removeItem('mrMgSessionId');
+                              setCurrentSession(null);
+                              setHasGreeted(false);
+                            }
+                          }
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
                   ))
                 )}
               </div>

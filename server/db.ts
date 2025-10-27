@@ -350,6 +350,18 @@ export async function getChatMessages(sessionId: number) {
     .orderBy(chatMessages.createdAt);
 }
 
+export async function deleteChatSession(sessionId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // First delete all messages in the session
+  await db.delete(chatMessages).where(eq(chatMessages.sessionId, sessionId));
+  
+  // Then delete the session itself
+  await db.delete(chatSessions)
+    .where(and(eq(chatSessions.id, sessionId), eq(chatSessions.userId, userId)));
+}
+
 // Meditation Sessions
 export async function getUserMeditationSessions(userId: number): Promise<MeditationSession[]> {
   const db = await getDb();
