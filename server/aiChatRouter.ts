@@ -321,11 +321,39 @@ export const aiChatRouter = router({
           // Parse function arguments
           const args = JSON.parse(toolCall.function.arguments);
           
-          // Save to journal
+          // Extract metadata from response using AI
+          const metadataPrompt = `Analyze this journal entry and extract contextual metadata. Return ONLY a JSON object with these fields (use null if not applicable):
+{
+  "timeContext": "time period mentioned (e.g., 'childhood', '2010', 'age 15', 'summer')",
+  "placeContext": "location mentioned (e.g., 'New York', 'grandfather's garage', 'school')",
+  "experienceType": "type of experience (e.g., 'learning', 'relationship', 'achievement', 'loss', 'struggle with time management')",
+  "challengeType": "challenge faced if any (e.g., 'bullying', 'failure', 'conflict', 'loss', 'not following through on commitments')",
+  "growthTheme": "growth or lesson (e.g., 'resilience', 'patience', 'self-discovery', 'courage', 'alignment creates time')"
+}
+
+Question: ${args.question}
+Response: ${args.response}`;
+          
+          let metadata = {};
+          try {
+            const result = await invokeLLM({
+              messages: [{ role: "user", content: metadataPrompt }],
+            });
+            const content = result.choices[0].message.content;
+            if (typeof content === 'string') {
+              const parsed = JSON.parse(content.replace(/```json\n?|```/g, '').trim());
+              metadata = parsed;
+            }
+          } catch (e) {
+            console.error('Failed to extract metadata:', e);
+          }
+          
+          // Save to journal with metadata
           await db.createJournalEntry({
             userId: ctx.user.id,
             question: args.question,
             response: args.response,
+            ...metadata,
           });
           
           // Generate a confirmation message
@@ -362,11 +390,39 @@ export const aiChatRouter = router({
           const args = JSON.parse(toolCall.function.arguments);
           const { entryIds, mergedQuestion, mergedResponse } = args;
           
-          // Create the merged entry
+          // Extract metadata from merged response
+          const metadataPrompt = `Analyze this journal entry and extract contextual metadata. Return ONLY a JSON object with these fields (use null if not applicable):
+{
+  "timeContext": "time period mentioned (e.g., 'childhood', '2010', 'age 15', 'summer')",
+  "placeContext": "location mentioned (e.g., 'New York', 'grandfather's garage', 'school')",
+  "experienceType": "type of experience (e.g., 'learning', 'relationship', 'achievement', 'loss')",
+  "challengeType": "challenge faced if any (e.g., 'bullying', 'failure', 'conflict', 'loss')",
+  "growthTheme": "growth or lesson (e.g., 'resilience', 'patience', 'self-discovery', 'courage')"
+}
+
+Question: ${mergedQuestion}
+Response: ${mergedResponse}`;
+          
+          let metadata = {};
+          try {
+            const result = await invokeLLM({
+              messages: [{ role: "user", content: metadataPrompt }],
+            });
+            const content = result.choices[0].message.content;
+            if (typeof content === 'string') {
+              const parsed = JSON.parse(content.replace(/```json\n?|```/g, '').trim());
+              metadata = parsed;
+            }
+          } catch (e) {
+            console.error('Failed to extract metadata for merged entry:', e);
+          }
+          
+          // Create the merged entry with metadata
           await db.createJournalEntry({
             userId: ctx.user.id,
             question: mergedQuestion,
             response: mergedResponse,
+            ...metadata,
           });
           
           // Delete the old entries
@@ -429,11 +485,40 @@ export const aiChatRouter = router({
             });
           }
           
-          // Save summary to journal
+          // Extract metadata from summary
+          const metadataPrompt = `Analyze this conversation summary and extract contextual metadata. Return ONLY a JSON object with these fields (use null if not applicable):
+{
+  "timeContext": "time period mentioned (e.g., 'childhood', '2010', 'age 15', 'summer')",
+  "placeContext": "location mentioned (e.g., 'New York', 'grandfather's garage', 'school')",
+  "experienceType": "type of experience discussed (e.g., 'learning', 'relationship', 'achievement', 'loss', 'career exploration')",
+  "challengeType": "main challenge discussed if any (e.g., 'bullying', 'failure', 'conflict', 'loss', 'time management')",
+  "growthTheme": "growth or lesson from conversation (e.g., 'resilience', 'patience', 'self-discovery', 'courage', 'alignment')"
+}
+
+Summary Title: ${summaryTitle}
+Full Summary: ${fullSummary}
+Key Insights: ${keyInsights ? keyInsights.join(', ') : 'none'}`;
+          
+          let metadata = {};
+          try {
+            const result = await invokeLLM({
+              messages: [{ role: "user", content: metadataPrompt }],
+            });
+            const content = result.choices[0].message.content;
+            if (typeof content === 'string') {
+              const parsed = JSON.parse(content.replace(/```json\n?|```/g, '').trim());
+              metadata = parsed;
+            }
+          } catch (e) {
+            console.error('Failed to extract metadata for conversation summary:', e);
+          }
+          
+          // Save summary to journal with metadata
           await db.createJournalEntry({
             userId: ctx.user.id,
             question: `Conversation Summary: ${summaryTitle}`,
             response: summaryText,
+            ...metadata,
           });
           
           // Generate a confirmation message

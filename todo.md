@@ -144,3 +144,14 @@
 - [x] Suggest starting a fresh conversation to continue the discussion
 - [x] Update Mr. MG's system prompt with this guidance (automatic at 15+ messages)
 
+
+
+## CRITICAL BUG - Pattern Detection
+- [x] Journal entry context extraction not working - Experience, Challenge, Growth fields remain "Not specified"
+- [x] AI should automatically extract these from user's response text
+- [x] Improve pattern detection to identify:
+  - Experience: What the user is going through or describing
+  - Challenge: The difficulty or obstacle mentioned
+  - Growth: Insights, realizations, or learning mentioned
+- [x] Update journal entry creation to use LLM for context extraction (added to all 3 Mr. MG tools)
+
