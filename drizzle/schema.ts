@@ -20,9 +20,6 @@ export const users = mysqlTable("users", {
   aiTokens: int("aiTokens").default(1000).notNull(), // AI usage tokens
   hasSeenWelcome: boolean("hasSeenWelcome").default(false).notNull(), // Track if user has seen welcome guide
   introAudioUrl: text("introAudioUrl"), // Custom intro audio URL for Start Here guide
-  voiceProvider: varchar("voiceProvider", { length: 64 }).default("elevenlabs"), // Voice provider preference
-  googleVoice: varchar("googleVoice", { length: 128 }), // Google TTS voice name
-  elevenLabsVoice: varchar("elevenLabsVoice", { length: 128 }), // ElevenLabs voice ID
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -169,3 +166,16 @@ export const meditationSessions = mysqlTable("meditationSessions", {
 
 export type MeditationSession = typeof meditationSessions.$inferSelect;
 export type InsertMeditationSession = typeof meditationSessions.$inferInsert;
+
+/**
+ * Global settings (admin-only)
+ */
+export const globalSettings = mysqlTable("globalSettings", {
+  id: int("id").autoincrement().primaryKey(),
+  settingKey: varchar("settingKey", { length: 100 }).notNull().unique(),
+  settingValue: text("settingValue"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type GlobalSetting = typeof globalSettings.$inferSelect;
+export type InsertGlobalSetting = typeof globalSettings.$inferInsert;

@@ -31,6 +31,22 @@ export const appRouter = router({
           .where(eq(users.id, ctx.user.id));
         return { success: true };
       }),
+  }),
+
+  // Global Settings (Admin-only)
+  globalSettings: router({
+    getAll: publicProcedure.query(async () => {
+      const db = await import('./db').then(m => m.getDb());
+      if (!db) throw new Error('Database not available');
+      const { globalSettings } = await import('../drizzle/schema');
+      const settings = await db.select().from(globalSettings);
+      // Convert to key-value object
+      const settingsObj: Record<string, string> = {};
+      settings.forEach(s => {
+        if (s.settingValue) settingsObj[s.settingKey] = s.settingValue;
+      });
+      return settingsObj;
+    }),
     updateVoiceSettings: protectedProcedure
       .input(z.object({
         voiceProvider: z.string().optional(),
@@ -38,17 +54,31 @@ export const appRouter = router({
         elevenLabsVoice: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Only admins can update global settings');
+        }
         const db = await import('./db').then(m => m.getDb());
         if (!db) throw new Error('Database not available');
-        const { users } = await import('../drizzle/schema');
+        const { globalSettings } = await import('../drizzle/schema');
         const { eq } = await import('drizzle-orm');
-        const updateData: any = {};
-        if (input.voiceProvider !== undefined) updateData.voiceProvider = input.voiceProvider;
-        if (input.googleVoice !== undefined) updateData.googleVoice = input.googleVoice;
-        if (input.elevenLabsVoice !== undefined) updateData.elevenLabsVoice = input.elevenLabsVoice;
-        await db.update(users)
-          .set(updateData)
-          .where(eq(users.id, ctx.user.id));
+        
+        // Update each setting
+        if (input.voiceProvider !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'voiceProvider', settingValue: input.voiceProvider })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.voiceProvider } });
+        }
+        if (input.googleVoice !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'googleVoice', settingValue: input.googleVoice })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.googleVoice } });
+        }
+        if (input.elevenLabsVoice !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'elevenLabsVoice', settingValue: input.elevenLabsVoice })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.elevenLabsVoice } });
+        }
         return { success: true };
       }),
   }),

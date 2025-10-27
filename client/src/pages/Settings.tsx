@@ -15,10 +15,22 @@ export default function Settings() {
   const [email, setEmail] = useState(user?.email || "");
   const [mrMgPrompt, setMrMgPrompt] = useState("");
   const [mrMgPromptExpanded, setMrMgPromptExpanded] = useState(false);
-  const [voiceProvider, setVoiceProvider] = useState(user?.voiceProvider || "elevenlabs");
   const [providerStatus, setProviderStatus] = useState<{provider: string, available: boolean, message: string} | null>(null);
-  const [googleVoice, setGoogleVoice] = useState(user?.googleVoice || "en-US-Neural2-J");
-  const [elevenLabsVoice, setElevenLabsVoice] = useState(user?.elevenLabsVoice || "VQypEoV1u8Wo9oGgDmW0");
+  
+  // Get global settings
+  const { data: globalSettings } = trpc.globalSettings.getAll.useQuery();
+  const [voiceProvider, setVoiceProvider] = useState("elevenlabs");
+  const [googleVoice, setGoogleVoice] = useState("en-US-Neural2-J");
+  const [elevenLabsVoice, setElevenLabsVoice] = useState("VQypEoV1u8Wo9oGgDmW0");
+  
+  // Update state when global settings load
+  useEffect(() => {
+    if (globalSettings) {
+      if (globalSettings.voiceProvider) setVoiceProvider(globalSettings.voiceProvider);
+      if (globalSettings.googleVoice) setGoogleVoice(globalSettings.googleVoice);
+      if (globalSettings.elevenLabsVoice) setElevenLabsVoice(globalSettings.elevenLabsVoice);
+    }
+  }, [globalSettings]);
   
   // Dynamically get ElevenLabs voices from environment variables
   const elevenLabsVoices = Object.entries(import.meta.env)
@@ -40,7 +52,7 @@ export default function Settings() {
   const updatePromptMutation = trpc.aiChat.updateAgentSystemPrompt.useMutation();
   const testVoiceMutation = trpc.textToSpeech.generate.useMutation();
   const updateIntroAudioMutation = trpc.user.updateIntroAudio.useMutation();
-  const updateVoiceSettingsMutation = trpc.user.updateVoiceSettings.useMutation();
+  const updateVoiceSettingsMutation = trpc.globalSettings.updateVoiceSettings.useMutation();
   
   useEffect(() => {
     if (mrMgAgent?.systemPrompt) {
@@ -196,7 +208,7 @@ export default function Settings() {
               <SelectTrigger id="voiceProvider">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent position="popper" className="max-h-[60vh] overflow-y-auto">
+              <SelectContent className="max-h-[60vh] overflow-y-auto">
                 <SelectItem value="elevenlabs">ElevenLabs (High Quality, Expensive)</SelectItem>
                 <SelectItem value="google">Google Cloud TTS (Good Quality, Affordable)</SelectItem>
                 <SelectItem value="browser">Browser TTS (Free, Basic Quality)</SelectItem>
@@ -232,7 +244,7 @@ export default function Settings() {
                 <SelectTrigger id="googleVoice">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent position="popper" className="max-h-[60vh] overflow-y-auto">
+                <SelectContent className="max-h-[60vh] overflow-y-auto">
                   <SelectItem value="en-US-Neural2-J">🇺🇸 Male - Neural2-J (Warm)</SelectItem>
                   <SelectItem value="en-US-Neural2-D">🇺🇸 Male - Neural2-D (Clear)</SelectItem>
                   <SelectItem value="en-US-Neural2-A">🇺🇸 Male - Neural2-A (Deep)</SelectItem>
@@ -302,7 +314,7 @@ export default function Settings() {
                 <SelectTrigger id="elevenLabsVoice">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent position="popper" className="max-h-[60vh] overflow-y-auto">
+                <SelectContent className="max-h-[60vh] overflow-y-auto">
                   {elevenLabsVoices.map(voice => (
                     <SelectItem key={voice.key} value={voice.id}>
                       {voice.name}

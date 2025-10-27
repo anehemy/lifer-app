@@ -14,8 +14,11 @@ export function useVoiceChat() {
   const previousTranscriptRef = useRef(''); // Store previous text for append mode
   const abortControllerRef = useRef<AbortController | null>(null); // To cancel ongoing TTS requests
   
-  // Get user voice settings from auth context
+  // Get user from auth context
   const { user } = useAuth();
+  
+  // Get global voice settings
+  const { data: globalSettings } = trpc.globalSettings.getAll.useQuery();
 
   useEffect(() => {
     // Initialize Web Speech API
@@ -127,10 +130,10 @@ export function useVoiceChat() {
       
       setIsSpeaking(true);
       
-      // Get provider from user settings (database) if not specified, fallback to localStorage for backward compatibility
-      const selectedProvider = (provider || user?.voiceProvider || localStorage.getItem("voiceProvider") || "elevenlabs") as "elevenlabs" | "google" | "browser";
-      const googleVoice = user?.googleVoice || localStorage.getItem("googleVoice") || "en-US-Neural2-J";
-      const elevenLabsVoice = user?.elevenLabsVoice || localStorage.getItem("elevenLabsVoice") || "VQypEoV1u8Wo9oGgDmW0";
+      // Get provider from global settings (database)
+      const selectedProvider = (provider || globalSettings?.voiceProvider || "elevenlabs") as "elevenlabs" | "google" | "browser";
+      const googleVoice = globalSettings?.googleVoice || "en-US-Neural2-J";
+      const elevenLabsVoice = globalSettings?.elevenLabsVoice || "VQypEoV1u8Wo9oGgDmW0";
       
       // Use selected voice for ElevenLabs, or fallback to provided voiceId
       const effectiveVoiceId = selectedProvider === "elevenlabs" ? elevenLabsVoice : voiceId;

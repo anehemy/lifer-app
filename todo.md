@@ -4,9 +4,20 @@
 - [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
 
 ## CRITICAL BUGS - Fix Immediately
+- [ ] Voice settings architecture: Move from per-user to global admin settings (IN PROGRESS)
+  - [x] Create global_settings table
+  - [x] Fix duplicate router error in server/routes.ts
+  - [x] Create tRPC endpoints (globalSettings.getAll, globalSettings.updateVoiceSettings)
+  - [x] Update Settings.tsx to use global settings
+  - [x] Update useVoiceChat.ts to read from global settings
+  - [x] Add admin-only UI restrictions to voice settings section (already implemented)
+  - [ ] Test voice settings changes apply globally to all users (ready for testing)
+  - [ ] Create migration to remove voice fields from users table (after testing)
+- [x] Voice dropdown positioning broken on mobile (removed position="popper", kept max-height)
+
+## Fixed Bugs
 - [x] Bubble dragging causes page behind to scroll/move
 - [x] User messages appearing duplicated in chat (removed duplicate save call)
-- [x] Voice settings dropdown overflows screen on mobile (added position="popper" and max-height)
 - [x] Voice changes in settings not applying to chat (now reads from user database)
 - [ ] Audio file upload: Current file display not refreshing after upload (shows old filename)
 - [ ] Audio file upload: Add save button to confirm upload success
