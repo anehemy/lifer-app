@@ -21,10 +21,10 @@ export default function Dashboard() {
   };
 
   const stats = [
-    { label: "Journal Entries", value: journalEntries.length, icon: BookOpen, color: "text-blue-600" },
-    { label: "Patterns Discovered", value: patterns.length, icon: Brain, color: "text-purple-600" },
-    { label: "Vision Items", value: visionItems.length, icon: Sparkles, color: "text-pink-600" },
-    { label: "Meditations", value: meditationSessions.length, icon: User, color: "text-green-600" },
+    { label: "Journal Entries", value: journalEntries.length, icon: BookOpen, color: "text-blue-600", href: "/journal" },
+    { label: "Patterns Discovered", value: patterns.length, icon: Brain, color: "text-purple-600", href: "/patterns" },
+    { label: "Vision Items", value: visionItems.length, icon: Sparkles, color: "text-pink-600", href: "/vision" },
+    { label: "Meditations", value: meditationSessions.length, icon: User, color: "text-green-600", href: "/meditation" },
   ];
 
   const quickActions = [
@@ -75,17 +75,19 @@ export default function Dashboard() {
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.label} className="hover:shadow-lg transition-shadow">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-                    <p className="text-3xl font-bold mt-2">{stat.value}</p>
+            <Link key={stat.label} href={stat.href}>
+              <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
+                      <p className="text-3xl font-bold mt-2">{stat.value}</p>
+                    </div>
+                    <Icon className={`h-12 w-12 ${stat.color} opacity-80`} />
                   </div>
-                  <Icon className={`h-12 w-12 ${stat.color} opacity-80`} />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           );
         })}
       </div>

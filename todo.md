@@ -363,3 +363,10 @@
 - [x] Scroll textarea into view when focused on mobile (300ms delay for keyboard animation)
 - [x] Adjust chat layout to account for virtual keyboard height (max-h-screen)
 
+
+
+## Dashboard UX Improvement
+- [x] Make stat cards clickable (Journal Entries → /journal, Patterns → /patterns, Vision Items → /vision, Meditations → /meditation)
+- [x] Add hover effect to indicate they're clickable (scale-105 on hover)
+- [x] Add cursor pointer on hover
+
