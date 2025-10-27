@@ -176,8 +176,9 @@ export const aiChatRouter = router({
         },
       ];
       
-      // Add conversation history (last 10 messages to keep context manageable)
-      const recentMessages = messages.slice(-10);
+      // Add conversation history (last 20 messages to keep context manageable, but trim if too long)
+      // Keep more history to maintain conversation flow
+      const recentMessages = messages.slice(-20);
       recentMessages.forEach((msg) => {
         if (msg.role !== "system") {
           llmMessages.push({
@@ -239,6 +240,37 @@ export const aiChatRouter = router({
                 },
               },
               required: ["entryIds", "mergedQuestion", "mergedResponse"],
+            },
+          },
+        },
+        {
+          type: "function",
+          function: {
+            name: "create_conversation_summary",
+            description: "Create a summary of the current conversation and save it to the user's journal. Use this when the conversation reaches a natural conclusion or when the user agrees to save a summary of insights discussed.",
+            parameters: {
+              type: "object",
+              properties: {
+                summaryTitle: {
+                  type: "string",
+                  description: "A clear title for the summary (e.g., 'Conversation about Career Purpose')",
+                },
+                keyInsights: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Array of key insights, realizations, or important points from the conversation",
+                },
+                actionItems: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Array of action items or next steps identified in the conversation (if any)",
+                },
+                fullSummary: {
+                  type: "string",
+                  description: "A comprehensive summary of the conversation in paragraph form",
+                },
+              },
+              required: ["summaryTitle", "keyInsights", "fullSummary"],
             },
           },
         },
@@ -365,6 +397,68 @@ export const aiChatRouter = router({
           return {
             message: assistantMessage,
             journalEntriesMerged: true,
+          };
+        }
+        
+        if (toolCall.function.name === "create_conversation_summary") {
+          // Parse function arguments
+          const args = JSON.parse(toolCall.function.arguments);
+          const { summaryTitle, keyInsights, actionItems, fullSummary } = args;
+          
+          // Format the summary for journal
+          let summaryText = fullSummary + "\n\n";
+          
+          if (keyInsights && keyInsights.length > 0) {
+            summaryText += "**Key Insights:**\n";
+            keyInsights.forEach((insight: string) => {
+              summaryText += `- ${insight}\n`;
+            });
+            summaryText += "\n";
+          }
+          
+          if (actionItems && actionItems.length > 0) {
+            summaryText += "**Action Items:**\n";
+            actionItems.forEach((item: string) => {
+              summaryText += `- ${item}\n`;
+            });
+          }
+          
+          // Save summary to journal
+          await db.createJournalEntry({
+            userId: ctx.user.id,
+            question: `Conversation Summary: ${summaryTitle}`,
+            response: summaryText,
+          });
+          
+          // Generate a confirmation message
+          const confirmationMessages = [
+            ...llmMessages,
+            responseMessage,
+            {
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify({ 
+                success: true, 
+                message: "Conversation summary saved to journal" 
+              }),
+            },
+          ];
+          
+          // Get final response from the model
+          const finalResponse = await invokeLLM({
+            messages: confirmationMessages,
+          });
+          
+          const assistantMessage = typeof finalResponse.choices[0].message.content === 'string' 
+            ? finalResponse.choices[0].message.content 
+            : "I've saved a summary of our conversation to your journal!";
+          
+          // Save assistant message
+          await db.addChatMessage(input.sessionId, "assistant", assistantMessage);
+          
+          return {
+            message: assistantMessage,
+            summarySaved: true,
           };
         }
       }

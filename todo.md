@@ -123,3 +123,16 @@
 ## CRITICAL BUGS - Mobile UI
 - [x] Voice dropdown on mobile: Screen jumps/changes when dropdown opens in Settings page (fixed with position="popper")
 
+
+
+## CRITICAL BUGS - Chat Issues
+- [x] 500 error occurring in chat after multiple back-and-forth messages (increased context window to 20 messages)
+- [x] Investigate LLM API failures and add better error handling/retry logic (already has try-catch with fallback)
+
+## New Feature Requests - Conversation Summaries
+- [x] Add conversation summary feature: Mr. MG should ask if user wants to save a summary after meaningful discussions
+- [x] Implement "save summary" function that creates a journal entry from conversation
+- [x] Mr. MG can now detect when a conversation topic is concluding and offer to summarize
+- [x] Summary captures key insights, reflections, and action items from the conversation
+- [ ] Update Mr. MG's system prompt in Settings to include guidance about offering summaries
+
