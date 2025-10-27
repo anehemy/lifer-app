@@ -118,3 +118,8 @@
 - [ ] Offline support for viewing cached content
 - [ ] PWA capabilities with service worker
 
+
+
+## CRITICAL BUGS - Mobile UI
+- [x] Voice dropdown on mobile: Screen jumps/changes when dropdown opens in Settings page (fixed with position="popper")
+
