@@ -226,7 +226,10 @@ export default function Journal() {
             </Button>
             <Button onClick={() => {
               const event = new CustomEvent('openMrMgChat', { 
-                detail: { question: currentQuestion } 
+                detail: { 
+                  question: currentQuestion,
+                  forceNew: true // Force create new conversation instead of continuing existing
+                } 
               });
               window.dispatchEvent(event);
             }} variant="default" size="sm" className="flex-1 min-w-[140px]">

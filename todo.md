@@ -4,6 +4,10 @@
 - [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
 
 ## CRITICAL BUGS - Fix Immediately
+- [x] Chat with Mr. MG should start fresh conversation, not add to existing
+- [x] LLM invoke failed: 500 Internal Server Error - Added error handling and graceful fallback
+
+## Fixed Bugs
 - [x] Duplicate React keys error in Settings - multiple env vars have same voice ID
 
 ## New Feature Requests

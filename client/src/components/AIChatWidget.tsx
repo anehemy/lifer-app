@@ -138,7 +138,18 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     const handleOpenChat = (event: any) => {
       setIsOpen(true);
       const initialQuestion = event.detail?.question;
-      if (!currentSession) {
+      const forceNew = event.detail?.forceNew;
+      
+      if (forceNew) {
+        // Force create new conversation - clear existing session
+        sessionStorage.removeItem('mrMgSessionId');
+        setCurrentSession(null);
+        setHasGreeted(false);
+        // Create new session with initial question
+        setTimeout(() => {
+          initializeMrMgSession(initialQuestion);
+        }, 100);
+      } else if (!currentSession) {
         initializeMrMgSession(initialQuestion);
       } else if (initialQuestion) {
         // If session exists but we have an initial question, send it immediately

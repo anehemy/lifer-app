@@ -239,13 +239,25 @@ export const aiChatRouter = router({
       ];
 
       // Get AI response with function calling
-      const response = await invokeLLM({
-        messages: llmMessages,
-        tools,
-        tool_choice: "auto", // Let the model decide when to use tools
-      });
-
-      console.log("[AI Chat] LLM Response:", JSON.stringify(response, null, 2));
+      let response;
+      try {
+        console.log("[AI Chat] Sending to LLM with", llmMessages.length, "messages and", tools.length, "tools");
+        response = await invokeLLM({
+          messages: llmMessages,
+          tools,
+          tool_choice: "auto", // Let the model decide when to use tools
+        });
+        console.log("[AI Chat] LLM Response:", JSON.stringify(response, null, 2));
+      } catch (error: any) {
+        console.error("[AI Chat] LLM Error:", error.message);
+        // Save error message for user
+        const errorMsg = "I apologize, but I'm having trouble connecting right now. Please try again in a moment.";
+        await db.addChatMessage(input.sessionId, "assistant", errorMsg);
+        return {
+          message: errorMsg,
+          journalEntrySaved: false,
+        };
+      }
 
       if (!response.choices || response.choices.length === 0) {
         throw new Error("No response from LLM");
