@@ -21,6 +21,7 @@ export default function Settings() {
   // Get Mr. MG agent (ID 1)
   const { data: mrMgAgent } = trpc.aiChat.getAgent.useQuery({ agentId: 1 });
   const updatePromptMutation = trpc.aiChat.updateAgentSystemPrompt.useMutation();
+  const testVoiceMutation = trpc.textToSpeech.generate.useMutation();
   
   useEffect(() => {
     if (mrMgAgent?.systemPrompt) {
@@ -217,6 +218,38 @@ export default function Settings() {
               <p className="text-sm text-muted-foreground mt-2">
                 Select the voice for Google Cloud TTS. Neural2 voices provide the highest quality.
               </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="mt-2"
+                disabled={testVoiceMutation.isPending}
+                onClick={() => {
+                  const testText = "Hello! This is a preview of the selected voice.";
+                  
+                  toast.info("Generating voice preview...");
+                  testVoiceMutation.mutate({
+                    text: testText,
+                    provider: "google",
+                    googleVoice: googleVoice
+                  }, {
+                    onSuccess: (result) => {
+                      if (result.audioUrl) {
+                        const audio = new Audio(result.audioUrl);
+                        audio.play();
+                        toast.success("Playing voice preview!");
+                      } else {
+                        toast.error("Could not generate preview. Check your Google Cloud TTS API key.");
+                      }
+                    },
+                    onError: (error) => {
+                      console.error("Voice preview error:", error);
+                      toast.error("Failed to generate voice preview.");
+                    }
+                  });
+                }}
+              >
+                🔊 {testVoiceMutation.isPending ? "Generating..." : "Test Voice"}
+              </Button>
             </div>
           )}
         </CardContent>

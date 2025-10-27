@@ -323,6 +323,14 @@ export async function getChatSession(sessionId: number, userId: number) {
   return result.length > 0 ? result[0] : null;
 }
 
+export async function updateChatSessionTitle(sessionId: number, title: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(chatSessions)
+    .set({ title })
+    .where(eq(chatSessions.id, sessionId));
+}
+
 export async function addChatMessage(sessionId: number, role: "user" | "assistant" | "system", content: string, metadata?: any) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

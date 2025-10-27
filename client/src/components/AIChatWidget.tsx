@@ -172,11 +172,20 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   const handleSendMessage = () => {
     if (!message.trim() || !currentSession) return;
     
+    const messageToSend = message.trim();
+    // Clear input immediately for better UX
+    setMessage("");
+    
     // Use sendMessage to respect database system prompt
     sendMessageMutation.mutate({
       sessionId: currentSession,
-      message: message.trim(),
+      message: messageToSend,
     });
+    
+    // Blur textarea on mobile to hide keyboard
+    if (window.innerWidth < 640 && textareaRef.current) {
+      textareaRef.current.blur();
+    }
   };
 
   const handleClearChat = async () => {
@@ -369,13 +378,27 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
                     </div>
                   </div>
                 ))}
+                
+                {/* Loading indicator while AI is thinking */}
                 {sendMessageMutation.isPending && (
                   <div className="flex justify-start">
-                    <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-lg p-3">
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                    <div className="max-w-[85%] rounded-lg p-3 bg-gradient-to-br from-purple-100 to-pink-100">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg">{MR_MG_AVATAR}</span>
+                        <span className="text-xs font-medium">{MR_MG_NAME}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex gap-1">
+                          <span className="animate-bounce" style={{animationDelay: '0ms'}}>●</span>
+                          <span className="animate-bounce" style={{animationDelay: '150ms'}}>●</span>
+                          <span className="animate-bounce" style={{animationDelay: '300ms'}}>●</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">Thinking...</span>
+                      </div>
                     </div>
                   </div>
                 )}
+
               </div>
             </div>
 

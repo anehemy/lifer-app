@@ -20,9 +20,10 @@ interface Props {
   onConfirm: (selectedContext: any) => void;
   userContext: UserContext;
   meditationType: string;
+  isGenerating?: boolean;
 }
 
-export default function MeditationCustomizer({ open, onClose, onConfirm, userContext, meditationType }: Props) {
+export default function MeditationCustomizer({ open, onClose, onConfirm, userContext, meditationType, isGenerating = false }: Props) {
   const [includeFirstName, setIncludeFirstName] = useState(true);
   const [selectedJournalEntries, setSelectedJournalEntries] = useState<number[]>([]);
   const [selectedVisionItems, setSelectedVisionItems] = useState<number[]>([]);
@@ -186,8 +187,17 @@ export default function MeditationCustomizer({ open, onClose, onConfirm, userCon
         </div>
 
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleConfirm}>Generate Meditation</Button>
+          <Button variant="outline" onClick={onClose} disabled={isGenerating}>Cancel</Button>
+          <Button onClick={handleConfirm} disabled={isGenerating}>
+            {isGenerating ? (
+              <>
+                <span className="animate-spin mr-2">⏳</span>
+                Generating...
+              </>
+            ) : (
+              "Generate Meditation"
+            )}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

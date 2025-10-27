@@ -296,6 +296,7 @@ export default function Meditation() {
           onConfirm={handleCustomizerConfirm}
           userContext={userContext}
           meditationType={selectedType}
+          isGenerating={generateMeditation.isPending}
         />
       )}
     </div>

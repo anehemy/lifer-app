@@ -109,6 +109,19 @@ export const aiChatRouter = router({
       // Get conversation history
       const messages = await db.getChatMessages(input.sessionId);
       
+      // Auto-generate title from first user message if session has no title
+      if (!session.title || session.title === "New Conversation") {
+        const userMessages = messages.filter(m => m.role === "user");
+        if (userMessages.length === 1) {
+          // This is the first user message - generate a title
+          const firstMessage = input.message;
+          const title = firstMessage.length > 50 
+            ? firstMessage.substring(0, 47) + "..." 
+            : firstMessage;
+          await db.updateChatSessionTitle(input.sessionId, title);
+        }
+      }
+      
       // Build context for AI based on agent capabilities
       const capabilities = JSON.parse(agent.capabilities);
       let contextData = "";

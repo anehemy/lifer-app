@@ -370,3 +370,26 @@
 - [x] Add hover effect to indicate they're clickable (scale-105 on hover)
 - [x] Add cursor pointer on hover
 
+
+
+## Phase 1 - Critical Fixes
+- [x] Fix chat input not clearing on mobile after sending message (clears immediately + blurs textarea)
+- [x] Verify Google Cloud TTS API key format and provide setup instructions (simple API key, not JSON)
+- [x] Add better error logging for Google Cloud TTS debugging
+- [ ] Test Google TTS with correct API key format (user needs to verify their API key)
+
+## Phase 2 - User Experience Improvements
+- [x] Add voice preview/test button for Google TTS voices (🔊 Test Voice button in Settings)
+- [x] Auto-generate conversation titles based on first user message (first 50 chars)
+- [x] Update conversation list to show meaningful titles instead of "Conversation" (auto-generated from first message)
+
+## Phase 3 ## Phase 3 - Polish & Animations
+- [x] Add better loading states for meditation generation (animated hourglass + "Generating...")
+- [x] Add loading states for AI chat responses (animated dots + "Thinking...")
+- [x] Improve mobile menu animations for smoother transitions (fade overlay + shadow effects)ions for all interactive elements
+
+## Phase 4 - Advanced Features
+- [ ] Implement offline support for viewing cached content
+- [ ] Add service worker for PWA capabilities
+- [ ] Cache journal entries and meditations for offline access
+

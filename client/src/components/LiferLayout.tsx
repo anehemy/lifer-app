@@ -69,17 +69,17 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
       </button>
 
       {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <div
+        className={`fixed inset-0 bg-black/50 z-40 lg:hidden transition-opacity duration-300 ${
+          sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+        onClick={() => setSidebarOpen(false)}
+      />
 
       {/* Sidebar */}
-      <aside className={`fixed left-0 top-0 h-full w-64 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-r border-gray-200 dark:border-gray-800 z-50 transition-transform duration-300 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } lg:translate-x-0`}>
+      <aside className={`fixed left-0 top-0 h-full w-64 bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border-r border-gray-200 dark:border-gray-800 z-50 transition-all duration-300 ease-in-out ${
+        sidebarOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full shadow-none'
+      } lg:translate-x-0 lg:shadow-none`}>
         <div className="p-6">
           <h1 className="text-2xl font-bold text-gradient">{APP_TITLE}</h1>
           <p className="text-sm text-muted-foreground mt-1">Discover Your Purpose</p>

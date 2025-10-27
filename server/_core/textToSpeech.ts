@@ -96,10 +96,21 @@ export async function generateSpeechAudio(options: TTSOptions): Promise<string> 
         }
       );
       
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[TTS] Google Cloud TTS HTTP error:", response.status, errorText);
+        return "";
+      }
+      
       const data = await response.json();
       
       if (data.error) {
-        console.error("[TTS] Google Cloud TTS error:", data.error);
+        console.error("[TTS] Google Cloud TTS API error:", {
+          code: data.error.code,
+          message: data.error.message,
+          status: data.error.status,
+          details: data.error.details
+        });
         return "";
       }
       
