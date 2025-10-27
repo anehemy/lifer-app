@@ -196,7 +196,7 @@ export default function Settings() {
               <SelectTrigger id="voiceProvider">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="max-h-[60vh] overflow-y-auto">
                 <SelectItem value="elevenlabs">ElevenLabs (High Quality, Expensive)</SelectItem>
                 <SelectItem value="google">Google Cloud TTS (Good Quality, Affordable)</SelectItem>
                 <SelectItem value="browser">Browser TTS (Free, Basic Quality)</SelectItem>
@@ -232,7 +232,7 @@ export default function Settings() {
                 <SelectTrigger id="googleVoice">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" className="max-h-[60vh] overflow-y-auto">
                   <SelectItem value="en-US-Neural2-J">🇺🇸 Male - Neural2-J (Warm)</SelectItem>
                   <SelectItem value="en-US-Neural2-D">🇺🇸 Male - Neural2-D (Clear)</SelectItem>
                   <SelectItem value="en-US-Neural2-A">🇺🇸 Male - Neural2-A (Deep)</SelectItem>
@@ -302,7 +302,7 @@ export default function Settings() {
                 <SelectTrigger id="elevenLabsVoice">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" className="max-h-[60vh] overflow-y-auto">
                   {elevenLabsVoices.map(voice => (
                     <SelectItem key={voice.key} value={voice.id}>
                       {voice.name}

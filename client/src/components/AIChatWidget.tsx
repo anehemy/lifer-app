@@ -294,6 +294,9 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging || !buttonRef.current) return;
     
+    e.preventDefault(); // Prevent page scrolling
+    e.stopPropagation();
+    
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const buttonSize = buttonRef.current.offsetWidth;
@@ -335,6 +338,9 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   const handleTouchMove = (e: TouchEvent) => {
     if (!isDragging || !buttonRef.current) return;
     
+    e.preventDefault(); // Prevent page scrolling
+    e.stopPropagation();
+    
     const touch = e.touches[0];
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -347,7 +353,6 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     const constrainedBottom = Math.max(0, Math.min(newBottom, viewportHeight - buttonSize));
     
     setPosition({ right: constrainedRight, bottom: constrainedBottom });
-    e.preventDefault();
   };
 
   const handleTouchEnd = () => {

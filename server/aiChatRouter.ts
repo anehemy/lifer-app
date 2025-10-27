@@ -175,9 +175,6 @@ export const aiChatRouter = router({
           content: agent.systemPrompt + (contextData ? "\n\nCurrent user data:" + contextData : ""),
         },
       ];
-
-      // Save user message first so it appears immediately
-      await db.addChatMessage(input.sessionId, "user", input.message);
       
       // Add conversation history (last 10 messages to keep context manageable)
       const recentMessages = messages.slice(-10);
