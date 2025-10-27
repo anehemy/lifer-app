@@ -3,6 +3,9 @@
 ## CRITICAL BUGS - Fix Immediately
 - [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
 
+## CRITICAL BUGS - Fix Immediately
+- [x] Duplicate React keys error in Settings - multiple env vars have same voice ID
+
 ## New Feature Requests
 - [x] Dynamic voice dropdowns: Read ElevenLabs voices from secret keys instead of hardcoding
 

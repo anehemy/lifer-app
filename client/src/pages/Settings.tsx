@@ -27,7 +27,11 @@ export default function Settings() {
       // Extract voice name from key (e.g., VITE_MEDITATION_VOICE_ANTONI -> Antoni)
       const name = key.replace('VITE_MEDITATION_VOICE_', '').replace('VITE_MR_MG_VOICE_ID', 'MR_MG')
         .split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ');
-      return { id: value as string, name };
+      return { 
+        key: key, // Use env var name as unique key (not voice ID which can be duplicate)
+        id: value as string, 
+        name 
+      };
     })
     .filter(voice => voice.id && voice.id !== '0'); // Filter out placeholder voices
   
@@ -294,7 +298,7 @@ export default function Settings() {
                 </SelectTrigger>
                 <SelectContent>
                   {elevenLabsVoices.map(voice => (
-                    <SelectItem key={voice.id} value={voice.id}>
+                    <SelectItem key={voice.key} value={voice.id}>
                       {voice.name}
                     </SelectItem>
                   ))}
