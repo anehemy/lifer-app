@@ -141,6 +141,66 @@ Return ONLY the question, nothing else.`;
           return "What would you like to explore today?";
         }
       }),
+    generateContextualQuestion: protectedProcedure.query(async ({ ctx }) => {
+      const db = await import('./db').then(m => m.getDb());
+      if (!db) return "What would you like to explore today?";
+      
+      const { getUserJournalEntries, getUserVisionItems, getUserPrimaryAim } = await import("./db");
+      const { getPatternInsights } = await import("./db");
+      const { invokeLLM } = await import("./_core/llm");
+      
+      // Gather user context
+      const [entries, visionItems, primaryAim, patterns] = await Promise.all([
+        getUserJournalEntries(ctx.user.id),
+        getUserVisionItems(ctx.user.id),
+        getUserPrimaryAim(ctx.user.id),
+        getPatternInsights(ctx.user.id),
+      ]);
+      
+      // Build context for Mr. MG
+      let context = "";
+      
+      if (entries.length > 0) {
+        const recentEntries = entries.slice(0, 5);
+        context += `Recent journal entries:\n${recentEntries.map(e => `- ${e.question}: ${e.response.slice(0, 100)}...`).join('\n')}\n\n`;
+      }
+      
+      if (visionItems.length > 0) {
+        context += `Vision board items: ${visionItems.map(v => v.title).join(', ')}\n\n`;
+      }
+      
+      if (primaryAim?.statement) {
+        context += `Primary Aim: ${primaryAim.statement}\n\n`;
+      }
+      
+      if (patterns && patterns.length > 0) {
+        context += `Patterns discovered: ${patterns.join(', ')}\n\n`;
+      }
+      
+      // Generate contextual question
+      const prompt = `You are Mr. MG, the AI avatar of Michael E. Gerber, author of The E-Myth. Based on this user's journey, generate ONE thoughtful, personalized question that will help them discover more about themselves.
+
+${context || "This user is just starting their journey."}
+
+Generate a question that:
+1. Connects to their existing reflections, vision, or patterns (if any)
+2. Encourages deeper self-discovery about who they are and what they want
+3. Feels warm, insightful, and genuinely curious
+4. Is specific to their journey, not generic
+
+Return ONLY the question (1-2 sentences max), nothing else.`;
+      
+      try {
+        const result = await invokeLLM({
+          messages: [{ role: "user", content: prompt }],
+        });
+        const question = result.choices[0]?.message?.content;
+        return typeof question === 'string' ? question.trim() : "What would you like to explore today?";
+      } catch (e) {
+        console.error('Failed to generate contextual question:', e);
+        return "What would you like to explore today?";
+      }
+    }),
     getStats: protectedProcedure.query(async ({ ctx }) => {
       const db = await import('./db').then(m => m.getDb());
       if (!db) return { journalEntries: 0, meditations: 0, visionItems: 0, patterns: 0 };

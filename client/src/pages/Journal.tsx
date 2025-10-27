@@ -12,21 +12,9 @@ import { toast } from "sonner";
 import { Trash2, RefreshCw, Mic, MicOff, MessageCircle, Send } from "lucide-react";
 import LifeStoryTimeline from "@/components/LifeStoryTimeline";
 
-const questions = [
-  "Tell me about a moment in your childhood that shaped who you are today.",
-  "What beliefs about success, money, and work did you learn from your family?",
-  "Think about a time when you felt most alive and authentic. What were you doing?",
-  "When you look at your biggest struggles, what have they taught you?",
-  "Imagine you're 90 years old. What would make you feel you truly lived?",
-  "If you could only be remembered for one thing, what would it be?",
-  "When you strip away what others expect, what do YOU actually want?",
-  "What would you do if you knew you couldn't fail?",
-  "What gives your life the deepest sense of meaning?",
-  "What patterns do you notice when you look back on your life?",
-];
-
 export default function Journal() {
-  const [currentQuestion, setCurrentQuestion] = useState(questions[0]);
+  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [isLoadingQuestion, setIsLoadingQuestion] = useState(false);
   const [response, setResponse] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
@@ -174,10 +162,27 @@ export default function Journal() {
   
   // askMrMg mutation removed - now using global AIChatWidget
 
-  const handleNextQuestion = () => {
-    const currentIndex = questions.indexOf(currentQuestion);
-    const nextIndex = (currentIndex + 1) % questions.length;
-    setCurrentQuestion(questions[nextIndex]);
+  const generateQuestion = trpc.journal.generateContextualQuestion.useQuery(undefined, {
+    enabled: !currentQuestion, // Only fetch if we don't have a question
+  });
+  
+  // Set initial question when it loads
+  useEffect(() => {
+    if (generateQuestion.data && !currentQuestion) {
+      setCurrentQuestion(generateQuestion.data);
+    }
+  }, [generateQuestion.data, currentQuestion]);
+  
+  const handleNextQuestion = async () => {
+    setIsLoadingQuestion(true);
+    try {
+      const result = await utils.journal.generateContextualQuestion.fetch();
+      setCurrentQuestion(result);
+    } catch (e) {
+      toast.error("Failed to generate question");
+    } finally {
+      setIsLoadingQuestion(false);
+    }
   };
 
   const handleSave = () => {
@@ -204,21 +209,25 @@ export default function Journal() {
             </div>
             <div className="flex-1">
               <CardTitle className="mb-2">{MR_MG_NAME} asks:</CardTitle>
-              <p className="text-lg">{currentQuestion}</p>
+              {generateQuestion.isLoading && !currentQuestion ? (
+                <p className="text-lg text-muted-foreground italic">Generating a personalized question for you...</p>
+              ) : (
+                <p className="text-lg">{currentQuestion || "What would you like to explore today?"}</p>
+              )}
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2 flex-wrap">
-            <Button onClick={handleNextQuestion} variant="outline" size="sm" className="flex-1 min-w-[140px]">
-              <RefreshCw className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Ask Another Question</span>
-              <span className="sm:hidden">New Question</span>
+            <Button onClick={handleNextQuestion} variant="outline" size="sm" className="flex-1 min-w-[140px]" disabled={isLoadingQuestion}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingQuestion ? 'animate-spin' : ''}`} />
+              <span className="hidden sm:inline">{isLoadingQuestion ? 'Generating...' : 'Ask Another Question'}</span>
+              <span className="sm:hidden">{isLoadingQuestion ? 'Loading...' : 'New Question'}</span>
             </Button>
             <Button onClick={() => window.dispatchEvent(new Event('openMrMgChat'))} variant="default" size="sm" className="flex-1 min-w-[140px]">
               <MessageCircle className="h-4 w-4 mr-2" />
-              <span className="hidden sm:inline">Ask Mr. MG for Guidance</span>
-              <span className="sm:hidden">Ask Mr. MG</span>
+              <span className="hidden sm:inline">Chat with Mr. MG</span>
+              <span className="sm:hidden">Chat Mr. MG</span>
             </Button>
           </div>
         </CardContent>
