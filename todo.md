@@ -393,3 +393,15 @@
 - [ ] Add service worker for PWA capabilities
 - [ ] Cache journal entries and meditations for offline access
 
+
+
+## Critical Bugs
+- [x] Fix API key routing - Keys ARE being detected, but ElevenLabs key is invalid/expired
+- [x] Check environment variable loading in textToSpeech service - Working correctly
+- [x] Added API Key Diagnostics section to help debug issues
+
+## UI Improvements
+- [x] Make Mr. MG prompt textarea collapsible (click header to expand/collapse)
+- [x] Add expand/collapse functionality for long text areas in Settings
+- [x] Added API diagnostics with links to regenerate keys
+

@@ -14,6 +14,7 @@ export default function Settings() {
   const [name, setName] = useState(user?.name || "");
   const [email, setEmail] = useState(user?.email || "");
   const [mrMgPrompt, setMrMgPrompt] = useState("");
+  const [mrMgPromptExpanded, setMrMgPromptExpanded] = useState(false);
   const [voiceProvider, setVoiceProvider] = useState(localStorage.getItem("voiceProvider") || "elevenlabs");
   const [providerStatus, setProviderStatus] = useState<{provider: string, available: boolean, message: string} | null>(null);
   const [googleVoice, setGoogleVoice] = useState(localStorage.getItem("googleVoice") || "en-US-Neural2-J");
@@ -83,30 +84,37 @@ export default function Settings() {
       
       {user?.role === "admin" && (
         <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Mr. MG Instructions (Admin)</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="mrMgPrompt">System Prompt</Label>
-              <Textarea
-                id="mrMgPrompt"
-                value={mrMgPrompt}
-                onChange={(e) => setMrMgPrompt(e.target.value)}
-                placeholder="Enter Mr. MG's system instructions..."
-                className="min-h-[300px] font-mono text-sm"
-              />
-              <p className="text-sm text-muted-foreground mt-2">
-                Customize how Mr. MG responds and behaves. Changes take effect immediately for new conversations.
-              </p>
+          <CardHeader className="cursor-pointer" onClick={() => setMrMgPromptExpanded(!mrMgPromptExpanded)}>
+            <div className="flex items-center justify-between">
+              <CardTitle>Mr. MG Instructions (Admin)</CardTitle>
+              <Button variant="ghost" size="sm">
+                {mrMgPromptExpanded ? "Collapse" : "Expand"}
+              </Button>
             </div>
-            <Button 
-              onClick={handleSavePrompt}
-              disabled={updatePromptMutation.isPending}
-            >
-              {updatePromptMutation.isPending ? "Saving..." : "Save Instructions"}
-            </Button>
-          </CardContent>
+          </CardHeader>
+          {mrMgPromptExpanded && (
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="mrMgPrompt">System Prompt</Label>
+                <Textarea
+                  id="mrMgPrompt"
+                  value={mrMgPrompt}
+                  onChange={(e) => setMrMgPrompt(e.target.value)}
+                  placeholder="Enter Mr. MG's system instructions..."
+                  className="min-h-[200px] max-h-[400px] font-mono text-sm"
+                />
+                <p className="text-sm text-muted-foreground mt-2">
+                  Customize how Mr. MG responds and behaves. Changes take effect immediately for new conversations.
+                </p>
+              </div>
+              <Button 
+                onClick={handleSavePrompt}
+                disabled={updatePromptMutation.isPending}
+              >
+                {updatePromptMutation.isPending ? "Saving..." : "Save Instructions"}
+              </Button>
+            </CardContent>
+          )}
         </Card>
       )}
       
@@ -254,6 +262,53 @@ export default function Settings() {
           )}
         </CardContent>
       </Card>
+      )}
+      
+      {user?.role === "admin" && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>API Key Diagnostics (Admin)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <h3 className="font-semibold">ElevenLabs API Key</h3>
+              <div className="flex items-center gap-2">
+                <code className="text-xs bg-muted px-2 py-1 rounded">ELEVENLABS_API_KEY</code>
+                <span className="text-xs text-muted-foreground">Configured in Manus Secrets</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Current error: "invalid_api_key" - The key exists but ElevenLabs is rejecting it.
+              </p>
+              <p className="text-sm text-yellow-600">
+                ⚠️ Please verify your API key at <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" className="underline">ElevenLabs Dashboard</a>
+              </p>
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="font-semibold">Google Cloud TTS API Key</h3>
+              <div className="flex items-center gap-2">
+                <code className="text-xs bg-muted px-2 py-1 rounded">GOOGLE_CLOUD_TTS_API_KEY</code>
+                <span className="text-xs text-muted-foreground">Configured in Manus Secrets</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Use the 🔊 Test Voice button in Voice Settings to verify this key.
+              </p>
+              <p className="text-sm text-blue-600">
+                💡 Get your API key at <a href="https://console.cloud.google.com/apis/credentials" target="_blank" className="underline">Google Cloud Console</a>
+              </p>
+            </div>
+            
+            <div className="p-4 bg-muted rounded-lg">
+              <h4 className="font-semibold mb-2">How to Fix API Key Issues:</h4>
+              <ol className="text-sm space-y-1 list-decimal list-inside">
+                <li>Go to Manus UI → Settings → Secrets</li>
+                <li>Update ELEVENLABS_API_KEY or GOOGLE_CLOUD_TTS_API_KEY</li>
+                <li>Restart the dev server (click Restart in Manus UI)</li>
+                <li>Test again using the 🔊 Test Voice button</li>
+              </ol>
+            </div>
+          </CardContent>
+        </Card>
       )}
       
       <Card>
