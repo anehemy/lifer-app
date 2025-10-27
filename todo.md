@@ -4,15 +4,18 @@
 - [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
 
 ## CRITICAL BUGS - Fix Immediately
+- [x] Chat bubble: Make draggable - overlaps with "Made with Manus" badge on mobile
 - [ ] Audio file upload: Current file display not refreshing after upload (shows old filename)
 - [ ] Audio file upload: Add save button to confirm upload success
 - [ ] ElevenLabs selector: Selecting one voice selects multiple (Domi/Elli/Mr MG share same ID)
-- [x] Chat bubble: Cannot move/drag around screen, overlaps with menu (moved to right side)
-- [x] Chat: User message doesn't appear until Mr. MG replies (now saved immediately)
-- [x] Voice settings: Not syncing across devices (desktop vs phone)
 - [ ] LLM 500 error: Still occurring in chat
 - [ ] Delete meditation not working - recording doesn't disappear
 - [ ] Chat should show journal question when opened directly (not just from journal page)
+
+## Fixed Bugs
+- [x] Chat bubble: Cannot move/drag around screen, overlaps with menu (moved to right side)
+- [x] Chat: User message doesn't appear until Mr. MG replies (now saved immediately)
+- [x] Voice settings: Not syncing across devices (desktop vs phone)
 
 ## Fixed Bugs
 - [x] Intro audio URL not persisting - uses localStorage instead of database (resets on new device/deployment)

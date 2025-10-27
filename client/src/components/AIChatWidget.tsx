@@ -24,6 +24,15 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   const [hasGreeted, setHasGreeted] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false); // Default to OFF to prevent auto-play
   const [showConversations, setShowConversations] = useState(false);
+  
+  // Draggable chat bubble state
+  const [position, setPosition] = useState(() => {
+    const saved = localStorage.getItem('chatBubblePosition');
+    return saved ? JSON.parse(saved) : { bottom: 24, right: 24 };
+  });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -119,13 +128,31 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     if (isListening && transcript) {
       setMessage(transcript);
     }
-  }, [transcript, isListening]);
+  }, [isListening, transcript]);
 
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Attach drag event listeners
+  useEffect(() => {
+    if (isDragging) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd);
+      
+      return () => {
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('mouseup', handleMouseUp);
+        window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
+  }, [isDragging, dragOffset, position]);
 
   // Initialize session without auto-opening
   useEffect(() => {
@@ -249,6 +276,87 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     toast.success("New conversation started!");
   };
 
+  // Drag handlers for chat bubble
+  const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (isOpen) return; // Don't drag when chat is open
+    
+    setIsDragging(true);
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      });
+    }
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging || !buttonRef.current) return;
+    
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const buttonSize = buttonRef.current.offsetWidth;
+    
+    // Calculate new position (using right and bottom for consistency)
+    const newRight = viewportWidth - e.clientX - (buttonSize - dragOffset.x);
+    const newBottom = viewportHeight - e.clientY - (buttonSize - dragOffset.y);
+    
+    // Constrain to viewport
+    const constrainedRight = Math.max(0, Math.min(newRight, viewportWidth - buttonSize));
+    const constrainedBottom = Math.max(0, Math.min(newBottom, viewportHeight - buttonSize));
+    
+    setPosition({ right: constrainedRight, bottom: constrainedBottom });
+  };
+
+  const handleMouseUp = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      // Save position to localStorage
+      localStorage.setItem('chatBubblePosition', JSON.stringify(position));
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLButtonElement>) => {
+    if (isOpen) return;
+    
+    setIsDragging(true);
+    const touch = e.touches[0];
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect) {
+      setDragOffset({
+        x: touch.clientX - rect.left,
+        y: touch.clientY - rect.top
+      });
+    }
+    e.preventDefault();
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isDragging || !buttonRef.current) return;
+    
+    const touch = e.touches[0];
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const buttonSize = buttonRef.current.offsetWidth;
+    
+    const newRight = viewportWidth - touch.clientX - (buttonSize - dragOffset.x);
+    const newBottom = viewportHeight - touch.clientY - (buttonSize - dragOffset.y);
+    
+    const constrainedRight = Math.max(0, Math.min(newRight, viewportWidth - buttonSize));
+    const constrainedBottom = Math.max(0, Math.min(newBottom, viewportHeight - buttonSize));
+    
+    setPosition({ right: constrainedRight, bottom: constrainedBottom });
+    e.preventDefault();
+  };
+
+  const handleTouchEnd = () => {
+    if (isDragging) {
+      setIsDragging(false);
+      localStorage.setItem('chatBubblePosition', JSON.stringify(position));
+    }
+  };
+
   const handleVoiceInput = () => {
     if (isListening) {
       // Stop listening and keep the transcript
@@ -312,11 +420,21 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
       {/* Floating Mr. MG Button */}
       {!isOpen && !sidebarOpen && (
         <Button
+          ref={buttonRef}
           onClick={() => {
-            setIsOpen(true);
-            if (!currentSession) initializeMrMgSession();
+            if (!isDragging) {
+              setIsOpen(true);
+              if (!currentSession) initializeMrMgSession();
+            }
           }}
-          className="fixed bottom-4 right-4 h-14 w-14 sm:h-16 sm:w-16 sm:bottom-6 sm:right-6 rounded-full shadow-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 z-50 text-2xl sm:text-3xl"
+          onMouseDown={handleMouseDown}
+          onTouchStart={handleTouchStart}
+          style={{
+            bottom: `${position.bottom}px`,
+            right: `${position.right}px`,
+            cursor: isDragging ? 'grabbing' : 'grab'
+          }}
+          className="fixed h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 z-50 text-2xl sm:text-3xl transition-none"
           size="icon"
         >
           {MR_MG_AVATAR}
