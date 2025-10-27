@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -345,6 +345,62 @@ export default function Settings() {
         </CardContent>
       </Card>
       )}
+      
+      {/* Intro Audio Upload */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Start Here Introduction Audio</CardTitle>
+          <CardDescription>
+            Upload a custom audio file for Mr. MG's welcome message in the "Start Here" guide
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="introAudio">Audio File (MP3)</Label>
+            <Input 
+              id="introAudio" 
+              type="file" 
+              accept="audio/mp3,audio/mpeg"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                
+                if (!file.type.includes('mp3') && !file.type.includes('mpeg')) {
+                  toast.error('Please upload an MP3 file');
+                  return;
+                }
+                
+                // Upload to S3 via storage API
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                  toast.info('Uploading audio file...');
+                  const response = await fetch('/api/storage/upload', {
+                    method: 'POST',
+                    body: formData,
+                  });
+                  
+                  if (!response.ok) {
+                    throw new Error('Upload failed');
+                  }
+                  
+                  const result = await response.json();
+                  localStorage.setItem('introAudioUrl', result.url);
+                  toast.success('Audio uploaded successfully!');
+                } catch (error) {
+                  console.error('Upload error:', error);
+                  toast.error('Failed to upload audio file');
+                }
+              }}
+              className="mt-2"
+            />
+            <p className="text-sm text-muted-foreground mt-2">
+              Current: {localStorage.getItem('introAudioUrl') || '/MichaelMrMGIntroV1.mp3 (default)'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
       
       {user?.role === "admin" && false && (
         <Card className="mb-6">

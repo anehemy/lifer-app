@@ -4,6 +4,12 @@
 - [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
 
 ## CRITICAL BUGS - Fix Immediately
+- [x] Chat opens blank when clicking "Chat with Mr. MG" from journal
+
+## New Feature Requests
+- [x] Add audio file upload in Settings for Mr. MG's "Start Here" introduction
+
+## Fixed Bugs
 - [x] Chat with Mr. MG should start fresh conversation, not add to existing
 - [x] LLM invoke failed: 500 Internal Server Error - Added error handling and graceful fallback
 

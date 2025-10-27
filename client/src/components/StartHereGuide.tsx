@@ -85,7 +85,7 @@ export default function StartHereGuide() {
                 <div className="p-4 bg-gradient-to-r from-purple-100 via-pink-100 to-blue-100 dark:from-purple-900/30 dark:via-pink-900/30 dark:to-blue-900/30 rounded-lg border-2 border-purple-300 dark:border-purple-700">
                   <audio 
                     ref={audioRef} 
-                    src="/MichaelMrMGIntroV1.mp3"
+                    src={localStorage.getItem('introAudioUrl') || "/MichaelMrMGIntroV1.mp3"}
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onEnded={() => {

@@ -145,10 +145,14 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
         sessionStorage.removeItem('mrMgSessionId');
         setCurrentSession(null);
         setHasGreeted(false);
-        // Create new session with initial question
-        setTimeout(() => {
-          initializeMrMgSession(initialQuestion);
-        }, 100);
+        // Create new session with initial question immediately
+        const mrMgAgent = { id: 1, name: MR_MG_NAME, avatar: MR_MG_AVATAR, role: "Life Mentor" };
+        createSession.mutate({ 
+          agentId: mrMgAgent.id,
+          title: initialQuestion ? initialQuestion.substring(0, 50) + "..." : "New Conversation",
+          initialQuestion: initialQuestion
+        });
+        setHasGreeted(true);
       } else if (!currentSession) {
         initializeMrMgSession(initialQuestion);
       } else if (initialQuestion) {
