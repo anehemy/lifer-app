@@ -19,6 +19,18 @@ export const appRouter = router({
         .where(eq(users.id, ctx.user.id));
       return { success: true };
     }),
+    updateIntroAudio: protectedProcedure
+      .input(z.object({ audioUrl: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db').then(m => m.getDb());
+        if (!db) throw new Error('Database not available');
+        const { users } = await import('../drizzle/schema');
+        const { eq } = await import('drizzle-orm');
+        await db.update(users)
+          .set({ introAudioUrl: input.audioUrl })
+          .where(eq(users.id, ctx.user.id));
+        return { success: true };
+      }),
   }),
 
   tokens: router({

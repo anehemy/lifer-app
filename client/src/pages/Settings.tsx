@@ -39,6 +39,7 @@ export default function Settings() {
   const { data: mrMgAgent } = trpc.aiChat.getAgent.useQuery({ agentId: 1 });
   const updatePromptMutation = trpc.aiChat.updateAgentSystemPrompt.useMutation();
   const testVoiceMutation = trpc.textToSpeech.generate.useMutation();
+  const updateIntroAudioMutation = trpc.user.updateIntroAudio.useMutation();
   
   useEffect(() => {
     if (mrMgAgent?.systemPrompt) {
@@ -386,8 +387,17 @@ export default function Settings() {
                   }
                   
                   const result = await response.json();
-                  localStorage.setItem('introAudioUrl', result.url);
-                  toast.success('Audio uploaded successfully!');
+                  
+                  // Save to database instead of localStorage
+                  updateIntroAudioMutation.mutate({ audioUrl: result.url }, {
+                    onSuccess: () => {
+                      toast.success('Audio uploaded successfully!');
+                    },
+                    onError: (error) => {
+                      console.error('Failed to save audio URL:', error);
+                      toast.error('Failed to save audio URL');
+                    }
+                  });
                 } catch (error) {
                   console.error('Upload error:', error);
                   toast.error('Failed to upload audio file');
@@ -396,7 +406,7 @@ export default function Settings() {
               className="mt-2"
             />
             <p className="text-sm text-muted-foreground mt-2">
-              Current: {localStorage.getItem('introAudioUrl') || '/MichaelMrMGIntroV1.mp3 (default)'}
+              Current: {user?.introAudioUrl || '/MichaelMrMGIntroV1.mp3 (default)'}
             </p>
           </div>
         </CardContent>

@@ -4,6 +4,17 @@
 - [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
 
 ## CRITICAL BUGS - Fix Immediately
+- [x] Intro audio URL not persisting - uses localStorage instead of database (resets on new device/deployment)
+- [ ] ElevenLabs test voice using wrong API key
+- [ ] Voice dropdown shows 3 checkmarks for voices with same ID (confusing UX)
+- [ ] Delete meditation not working - recording doesn't disappear
+- [ ] Chat should show journal question when opened directly (not just from journal page)
+
+## Feature Improvements Needed
+- [ ] Improve Primary Aim AI behavior
+- [ ] Add settings instructions for Primary Aim AI customization
+
+## Fixed Bugs
 - [x] Storage upload endpoint missing - returns HTML instead of JSON
 
 ## Fixed Bugs

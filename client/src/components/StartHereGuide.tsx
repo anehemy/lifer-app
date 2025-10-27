@@ -14,6 +14,9 @@ export default function StartHereGuide() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // Get intro audio URL from user profile or use default
+  const introAudioUrl = user?.introAudioUrl || "/MichaelMrMGIntroV1.mp3";
 
   const markWelcomeSeen = trpc.user.markWelcomeSeen.useMutation();
 
@@ -85,7 +88,7 @@ export default function StartHereGuide() {
                 <div className="p-4 bg-gradient-to-r from-purple-100 via-pink-100 to-blue-100 dark:from-purple-900/30 dark:via-pink-900/30 dark:to-blue-900/30 rounded-lg border-2 border-purple-300 dark:border-purple-700">
                   <audio 
                     ref={audioRef} 
-                    src={localStorage.getItem('introAudioUrl') || "/MichaelMrMGIntroV1.mp3"}
+                    src={introAudioUrl}
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
                     onEnded={() => {

@@ -78,6 +78,13 @@
       "when": 1761488617202,
       "tag": "0010_gifted_nemesis",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1761575367584,
+      "tag": "0011_thankful_hercules",
+      "breakpoints": true
     }
   ]
 }
