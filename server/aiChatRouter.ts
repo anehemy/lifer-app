@@ -176,6 +176,9 @@ export const aiChatRouter = router({
         },
       ];
 
+      // Save user message first so it appears immediately
+      await db.addChatMessage(input.sessionId, "user", input.message);
+      
       // Add conversation history (last 10 messages to keep context manageable)
       const recentMessages = messages.slice(-10);
       recentMessages.forEach((msg) => {
@@ -185,6 +188,12 @@ export const aiChatRouter = router({
             content: msg.content,
           });
         }
+      });
+      
+      // Add the current user message to LLM context
+      llmMessages.push({
+        role: "user",
+        content: input.message,
       });
 
       // Define tools for Mr. MG to use

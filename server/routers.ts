@@ -31,6 +31,26 @@ export const appRouter = router({
           .where(eq(users.id, ctx.user.id));
         return { success: true };
       }),
+    updateVoiceSettings: protectedProcedure
+      .input(z.object({
+        voiceProvider: z.string().optional(),
+        googleVoice: z.string().optional(),
+        elevenLabsVoice: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const db = await import('./db').then(m => m.getDb());
+        if (!db) throw new Error('Database not available');
+        const { users } = await import('../drizzle/schema');
+        const { eq } = await import('drizzle-orm');
+        const updateData: any = {};
+        if (input.voiceProvider !== undefined) updateData.voiceProvider = input.voiceProvider;
+        if (input.googleVoice !== undefined) updateData.googleVoice = input.googleVoice;
+        if (input.elevenLabsVoice !== undefined) updateData.elevenLabsVoice = input.elevenLabsVoice;
+        await db.update(users)
+          .set(updateData)
+          .where(eq(users.id, ctx.user.id));
+        return { success: true };
+      }),
   }),
 
   tokens: router({

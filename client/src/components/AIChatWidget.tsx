@@ -24,6 +24,7 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   const [hasGreeted, setHasGreeted] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false); // Default to OFF to prevent auto-play
   const [showConversations, setShowConversations] = useState(false);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lastSpokenMessageRef = useRef<string | null>(null);
@@ -219,6 +220,11 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     sendMessageMutation.mutate({
       sessionId: currentSession,
       message: messageToSend,
+    }, {
+      onSuccess: () => {
+        // Refetch messages to show both user message and AI response
+        refetchMessages();
+      }
     });
     
     // Blur textarea on mobile to hide keyboard
@@ -310,7 +316,7 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
             setIsOpen(true);
             if (!currentSession) initializeMrMgSession();
           }}
-          className="fixed bottom-4 left-4 h-14 w-14 sm:h-16 sm:w-16 sm:bottom-6 sm:left-6 rounded-full shadow-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 z-50 text-2xl sm:text-3xl"
+          className="fixed bottom-4 right-4 h-14 w-14 sm:h-16 sm:w-16 sm:bottom-6 sm:right-6 rounded-full shadow-lg bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 z-50 text-2xl sm:text-3xl"
           size="icon"
         >
           {MR_MG_AVATAR}
@@ -322,7 +328,7 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
         <>
         {/* Mobile overlay to prevent background scroll */}
         <div className="fixed inset-0 bg-black/20 z-40 sm:hidden" onClick={() => setIsOpen(false)} />
-        <Card className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:left-6 sm:w-96 sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200 max-h-screen">
+        <Card className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-96 sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200 max-h-screen">
           <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

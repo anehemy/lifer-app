@@ -20,6 +20,9 @@ export const users = mysqlTable("users", {
   aiTokens: int("aiTokens").default(1000).notNull(), // AI usage tokens
   hasSeenWelcome: boolean("hasSeenWelcome").default(false).notNull(), // Track if user has seen welcome guide
   introAudioUrl: text("introAudioUrl"), // Custom intro audio URL for Start Here guide
+  voiceProvider: varchar("voiceProvider", { length: 64 }).default("elevenlabs"), // Voice provider preference
+  googleVoice: varchar("googleVoice", { length: 128 }), // Google TTS voice name
+  elevenLabsVoice: varchar("elevenLabsVoice", { length: 128 }), // ElevenLabs voice ID
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

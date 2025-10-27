@@ -15,10 +15,10 @@ export default function Settings() {
   const [email, setEmail] = useState(user?.email || "");
   const [mrMgPrompt, setMrMgPrompt] = useState("");
   const [mrMgPromptExpanded, setMrMgPromptExpanded] = useState(false);
-  const [voiceProvider, setVoiceProvider] = useState(localStorage.getItem("voiceProvider") || "elevenlabs");
+  const [voiceProvider, setVoiceProvider] = useState(user?.voiceProvider || "elevenlabs");
   const [providerStatus, setProviderStatus] = useState<{provider: string, available: boolean, message: string} | null>(null);
-  const [googleVoice, setGoogleVoice] = useState(localStorage.getItem("googleVoice") || "en-US-Neural2-J");
-  const [elevenLabsVoice, setElevenLabsVoice] = useState(localStorage.getItem("elevenLabsVoice") || "VQypEoV1u8Wo9oGgDmW0");
+  const [googleVoice, setGoogleVoice] = useState(user?.googleVoice || "en-US-Neural2-J");
+  const [elevenLabsVoice, setElevenLabsVoice] = useState(user?.elevenLabsVoice || "VQypEoV1u8Wo9oGgDmW0");
   
   // Dynamically get ElevenLabs voices from environment variables
   const elevenLabsVoices = Object.entries(import.meta.env)
@@ -40,6 +40,7 @@ export default function Settings() {
   const updatePromptMutation = trpc.aiChat.updateAgentSystemPrompt.useMutation();
   const testVoiceMutation = trpc.textToSpeech.generate.useMutation();
   const updateIntroAudioMutation = trpc.user.updateIntroAudio.useMutation();
+  const updateVoiceSettingsMutation = trpc.user.updateVoiceSettings.useMutation();
   
   useEffect(() => {
     if (mrMgAgent?.systemPrompt) {
@@ -145,7 +146,7 @@ export default function Settings() {
             <Label htmlFor="voiceProvider">Voice Provider</Label>
             <Select value={voiceProvider} onValueChange={async (value) => {
               setVoiceProvider(value);
-              localStorage.setItem("voiceProvider", value);
+              updateVoiceSettingsMutation.mutate({ voiceProvider: value });
               
               // Test the provider by making a test call
               try {
@@ -223,8 +224,10 @@ export default function Settings() {
               <Label htmlFor="googleVoice">Google Cloud TTS Voice</Label>
               <Select value={googleVoice} onValueChange={(value) => {
                 setGoogleVoice(value);
-                localStorage.setItem("googleVoice", value);
-                toast.success("Voice updated!");
+                updateVoiceSettingsMutation.mutate({ googleVoice: value }, {
+                  onSuccess: () => toast.success("Voice updated!"),
+                  onError: () => toast.error("Failed to update voice")
+                });
               }}>
                 <SelectTrigger id="googleVoice">
                   <SelectValue />
@@ -291,8 +294,10 @@ export default function Settings() {
               <Label htmlFor="elevenLabsVoice">ElevenLabs Voice</Label>
               <Select value={elevenLabsVoice} onValueChange={(value) => {
                 setElevenLabsVoice(value);
-                localStorage.setItem("elevenLabsVoice", value);
-                toast.success("Voice updated!");
+                updateVoiceSettingsMutation.mutate({ elevenLabsVoice: value }, {
+                  onSuccess: () => toast.success("Voice updated!"),
+                  onError: () => toast.error("Failed to update voice")
+                });
               }}>
                 <SelectTrigger id="elevenLabsVoice">
                   <SelectValue />
