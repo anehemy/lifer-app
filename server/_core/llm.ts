@@ -265,7 +265,28 @@ const normalizeResponseFormat = ({
   };
 };
 
-export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
+export async function invokeLLM(params: InvokeParams, retries = 3, delay = 1000): Promise<InvokeResult> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await invokeLLMInternal(params);
+    } catch (error) {
+      console.error(`[LLM] Attempt ${attempt}/${retries} failed:`, error);
+      
+      if (attempt === retries) {
+        throw error; // Final attempt failed, throw error
+      }
+      
+      // Exponential backoff: wait longer between each retry
+      const waitTime = delay * Math.pow(2, attempt - 1);
+      console.log(`[LLM] Retrying in ${waitTime}ms...`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+    }
+  }
+  
+  throw new Error('All retry attempts exhausted');
+}
+
+async function invokeLLMInternal(params: InvokeParams): Promise<InvokeResult> {
   assertApiKey();
 
   const {

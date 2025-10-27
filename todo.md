@@ -166,3 +166,86 @@
 - [ ] Chat communication errors happening frequently - investigate root cause
 - [ ] Add retry button in error toast for failed messages
 
+
+
+## NEW FEATURE - Comprehensive Feedback System
+**Goal**: Allow users to provide contextual feedback from anywhere in the app, store it in a repository, and enable AI-powered analysis for continuous improvement.
+
+### Phase 1: Database & Backend (Step 1)
+- [ ] Create feedback table in database schema
+  - Fields: id, userId, timestamp, page/feature context, feedbackType (chat/thumbs/text/voice), sentiment (positive/negative/neutral), textContent, audioUrl, metadata
+
+### Phase 2: Backend API (Step 2)
+- [ ] Create tRPC endpoints for feedback
+  - submitFeedback mutation (text or voice)
+  - listFeedback query (admin only)
+  - getFeedbackStats query (admin only)
+
+### Phase 3: Feedback Widget Component (Step 3)
+- [ ] Create reusable FeedbackWidget component
+  - Thumbs up/down buttons for quick sentiment
+  - Expandable text area for detailed feedback
+  - Voice recording button (reuse voice chat logic)
+  - Auto-capture current page/feature context
+  - Submit button with loading state
+
+### Phase 4: Voice Feedback Storage (Step 4)
+- [ ] Implement voice feedback recording and storage
+  - Record audio using existing voice chat infrastructure
+  - Upload audio files to S3 storage
+  - Store audio URL in feedback table
+  - Optional: Add transcription for searchability
+
+### Phase 5: Global Integration (Step 5)
+- [ ] Add FeedbackWidget to all major pages
+  - Dashboard
+  - Life Story
+  - Patterns
+  - Vision Board
+  - Meditation
+  - Primary Aim
+  - Settings
+  - Make it a floating button or sidebar widget
+
+### Phase 6: Mr. MG Chat Integration (Step 6)
+- [ ] Add feedback prompting to Mr. MG
+  - Occasionally ask "Would you like to give feedback?"
+  - Add collect_feedback tool for Mr. MG
+  - Feedback goes to feedback table (NOT journal)
+  - Natural, conversational flow
+
+### Phase 7: Admin Feedback Dashboard (Step 7)
+- [ ] Create admin page to view all feedback
+  - Filter by date, page, sentiment, type
+  - Display text and play voice recordings
+  - Mark feedback as "reviewed" or "addressed"
+  - Export feedback data
+
+### Phase 8: AI Analysis Tool (Step 8)
+- [ ] Create AI-powered feedback analysis system
+  - Admin can request "Analyze all feedback"
+  - AI compiles and categorizes feedback
+  - Identifies patterns, common issues, feature requests
+  - Generates prioritized action plan
+  - Creates summary report with recommendations
+
+**Benefits:**
+- Continuous user-driven improvement
+- Context-aware feedback (know exactly where issues occur)
+- Voice feedback for detailed, emotional responses
+- AI-powered insights from aggregate data
+- Data-driven product decisions
+
+
+
+## CRITICAL BUG - 500 Error on First Message
+- [x] Chat giving 500 error on the very first message sent (IDENTIFIED)
+- [x] Investigate server logs to find root cause (FOUND: LLM API returning 500)
+- [x] Check aiChatRouter.ts sendMessage endpoint (working correctly)
+- [x] Verify database queries are working (working correctly)
+- [x] Add better error logging to identify exact failure point (DONE)
+- [x] Root cause: LLM API (Forge) returning "code 13: bad response from upstream"
+- [x] Add retry logic for LLM API failures (exponential backoff - 3 attempts with 1s, 2s, 4s delays)
+- [ ] Add graceful fallback when LLM completely fails (return helpful error message instead of 500)
+- [ ] Monitor if Forge API continues failing - may need alternative provider
+

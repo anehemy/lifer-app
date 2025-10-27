@@ -77,6 +77,8 @@ export const aiChatRouter = router({
       message: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
+      try {
+        console.log('[sendMessage] Starting - sessionId:', input.sessionId, 'userId:', ctx.user.id);
       // Verify session belongs to user
       const session = await db.getChatSession(input.sessionId, ctx.user.id);
       if (!session) {
@@ -565,6 +567,11 @@ Key Insights: ${keyInsights ? keyInsights.join(', ') : 'none'}`;
         message: assistantMessage,
         journalEntrySaved: false,
       };
+      } catch (error) {
+        console.error('[sendMessage] ERROR:', error);
+        console.error('[sendMessage] Stack:', error instanceof Error ? error.stack : 'No stack trace');
+        throw error;
+      }
     }),
 
   // Delete a chat session
