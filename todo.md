@@ -4,6 +4,9 @@
 - [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
 
 ## CRITICAL BUGS - Fix Immediately
+- [x] Storage upload endpoint missing - returns HTML instead of JSON
+
+## Fixed Bugs
 - [x] Chat opens blank when clicking "Chat with Mr. MG" from journal
 
 ## New Feature Requests

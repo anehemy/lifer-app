@@ -7,6 +7,9 @@ import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
+import multer from "multer";
+import { storagePut } from "../storage";
+import type { Request, Response } from "express";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -35,6 +38,31 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+  
+  // File upload endpoint
+  const upload = multer({ storage: multer.memoryStorage() });
+  app.post("/api/storage/upload", upload.single("file"), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      
+      const fileName = req.file.originalname;
+      const contentType = req.file.mimetype;
+      const fileBuffer = req.file.buffer;
+      
+      // Upload to S3 with a unique path
+      const timestamp = Date.now();
+      const relKey = `uploads/${timestamp}-${fileName}`;
+      const result = await storagePut(relKey, fileBuffer, contentType);
+      
+      res.json({ url: result.url, key: result.key });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
   // tRPC API
   app.use(
     "/api/trpc",
