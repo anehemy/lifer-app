@@ -702,3 +702,125 @@
 - [ ] Verify all actions actually execute
 - [ ] Verify proper error handling
 
+
+
+## NEW FEATURE - Custom Engagement Tracking System (Option A - Full Implementation)
+**Priority**: HIGH - Critical for understanding user behavior and improving the app
+**Total Estimated Effort**: 23,000-30,000 tokens
+
+### Phase 1: Event Logging System ✅ COMPLETE (4,500 tokens)
+- [x] Create `userEvents` table in database schema
+  - Fields: id, userId, eventType, eventData (JSON), timestamp, sessionId
+- [x] Add event types enum: LOGIN, LOGOUT, PAGE_VIEW, JOURNAL_ENTRY_CREATED, MEDITATION_STARTED, MEDITATION_COMPLETED, VISION_ITEM_CREATED, PATTERN_VIEWED, PRIMARY_AIM_UPDATED, etc.
+- [x] Create tRPC router for event logging (`analytics.logEvent`)
+- [x] Add helper function `logUserEvent(userId, eventType, metadata)`
+- [x] Added `analytics.getRecentEvents` and `analytics.getAllRecentEvents` endpoints
+- [ ] Test event logging from backend (ready for Phase 2)
+
+### Phase 2: Automatic Event Tracking (6,000-8,000 tokens)
+- [ ] Add login/logout event tracking to auth system
+- [ ] Instrument journal entry creation
+- [ ] Track meditation start/completion
+- [ ] Track vision board item creation/updates
+- [ ] Track pattern page views
+- [ ] Track primary aim updates
+- [ ] Add page view tracking to client-side router
+- [ ] Track session duration (session start/end)
+- [ ] Add client-side event logging hook (`useAnalytics`)
+
+### Phase 3: Engagement Metrics Calculation (5,000-7,000 tokens)
+- [ ] Create analytics service with metric calculations
+- [ ] Calculate DAU (Daily Active Users)
+- [ ] Calculate WAU (Weekly Active Users)
+- [ ] Calculate MAU (Monthly Active Users)
+- [ ] Calculate feature adoption rates (% of users using each feature)
+- [ ] Calculate retention cohorts (Day 1, Day 7, Day 30 retention)
+- [ ] Calculate average session duration
+- [ ] Calculate feature usage frequency
+- [ ] Add tRPC endpoints to fetch metrics (`analytics.getMetrics`, `analytics.getRetention`, `analytics.getFeatureUsage`)
+
+### Phase 4: Admin Engagement Dashboard (8,000-10,000 tokens)
+- [ ] Create new "Analytics" page (admin-only, accessible from Settings sidebar)
+- [ ] **User Login Log**:
+  - Table showing: User name, Last login time, Total logins
+  - Sortable by name, last login, login count
+  - Search/filter by user name
+- [ ] **Time Spent Per User**:
+  - Table showing: User name, Time spent today, Time spent this week, Total time
+  - Calculate from session start/end events
+  - Sortable and filterable
+- [ ] **Overall App Usage Metrics**:
+  - Total users, Active users (today/week/month)
+  - Total journal entries created
+  - Total meditations completed
+  - Total vision items created
+  - Total chat messages sent
+  - Primary aims created/updated
+  - Patterns viewed
+- [ ] **Feature Usage Breakdown**:
+  - Bar chart or table showing usage per feature
+  - Journal, Meditation, Vision Board, Patterns, Primary Aim, Chat
+- [ ] **Recent Activity Log**:
+  - Last 100 events across all users
+  - Filterable by user, event type, date range
+  - Shows: Time, User, Event type, Details
+- [ ] Export to CSV functionality for all tables
+- [ ] Date range selector for all metrics
+- [ ] Responsive design for mobile viewing
+
+### Testing Checklist:
+- [ ] Verify events are logged correctly for all actions
+- [ ] Check that metrics calculate accurately
+- [ ] Test dashboard loads without errors
+- [ ] Verify admin-only access control
+- [ ] Test CSV export functionality
+- [ ] Verify performance with large datasets
+
+### Success Metrics:
+- All user actions tracked automatically
+- Dashboard loads in <2 seconds
+- Metrics update in real-time
+- Admin can export data for external analysis
+- Zero impact on user experience (tracking is invisible)
+
+---
+
+**Ready to implement!** Starting with Phase 1: Event Logging System.
+
+
+
+## BUG - Early Tester Notice Showing on Every Page ✅ FIXED
+**Priority**: HIGH - Annoying UX issue
+- [x] Early tester notice currently shows on every page navigation (FIXED)
+- [x] Should only show once after login on the dashboard (uses localStorage)
+- [x] Use localStorage to track if user has seen it (implemented)
+- [x] Notice now only shows once per browser
+**Actual effort**: 500 tokens
+
+
+
+## NEW FEATURE - Quick Feedback Widget on Dashboard ✅ COMPLETE
+**Priority**: HIGH - Immediate user feedback collection
+**Actual effort**: 3,500 tokens
+
+### Implementation Steps:
+- [x] Remove Quick Actions section from Dashboard
+- [x] Create FeedbackWidget component with button-based message builder
+  - Area buttons: Chat, Voice, Journal, Meditation, Vision Board, Patterns, Primary Aim, Settings, Other
+  - Function buttons: Navigation, Saving, Loading, Display, Performance, Other
+  - State buttons: Works well, Doesn't work, I don't like it, Could be better, Confusing
+- [x] Auto-generate message from selected buttons (e.g., "I don't like the voice in the chat")
+- [x] Add editable text area for users to modify/add to generated message
+- [x] Create backend endpoint to send feedback email to support@metamorphosisworldwide.com
+- [x] Format email with user info, timestamp, selected options, and message
+- [x] Add success/error toast notifications
+- [x] Update early tester notice email to support@metamorphosisworldwide.com
+- [x] Test feedback submission flow (visible in screenshot)
+
+### Example Flow:
+User clicks: "Chat" + "Voice" + "I don't like it"
+→ Message generated: "I don't like the voice in the chat"
+→ User can edit or add more details
+→ Click "Send Feedback"
+→ Email sent to support@metamorphosisworldwide.com
+

@@ -5,6 +5,7 @@ import { BookOpen, Brain, Sparkles, User, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import StartHereGuide from "@/components/StartHereGuide";
+import { FeedbackWidget } from "@/components/FeedbackWidget";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -27,36 +28,7 @@ export default function Dashboard() {
     { label: "Meditations", value: meditationSessions.length, icon: User, color: "text-green-600", href: "/meditation" },
   ];
 
-  const quickActions = [
-    {
-      title: "Continue Your Story",
-      description: "Explore your journey with guided questions",
-      icon: BookOpen,
-      href: "/journal",
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      title: "Explore Patterns",
-      description: "Discover insights from your reflections",
-      icon: Brain,
-      href: "/patterns",
-      color: "from-purple-500 to-pink-500",
-    },
-    {
-      title: "Create Vision",
-      description: "Build your vision board and manifest dreams",
-      icon: Sparkles,
-      href: "/vision",
-      color: "from-pink-500 to-rose-500",
-    },
-    {
-      title: "Meditate",
-      description: "Find your center with guided meditation",
-      icon: User,
-      href: "/meditation",
-      color: "from-green-500 to-emerald-500",
-    },
-  ];
+  // Removed quickActions - replaced with FeedbackWidget
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -92,28 +64,8 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {quickActions.map((action) => {
-            const Icon = action.icon;
-            return (
-              <Link key={action.href} href={action.href}>
-                <Card className="hover:shadow-xl transition-all cursor-pointer group h-full">
-                  <CardHeader>
-                    <div className={`h-12 w-12 rounded-lg bg-gradient-to-br ${action.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                      <Icon className="h-6 w-6 text-white" />
-                    </div>
-                    <CardTitle>{action.title}</CardTitle>
-                    <CardDescription>{action.description}</CardDescription>
-                  </CardHeader>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      </div>
+      {/* Quick Feedback */}
+      <FeedbackWidget />
 
       {/* Inspirational Quote */}
       <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-none">

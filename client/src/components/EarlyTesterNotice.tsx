@@ -13,12 +13,20 @@ export function EarlyTesterNotice() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    // Show notice on every page load
-    setOpen(true);
+    // Only show notice if user hasn't seen it before
+    const hasSeenNotice = localStorage.getItem("hasSeenEarlyTesterNotice");
+    if (!hasSeenNotice) {
+      setOpen(true);
+    }
   }, []);
 
+  const handleClose = () => {
+    localStorage.setItem("hasSeenEarlyTesterNotice", "true");
+    setOpen(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(newOpen) => !newOpen && handleClose()}>
       <DialogContent className="max-w-2xl max-h-[70vh] sm:max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
@@ -48,17 +56,10 @@ export function EarlyTesterNotice() {
                 We'd love to hear from you! Please send any feedback, suggestions, or bug reports to:
               </p>
               <a 
-                href="mailto:alan.nehemy@metamorphosisworldwide.com" 
+                href="mailto:support@metamorphosisworldwide.com" 
                 className="text-sm text-blue-600 hover:underline font-medium"
               >
-                alan.nehemy@metamorphosisworldwide.com
-              </a>
-              <span className="text-sm text-muted-foreground"> or </span>
-              <a 
-                href="mailto:info@metamorphosisworldwide.com" 
-                className="text-sm text-blue-600 hover:underline font-medium"
-              >
-                info@metamorphosisworldwide.com
+                support@metamorphosisworldwide.com
               </a>
             </div>
           </div>
@@ -121,7 +122,7 @@ export function EarlyTesterNotice() {
         </div>
 
         <div className="sticky bottom-0 bg-background pt-4 pb-2 flex justify-end border-t mt-4">
-          <Button onClick={() => setOpen(false)} className="w-full sm:w-auto">
+          <Button onClick={handleClose} className="w-full sm:w-auto">
             Got it, thanks!
           </Button>
         </div>

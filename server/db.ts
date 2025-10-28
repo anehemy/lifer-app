@@ -21,6 +21,9 @@ import {
   AiAgent,
   ChatSession,
   ChatMessage,
+  userEvents,
+  InsertUserEvent,
+  UserEvent,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -431,5 +434,41 @@ export async function deleteMeditationSession(id: number, userId: number): Promi
   
   await db.delete(meditationSessions)
     .where(and(eq(meditationSessions.id, id), eq(meditationSessions.userId, userId)));
+}
+
+// User Events / Analytics
+export async function logUserEvent(event: InsertUserEvent): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Analytics] Database not available, skipping event log");
+    return;
+  }
+  
+  try {
+    await db.insert(userEvents).values(event);
+  } catch (error) {
+    console.error("[Analytics] Failed to log event:", error);
+  }
+}
+
+export async function getUserRecentEvents(userId: number, limit: number = 50): Promise<UserEvent[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(userEvents)
+    .where(eq(userEvents.userId, userId))
+    .orderBy(desc(userEvents.createdAt))
+    .limit(limit);
+}
+
+export async function getAllRecentEvents(limit: number = 100): Promise<UserEvent[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(userEvents)
+    .orderBy(desc(userEvents.createdAt))
+    .limit(limit);
 }
 

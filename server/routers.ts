@@ -3,6 +3,8 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { aiChatRouter } from "./aiChatRouter";
+import { analyticsRouter } from "./analyticsRouter";
+import { feedbackRouter } from "./feedbackRouter";
 import { z } from "zod";
 
 export const appRouter = router({
@@ -1092,6 +1094,8 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
   }),
 
   aiChat: aiChatRouter,
+  analytics: analyticsRouter,
+  feedback: feedbackRouter,
 });
 
 export type AppRouter = typeof appRouter;

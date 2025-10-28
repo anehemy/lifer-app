@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import AIChatWidget from "@/components/AIChatWidget";
 import { EarlyTesterNotice } from "@/components/EarlyTesterNotice";
+import { useSessionTracking } from "@/hooks/useAnalytics";
 
 interface LiferLayoutProps {
   children: React.ReactNode;
@@ -17,6 +18,9 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
   const { data: tokenBalance } = trpc.tokens.getBalance.useQuery(undefined, { enabled: isAuthenticated });
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  
+  // Track user sessions
+  useSessionTracking();
 
   if (loading) {
     return (

@@ -179,3 +179,18 @@ export const globalSettings = mysqlTable("globalSettings", {
 
 export type GlobalSetting = typeof globalSettings.$inferSelect;
 export type InsertGlobalSetting = typeof globalSettings.$inferInsert;
+
+/**
+ * User events for engagement tracking and analytics
+ */
+export const userEvents = mysqlTable("userEvents", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  eventType: varchar("eventType", { length: 100 }).notNull(), // LOGIN, LOGOUT, PAGE_VIEW, JOURNAL_ENTRY_CREATED, etc.
+  eventData: text("eventData"), // JSON metadata about the event
+  sessionId: varchar("sessionId", { length: 255 }), // Browser session ID for tracking sessions
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type UserEvent = typeof userEvents.$inferSelect;
+export type InsertUserEvent = typeof userEvents.$inferInsert;
