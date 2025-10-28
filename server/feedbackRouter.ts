@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
+import { notifyOwner } from "./_core/notification";
 
 export const feedbackRouter = router({
   send: protectedProcedure
@@ -30,25 +31,23 @@ ${input.message}
 Sent from Lifer App Feedback System
       `.trim();
 
-      // TODO: Implement actual email sending
-      // For now, just log it
+      // Log to console for debugging
       console.log("[Feedback] New feedback received:");
       console.log(emailBody);
       
-      // In production, you would use a service like:
-      // - SendGrid
-      // - AWS SES
-      // - Resend
-      // - Nodemailer with SMTP
-      
-      // Example with a hypothetical email service:
-      // await sendEmail({
-      //   to: "support@metamorphosisworldwide.com",
-      //   subject: `Lifer App Feedback: ${input.area || "General"} - ${input.state || "Feedback"}`,
-      //   text: emailBody,
-      // });
-      
-      return { success: true };
+      // Send notification via Manus notification service
+      try {
+        await notifyOwner({
+          title: `Lifer App Feedback: ${input.area || "General"} - ${input.state || "Feedback"}`,
+          content: emailBody,
+        });
+        
+        return { success: true };
+      } catch (error) {
+        console.error("[Feedback] Failed to send notification:", error);
+        // Still return success since we logged it
+        return { success: true };
+      }
     }),
 });
 

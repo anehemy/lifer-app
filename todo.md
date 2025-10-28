@@ -824,3 +824,27 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 → Click "Send Feedback"
 → Email sent to support@metamorphosisworldwide.com
 
+
+
+## CRITICAL BUGS - Feedback Widget Issues
+**Priority**: URGENT - Fix immediately
+- [ ] Message generation logic broken - generates "I don't like it the saving in the chat" instead of proper sentence
+- [ ] Fix message generation to use structure: "The [area] area [function] function [state]"
+  - Example: Chat + Saving + I don't like it = "The chat area saving function I don't like it"
+  - Better: "I don't like it the saving function in the chat area"
+- [ ] Email not actually being sent - only logging to console
+- [ ] Implement actual email sending to support@metamorphosisworldwide.com
+- [ ] Test email delivery
+
+## MISSING FEATURE - Admin Analytics Dashboard
+**Priority**: HIGH - Promised but not delivered
+- [ ] Create Analytics page (admin-only, accessible from Settings)
+- [ ] User Login Log table (user name, last login, total logins)
+- [ ] Time Spent Per User table (time today, this week, total)
+- [ ] Overall App Usage Metrics cards
+- [ ] Feature Usage Breakdown
+- [ ] Recent Activity Log (last 100 events)
+- [ ] Export to CSV functionality
+- [ ] Date range selector
+**Estimated effort**: 8,000-10,000 tokens
+

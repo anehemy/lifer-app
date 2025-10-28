@@ -472,3 +472,14 @@ export async function getAllRecentEvents(limit: number = 100): Promise<UserEvent
     .limit(limit);
 }
 
+
+
+export async function getAllUsers(): Promise<any[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select()
+    .from(users)
+    .orderBy(desc(users.createdAt));
+}
+

@@ -123,6 +123,23 @@ export default function Settings() {
       
       {user?.role === "admin" && (
         <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Admin Tools</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button 
+              variant="outline" 
+              className="w-full" 
+              onClick={() => window.location.href = '/analytics'}
+            >
+              📊 View Analytics Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+      
+      {user?.role === "admin" && (
+        <Card className="mb-6">
           <CardHeader className="cursor-pointer" onClick={() => setMrMgPromptExpanded(!mrMgPromptExpanded)}>
             <div className="flex items-center justify-between">
               <CardTitle>Mr. MG Instructions (Admin)</CardTitle>

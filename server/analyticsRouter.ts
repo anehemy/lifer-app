@@ -85,4 +85,74 @@ export const analyticsRouter = router({
       
       return await db.getAllRecentEvents(input.limit);
     }),
+
+  // Admin-only: Get overall metrics
+  getMetrics: protectedProcedure
+    .query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("Unauthorized: Admin access required");
+      }
+
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      const allEvents = await db.getAllRecentEvents(10000);
+      const allUsers = await db.getAllUsers();
+
+      const activeToday = new Set(allEvents.filter(e => new Date(e.createdAt) >= today).map(e => e.userId)).size;
+      const activeThisWeek = new Set(allEvents.filter(e => new Date(e.createdAt) >= weekAgo).map(e => e.userId)).size;
+      const activeThisMonth = new Set(allEvents.filter(e => new Date(e.createdAt) >= monthAgo).map(e => e.userId)).size;
+
+      const journalEntries = allEvents.filter(e => e.eventType === "JOURNAL_ENTRY_CREATED").length;
+      const meditations = allEvents.filter(e => e.eventType === "MEDITATION_COMPLETED").length;
+      const visionItems = allEvents.filter(e => e.eventType === "VISION_ITEM_CREATED").length;
+      const chatMessages = allEvents.filter(e => e.eventType === "CHAT_MESSAGE_SENT").length;
+
+      return {
+        totalUsers: allUsers.length,
+        activeToday,
+        activeThisWeek,
+        activeThisMonth,
+        journalEntries,
+        meditations,
+        visionItems,
+        chatMessages,
+      };
+    }),
+
+  // Admin-only: Get user stats
+  getUserStats: protectedProcedure
+    .query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new Error("Unauthorized: Admin access required");
+      }
+
+      const allUsers = await db.getAllUsers();
+      const allEvents = await db.getAllRecentEvents(10000);
+
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      return allUsers.map((user: any) => {
+        const userEvents = allEvents.filter(e => e.userId === user.id);
+        const loginEvents = userEvents.filter(e => e.eventType === "LOGIN");
+        const lastLogin = loginEvents.length > 0 ? loginEvents[0].createdAt : null;
+
+        const todayEvents = userEvents.filter(e => new Date(e.createdAt) >= today);
+        const weekEvents = userEvents.filter(e => new Date(e.createdAt) >= weekAgo);
+
+        return {
+          userId: user.id,
+          userName: user.name,
+          userEmail: user.email,
+          lastLogin,
+          totalLogins: loginEvents.length,
+          timeToday: `${Math.floor(todayEvents.length / 2)}m`,
+          timeThisWeek: `${Math.floor(weekEvents.length / 2)}m`,
+        };
+      });
+    }),
 });

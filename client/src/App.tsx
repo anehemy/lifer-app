@@ -14,6 +14,7 @@ import PrimaryAim from "./pages/PrimaryAim";
 import Tokens from "./pages/Tokens";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
+import Analytics from "./pages/Analytics";
 
 function Router() {
   return (
@@ -28,6 +29,7 @@ function Router() {
         <Route path="/tokens" component={Tokens} />
         <Route path="/settings" component={Settings} />
         <Route path="/admin" component={Admin} />
+        <Route path="/analytics" component={Analytics} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>

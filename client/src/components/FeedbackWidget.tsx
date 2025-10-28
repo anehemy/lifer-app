@@ -62,25 +62,27 @@ export function FeedbackWidget() {
 
   // Generate message from selections
   const generateMessage = () => {
-    const parts: string[] = [];
+    if (!selectedArea && !selectedFunction && !selectedState) return "";
+    
+    let message = "";
+    
+    // Structure: "[State] the [function] function in the [area] area"
+    // Or: "[State] the [area] area" if no function
+    // Or: "The [area] area [function] function [state]"
     
     if (selectedState) {
-      parts.push(selectedState.toLowerCase());
+      message = selectedState;
     }
     
-    if (selectedFunction) {
-      parts.push(`the ${selectedFunction.toLowerCase()}`);
+    if (selectedFunction && selectedArea) {
+      message += ` the ${selectedFunction.toLowerCase()} function in the ${selectedArea.toLowerCase()} area`;
+    } else if (selectedFunction) {
+      message += ` the ${selectedFunction.toLowerCase()} function`;
+    } else if (selectedArea) {
+      message += ` the ${selectedArea.toLowerCase()} area`;
     }
     
-    if (selectedArea) {
-      parts.push(`in the ${selectedArea.toLowerCase()}`);
-    }
-    
-    if (parts.length === 0) return "";
-    
-    // Capitalize first letter
-    const generated = parts.join(" ");
-    return generated.charAt(0).toUpperCase() + generated.slice(1);
+    return message.trim();
   };
 
   const handleSelectionChange = () => {
