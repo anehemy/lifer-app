@@ -282,6 +282,28 @@ export const aiChatRouter = router({
             },
           },
         },
+        {
+          type: "function",
+          function: {
+            name: "navigate_to_page",
+            description: "Navigate the user to a specific page in the app. Use this when the user asks to go to a page, open a section, or view a specific feature.",
+            parameters: {
+              type: "object",
+              properties: {
+                page: {
+                  type: "string",
+                  enum: ["dashboard", "life-story", "patterns", "vision-board", "meditation", "primary-aim", "settings"],
+                  description: "The page to navigate to",
+                },
+                message: {
+                  type: "string",
+                  description: "A friendly message to show the user before navigating (e.g., 'Taking you to the meditation page now!')",
+                },
+              },
+              required: ["page", "message"],
+            },
+          },
+        },
       ];
 
       // Get AI response with function calling
@@ -552,6 +574,21 @@ Key Insights: ${keyInsights ? keyInsights.join(', ') : 'none'}`;
           return {
             message: assistantMessage,
             summarySaved: true,
+          };
+        }
+        
+        if (toolCall.function.name === "navigate_to_page") {
+          // Parse function arguments
+          const args = JSON.parse(toolCall.function.arguments);
+          const { page, message } = args;
+          
+          // Save the navigation message
+          await db.addChatMessage(input.sessionId, "assistant", message);
+          
+          // Return navigation instruction to client
+          return {
+            message,
+            navigateTo: page,
           };
         }
       }

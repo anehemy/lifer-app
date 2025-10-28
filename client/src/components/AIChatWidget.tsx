@@ -82,11 +82,32 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
 
   // Use sendMessage for regular chat (uses database system prompt)
   const sendMessageMutation = trpc.aiChat.sendMessage.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       refetchMessages();
       setMessage("");
       // Clear draft from localStorage on successful send
       localStorage.removeItem('mrMgDraftMessage');
+      
+      // Handle navigation if Mr. MG requested it
+      if (data.navigateTo) {
+        const pageMap: Record<string, string> = {
+          'dashboard': '/',
+          'life-story': '/life-story',
+          'patterns': '/patterns',
+          'vision-board': '/vision-board',
+          'meditation': '/meditation',
+          'primary-aim': '/primary-aim',
+          'settings': '/settings',
+        };
+        
+        const targetPath = pageMap[data.navigateTo];
+        if (targetPath) {
+          // Small delay to let user see the message
+          setTimeout(() => {
+            window.location.href = targetPath;
+          }, 1000);
+        }
+      }
     },
     onError: (error) => {
       // Keep message in input so user doesn't lose it
@@ -96,11 +117,31 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   });
 
   const sendMessage = trpc.aiChat.sendMessage.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       refetchMessages();
       setMessage("");
       // Clear draft from localStorage on successful send
       localStorage.removeItem('mrMgDraftMessage');
+      
+      // Handle navigation if Mr. MG requested it
+      if (data.navigateTo) {
+        const pageMap: Record<string, string> = {
+          'dashboard': '/',
+          'life-story': '/life-story',
+          'patterns': '/patterns',
+          'vision-board': '/vision-board',
+          'meditation': '/meditation',
+          'primary-aim': '/primary-aim',
+          'settings': '/settings',
+        };
+        
+        const targetPath = pageMap[data.navigateTo];
+        if (targetPath) {
+          setTimeout(() => {
+            window.location.href = targetPath;
+          }, 1000);
+        }
+      }
     },
     onError: (error) => {
       // Keep message in input so user doesn't lose it

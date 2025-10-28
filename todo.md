@@ -628,3 +628,77 @@
 **Actual effort**: ~1,500 tokens
 **Impact**: High - First impression for mobile users
 
+
+
+## CRITICAL BUG - Mr. MG Cannot Perform Actions
+**Priority**: CRITICAL - Core feature broken
+**Issue**: Mr. MG claims to navigate/perform actions but doesn't actually do anything
+
+### Root Cause:
+- Mr. MG has no tools to actually navigate the app
+- No tools to modify user data (clear primary aim, etc.)
+- Can only respond with text, not perform actions
+
+### Required Tools to Implement:
+
+**1. Navigation Tools**
+- [ ] `navigate_to_page` - Navigate to specific pages (dashboard, life-story, patterns, vision-board, meditation, primary-aim, settings)
+- [ ] Tool should trigger client-side navigation
+- [ ] Return confirmation of navigation
+
+**2. Primary Aim Tools**
+- [ ] `get_primary_aim` - Read user's current primary aim
+- [ ] `update_primary_aim` - Update primary aim content
+- [ ] `clear_primary_aim` - Clear/reset primary aim
+
+**3. Journal Tools**
+- [ ] `get_recent_journal_entries` - Fetch recent entries
+- [ ] `create_journal_entry` - Create new entry (already exists as save_journal_entry)
+- [ ] `update_journal_entry` - Edit existing entry
+- [ ] `delete_journal_entry` - Delete entry
+
+**4. Vision Board Tools**
+- [ ] `get_vision_items` - List user's vision board items
+- [ ] `create_vision_item` - Add new vision item
+- [ ] `update_vision_item` - Edit vision item
+- [ ] `delete_vision_item` - Remove vision item
+
+**5. Meditation Tools**
+- [ ] `start_meditation` - Launch meditation with specific type/duration
+- [ ] `get_meditation_history` - View past meditation sessions
+
+**6. Pattern Tools**
+- [ ] `get_patterns` - Fetch detected patterns
+- [ ] `analyze_patterns` - Trigger pattern analysis
+
+### Implementation Plan:
+
+**Phase 1: Navigation (Highest Priority)** ✅ COMPLETE
+- [x] Add `navigate_to_page` tool to aiChatRouter
+- [x] Implement client-side navigation trigger
+- [x] Test navigation from chat (ready for testing)
+**Actual effort**: ~3,500 tokens
+
+**Phase 2: Primary Aim Tools**
+- Add CRUD tools for primary aim
+- Connect to existing primary aim database
+- Test clearing and updating
+**Estimated effort**: 4,000-5,000 tokens
+
+**Phase 3: Data Manipulation Tools**
+- Add tools for journal, vision board, meditation
+- Ensure proper permissions and validation
+- Test all operations
+**Estimated effort**: 8,000-10,000 tokens
+
+**Total Estimated Effort**: 15,000-19,000 tokens
+**Impact**: CRITICAL - Makes Mr. MG actually useful as an AI assistant
+
+### Testing Checklist:
+- [ ] Ask Mr. MG to navigate to meditation page
+- [ ] Ask Mr. MG to clear primary aim
+- [ ] Ask Mr. MG to create a journal entry
+- [ ] Ask Mr. MG to add a vision board item
+- [ ] Verify all actions actually execute
+- [ ] Verify proper error handling
+
