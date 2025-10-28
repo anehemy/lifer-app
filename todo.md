@@ -330,3 +330,27 @@
 **Actual tokens used**: ~22,000
 **Benefit**: Chat now has automatic fallback! If Forge fails, OpenAI takes over seamlessly.
 
+
+
+## NEW FEATURE - Early Tester Welcome Notice ✅
+**Priority**: HIGH - COMPLETED!
+
+### What was built:
+- [x] Create welcome notice modal/banner that shows on every login
+- [x] Content includes:
+  - Thank you message for early testers
+  - Feedback emails: alan.nehemy@metamorphosisworldwide.com and info@metamorphosisworldwide.com
+  - Feature status:
+    * Chat version is stable (with some bugs)
+    * Voice TTS is experimental and will change without notice as we test providers
+  - Privacy & data notice:
+    * We are not monitoring user data
+    * Not responsible for data loss - users should backup in Settings
+  - Promise to keep users updated with release notes
+- [x] Shows on every login (appears fresh each time)
+- [x] Professional, friendly tone with icons
+- [x] Easy to close with "Got it, thanks!" button
+- [x] Appears after login in authenticated layout
+
+**Actual effort**: ~5,000 tokens
+

@@ -6,6 +6,7 @@ import { BookOpen, Brain, Home, Loader2, LogOut, Menu, Settings, Sparkles, Targe
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import AIChatWidget from "@/components/AIChatWidget";
+import { EarlyTesterNotice } from "@/components/EarlyTesterNotice";
 
 interface LiferLayoutProps {
   children: React.ReactNode;
@@ -146,6 +147,9 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
 
       {/* AI Chat Widget */}
       <AIChatWidget sidebarOpen={sidebarOpen} />
+      
+      {/* Early Tester Notice */}
+      <EarlyTesterNotice />
     </div>
   );
 }
