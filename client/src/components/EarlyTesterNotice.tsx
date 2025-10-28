@@ -67,15 +67,34 @@ export function EarlyTesterNotice() {
           <div className="flex items-start gap-3 p-4 border rounded-lg">
             <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
             <div>
-              <h3 className="font-semibold mb-1">Current Status</h3>
-              <ul className="text-sm text-muted-foreground space-y-1">
-                <li>
-                  <strong>Chat (Mr. MG):</strong> Stable and available, though you may encounter occasional bugs
-                </li>
-                <li>
-                  <strong>Voice/TTS:</strong> Experimental - voices will change without notice as we test different providers
-                </li>
-              </ul>
+              <h3 className="font-semibold mb-2">Feature Status</h3>
+              <div className="text-sm space-y-2">
+                <div>
+                  <strong className="text-foreground">✅ Chat (Mr. MG):</strong>
+                  <span className="text-muted-foreground"> Stable (with bugs) - AI mentor available. </span>
+                  <span className="text-blue-600 font-medium">Beta: Ask Mr. MG to navigate the app!</span>
+                </div>
+                <div>
+                  <strong className="text-foreground">⚠️ Life Story (Journal):</strong>
+                  <span className="text-muted-foreground"> Partially Stable - Text input works well. Card management, combining entries, and timeline display under development.</span>
+                </div>
+                <div>
+                  <strong className="text-foreground">⚠️ Patterns:</strong>
+                  <span className="text-muted-foreground"> Beta - Detection working, AI analysis may need refinement. Report anything that seems off.</span>
+                </div>
+                <div>
+                  <strong className="text-foreground">✅ Vision Board:</strong>
+                  <span className="text-muted-foreground"> Stable - All features functional (create, manage, image uploads, goal tracking).</span>
+                </div>
+                <div>
+                  <strong className="text-foreground">⚠️ Meditation:</strong>
+                  <span className="text-muted-foreground"> Experimental - Voice guidance works but TTS providers being tested. Voices will change without notice.</span>
+                </div>
+                <div>
+                  <strong className="text-foreground">🚧 Primary Aim:</strong>
+                  <span className="text-muted-foreground"> In Development - Basic functionality available, being refined and expanded.</span>
+                </div>
+              </div>
             </div>
           </div>
 

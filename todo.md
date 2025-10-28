@@ -354,3 +354,14 @@
 
 **Actual effort**: ~5,000 tokens
 
+
+
+## UPDATE - Expand Feature Status in Welcome Notice ✅
+- [x] Add detailed status for each feature:
+  - Life Story: Partially Stable - text input works, card management/combining/timeline under development
+  - Chat (Mr. MG): Stable with bugs - includes beta navigation feature
+  - Patterns: Beta - detection working, AI analysis needs refinement
+  - Vision Board: Stable - all features functional
+  - Meditation: Experimental - TTS providers being tested
+  - Primary Aim: In Development - basic functionality available
+
