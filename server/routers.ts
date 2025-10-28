@@ -85,7 +85,6 @@ export const appRouter = router({
       .input(z.object({
         primaryProvider: z.enum(['forge', 'openai']).optional(),
         fallbackProvider: z.enum(['forge', 'openai', 'none']).optional(),
-        openaiApiKey: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         // Check if user is admin
@@ -107,11 +106,7 @@ export const appRouter = router({
             .values({ settingKey: 'llm_fallback_provider', settingValue: input.fallbackProvider })
             .onDuplicateKeyUpdate({ set: { settingValue: input.fallbackProvider } });
         }
-        if (input.openaiApiKey !== undefined) {
-          await db.insert(globalSettings)
-            .values({ settingKey: 'llm_openai_api_key', settingValue: input.openaiApiKey })
-            .onDuplicateKeyUpdate({ set: { settingValue: input.openaiApiKey } });
-        }
+        // Note: OpenAI API key is now managed in Secrets (OPENAI_API_KEY env var)
         return { success: true };
       }),
   }),

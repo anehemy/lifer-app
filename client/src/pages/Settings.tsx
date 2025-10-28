@@ -26,7 +26,6 @@ export default function Settings() {
   // LLM Provider settings
   const [primaryLLM, setPrimaryLLM] = useState<'forge' | 'openai'>('forge');
   const [fallbackLLM, setFallbackLLM] = useState<'forge' | 'openai' | 'none'>('openai');
-  const [openaiKey, setOpenaiKey] = useState('');
   
   // Update state when global settings load
   useEffect(() => {
@@ -38,7 +37,6 @@ export default function Settings() {
       // LLM Provider settings
       if (globalSettings.llm_primary_provider) setPrimaryLLM(globalSettings.llm_primary_provider as 'forge' | 'openai');
       if (globalSettings.llm_fallback_provider) setFallbackLLM(globalSettings.llm_fallback_provider as 'forge' | 'openai' | 'none');
-      if (globalSettings.llm_openai_api_key) setOpenaiKey(globalSettings.llm_openai_api_key);
     }
   }, [globalSettings]);
   
@@ -423,25 +421,16 @@ export default function Settings() {
             </Select>
           </div>
           
-          <div>
-            <Label htmlFor="openaiKey">OpenAI API Key</Label>
-            <Input 
-              id="openaiKey" 
-              type="password"
-              placeholder="sk-..." 
-              value={openaiKey}
-              onChange={(e) => {
-                setOpenaiKey(e.target.value);
-              }}
-              onBlur={() => {
-                if (openaiKey) {
-                  updateLLMSettingsMutation.mutate({ openaiApiKey: openaiKey });
-                  toast.success('OpenAI API key saved');
-                }
-              }}
-            />
-            <p className="text-sm text-muted-foreground mt-1">
-              Required if using OpenAI as primary or fallback provider
+          <div className="p-4 border rounded-lg bg-muted/50">
+            <Label>OpenAI API Key</Label>
+            <p className="text-sm text-muted-foreground mt-1 mb-2">
+              Required if using OpenAI as primary or fallback provider. For security, API keys are managed in the Secrets panel.
+            </p>
+            <p className="text-sm font-medium text-blue-600">
+              → Configure in <strong>Management UI → Settings → Secrets</strong>
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Environment variable: <code className="bg-muted px-1 py-0.5 rounded">OPENAI_API_KEY</code>
             </p>
           </div>
         </CardContent>

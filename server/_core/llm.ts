@@ -337,18 +337,8 @@ async function getProviderConfig(provider: LLMProvider): Promise<ProviderConfig>
       model: 'gemini-2.5-flash',
     };
   } else if (provider === 'openai') {
-    // Get OpenAI key from global settings
-    const db = await import('../db').then(m => m.getDb());
-    const { globalSettings } = await import('../../drizzle/schema');
-    const { eq } = await import('drizzle-orm');
-    
-    let openaiKey = '';
-    if (db) {
-      const settings = await db.select().from(globalSettings).where(eq(globalSettings.settingKey, 'llm_openai_api_key'));
-      if (settings.length > 0 && settings[0].settingValue) {
-        openaiKey = settings[0].settingValue;
-      }
-    }
+    // Get OpenAI key from environment variable (stored in Secrets)
+    const openaiKey = process.env.OPENAI_API_KEY || '';
     
     return {
       apiUrl: resolveOpenAIApiUrl(),

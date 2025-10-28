@@ -375,3 +375,242 @@
 
 **Greeting message**: "Hello! I'm Mr. MG, your AI life mentor. I'm here to help you explore your thoughts, discover patterns, and work toward your Primary Aim. What's on your mind today?"
 
+
+
+## TIMELINE & VISUALIZATION ROADMAP
+
+### Phase 1: Interactive Visual Timeline
+**Priority**: HIGH - Core feature for pattern discovery
+- [ ] Create horizontal scrollable timeline component
+- [ ] Display journal entries as nodes/cards on timeline
+- [ ] Color-code entries by sentiment/emotion (positive, neutral, challenging)
+  - Use AI to detect sentiment from entry content
+  - Visual indicators: green (positive), yellow (neutral), red (challenging)
+- [ ] Click to expand entry details inline
+- [ ] Zoom controls (day/week/month/year views)
+- [ ] Smooth scrolling and animations
+- [ ] Mobile-responsive touch gestures
+- [ ] Show entry count per time period
+**Estimated effort**: 15,000-20,000 tokens
+**Impact**: High - Makes journal history visual and explorable
+
+### Phase 2: Timeline Filters & Search
+**Priority**: HIGH - Essential for finding specific entries
+- [ ] Time period filters (last week, month, quarter, year, all time, custom range)
+- [ ] Filter by place (dropdown of all places mentioned)
+- [ ] Filter by experience type (all detected experiences)
+- [ ] Filter by challenge type (all detected challenges)
+- [ ] Filter by growth theme (all detected growth areas)
+- [ ] Multi-filter support (combine filters)
+- [ ] Search within timeline (full-text search)
+- [ ] "Show only entries with metadata" toggle
+- [ ] Save filter presets for quick access
+- [ ] Clear all filters button
+**Estimated effort**: 10,000-12,000 tokens
+**Impact**: High - Makes large journals manageable
+
+### Phase 3: Places Map Visualization
+**Priority**: MEDIUM - Unique spatial insight
+- [ ] Integrate mapping library (Leaflet or Mapbox)
+- [ ] Parse place data from journal entries
+- [ ] Display markers on interactive map
+- [ ] Cluster markers when multiple entries at same location
+- [ ] Click marker to see entry preview
+- [ ] Click preview to open full entry
+- [ ] Heat map overlay showing writing frequency by location
+- [ ] Filter timeline by clicking map regions
+- [ ] "Most reflective places" insights
+- [ ] Mobile-friendly map controls
+**Estimated effort**: 12,000-15,000 tokens
+**Impact**: Medium - Novel way to explore journal, great for travelers
+
+### Phase 4: Metadata Tag Clouds
+**Priority**: MEDIUM - Visual pattern recognition
+- [ ] Create tag cloud component
+- [ ] Separate clouds for: Experiences, Challenges, Growth themes
+- [ ] Size tags by frequency (bigger = more common)
+- [ ] Color-code by category or recency
+- [ ] Click tag to filter timeline to related entries
+- [ ] Hover to show count and preview
+- [ ] Animated transitions when filtering
+- [ ] Export tag cloud as image
+- [ ] "Trending" indicator for recent themes
+**Estimated effort**: 8,000-10,000 tokens
+**Impact**: Medium - Quick visual summary of journal themes
+
+### Phase 5: Pattern Dashboard ("Your Journey at a Glance")
+**Priority**: HIGH - Shows value of journaling
+- [ ] Create dedicated Patterns page/dashboard
+- [ ] Top 5 most common places (bar chart)
+- [ ] Top 10 experiences (horizontal bar chart)
+- [ ] Recurring challenges (pie chart or list with counts)
+- [ ] Growth themes over time (line graph showing evolution)
+- [ ] Entry frequency chart (calendar heat map like GitHub)
+- [ ] Sentiment trend over time (line graph)
+- [ ] Word count statistics (total, average, longest entry)
+- [ ] Streak tracker (consecutive days journaling)
+- [ ] "Insights" section with AI-generated observations
+  - "You write most on Sundays"
+  - "Your top growth area is 'self-awareness'"
+  - "You've mentioned 'time management' 5 times this month"
+- [ ] Time period selector (last month, quarter, year, all time)
+- [ ] Export dashboard as PDF report
+**Estimated effort**: 18,000-22,000 tokens
+**Impact**: Very High - Motivates continued journaling, shows progress
+
+### Phase 6: Connections & Relationships Graph
+**Priority**: LOW - Advanced feature
+- [ ] Network graph visualization (D3.js or similar)
+- [ ] Nodes: Challenges, Experiences, Growth themes
+- [ ] Edges: Relationships between them
+- [ ] Show "When you faced [challenge], you grew in [area]"
+- [ ] Interactive: drag nodes, zoom, pan
+- [ ] Click node to see related entries
+- [ ] Highlight strongest connections
+- [ ] AI analysis to detect non-obvious patterns
+- [ ] "Your growth journey" narrative view
+**Estimated effort**: 15,000-18,000 tokens
+**Impact**: Medium - Deep insights for engaged users
+
+### Phase 7: AI-Generated Timeline Stories
+**Priority**: MEDIUM - Narrative synthesis
+- [ ] Generate summaries for time periods (week, month, quarter, year)
+- [ ] "Your [Time Period]: A journey of..." format
+- [ ] Highlight key moments and turning points
+- [ ] Identify breakthrough entries
+- [ ] Create narrative arc from entries
+- [ ] Include quotes from actual entries
+- [ ] Export as shareable document
+- [ ] "Year in Review" special feature (annual summary)
+**Estimated effort**: 10,000-12,000 tokens
+**Impact**: Medium - Emotional connection, shareable content
+
+### Phase 8: Comparison Views
+**Priority**: LOW - Nice-to-have
+- [ ] Side-by-side timeline comparison
+- [ ] "You now vs. 6 months ago"
+- [ ] Compare metadata (challenges then vs. now)
+- [ ] Compare sentiment (mood improvement/decline)
+- [ ] Compare writing frequency
+- [ ] Compare topics discussed
+- [ ] Show evolution of thinking on specific topics
+- [ ] "How you've grown" summary
+**Estimated effort**: 8,000-10,000 tokens
+**Impact**: Medium - Shows personal growth clearly
+
+### Phase 9: Milestone Markers & Achievements
+**Priority**: MEDIUM - Gamification & motivation
+- [ ] Auto-detect breakthrough moments (AI analysis)
+- [ ] Manual milestone marking (user can flag important entries)
+- [ ] Special visual indicators on timeline
+- [ ] Achievements system:
+  - "First entry" badge
+  - "7-day streak" badge
+  - "50 entries" badge
+  - "Deep reflector" (long entries)
+  - "Consistent journaler" (regular entries)
+- [ ] Milestone gallery view
+- [ ] Share achievements (optional)
+- [ ] Celebrate milestones with animations
+**Estimated effort**: 10,000-12,000 tokens
+**Impact**: Medium - Increases engagement and retention
+
+### Phase 10: Export & Share Features
+**Priority**: MEDIUM - User control & portability
+- [ ] Export timeline as PDF (formatted document)
+- [ ] Export timeline as image (visual snapshot)
+- [ ] Export specific time period
+- [ ] Export filtered view (e.g., all entries about "career")
+- [ ] Create shareable "Year in Review" summary
+- [ ] Privacy controls (what to include/exclude)
+- [ ] Beautiful templates for exports
+- [ ] Option to share anonymously
+- [ ] Generate public link (optional)
+- [ ] Backup entire journal (JSON/CSV)
+**Estimated effort**: 12,000-15,000 tokens
+**Impact**: Medium - Data ownership, sharing capability
+
+---
+
+## TOTAL ESTIMATED EFFORT
+**All 10 phases**: ~130,000-160,000 tokens
+
+## RECOMMENDED IMPLEMENTATION ORDER
+**Quick Wins (High Impact, Lower Effort)**:
+1. Phase 2: Timeline Filters (10-12k tokens)
+2. Phase 4: Tag Clouds (8-10k tokens)
+
+**Core Features (High Impact, Higher Effort)**:
+3. Phase 1: Interactive Timeline (15-20k tokens)
+4. Phase 5: Pattern Dashboard (18-22k tokens)
+
+**Engagement Features**:
+5. Phase 9: Milestones (10-12k tokens)
+6. Phase 7: Timeline Stories (10-12k tokens)
+
+**Advanced Features (Later)**:
+7. Phase 3: Places Map (12-15k tokens)
+8. Phase 10: Export/Share (12-15k tokens)
+9. Phase 8: Comparison Views (8-10k tokens)
+10. Phase 6: Connections Graph (15-18k tokens)
+
+
+
+## NEW FEATURE - Refresh Context & Themes on Journal Cards
+**Priority**: MEDIUM - Quality of life improvement
+- [ ] Add refresh/re-analyze button to each journal card
+- [ ] Button triggers AI re-evaluation of Context & Themes metadata:
+  - Time Context
+  - Place Context
+  - Experience Type
+  - Challenge Type
+  - Growth Theme
+- [ ] Show loading state while re-analyzing
+- [ ] Update card display with new metadata
+- [ ] Save updated metadata to database
+- [ ] Add confirmation: "Are you sure? This will overwrite existing metadata"
+- [ ] Option to bulk refresh multiple cards (select + refresh all)
+- [ ] Show "Last analyzed: [date]" on cards
+- [ ] Useful when:
+  - AI improves over time (better analysis)
+  - User edits entry content
+  - Initial analysis was inaccurate
+**Estimated effort**: 5,000-7,000 tokens
+**Impact**: Medium - Improves data quality, user control
+
+
+
+## DASHBOARD REDESIGN - Replace Quick Actions with Insights
+**Priority**: MEDIUM - Part of visualization improvements
+**Timing**: Implement alongside Phase 5 (Pattern Dashboard)
+
+- [ ] Remove "Quick Actions" section from dashboard
+  - Redundant with sidebar navigation
+  - Takes up valuable space
+- [ ] Replace with "Insights" section showing:
+  - Recent patterns detected
+  - "You've journaled X days this week"
+  - "Your top theme this month: [theme]"
+  - "You write most on [day of week]"
+  - Sentiment trend (improving/declining)
+  - Streak information
+  - Suggested reflection prompts based on patterns
+- [ ] Make insights dynamic and personalized
+- [ ] Link insights to filtered timeline views
+- [ ] Refresh insights based on selected time period
+**Estimated effort**: 5,000-7,000 tokens (part of Pattern Dashboard work)
+**Impact**: High - Makes dashboard actionable and insightful
+
+
+
+## SECURITY FIX - Move OpenAI API Key to Secrets ✅
+**Priority**: HIGH - Security best practice
+- [x] Remove OpenAI API key input from Settings UI
+- [x] Use webdev_request_secrets to request OPENAI_API_KEY
+- [x] Update llm.ts to read from environment variable instead of database
+- [x] Keep only provider selection (Forge/OpenAI/fallback) in Settings
+- [x] Update Settings UI to show "Configure in Secrets →" link
+- [ ] Test that OpenAI works with env var (ready for testing)
+**Actual effort**: ~3,500 tokens
+**Impact**: High - Security improvement, follows best practices
+
