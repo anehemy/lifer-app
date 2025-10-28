@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { MessageSquare, Loader2 } from "lucide-react";
@@ -36,11 +35,9 @@ const STATE_OPTIONS = [
 ];
 
 export function FeedbackWidget() {
-  const [selectedArea, setSelectedArea] = useState<string | null>(null);
-  const [selectedFunction, setSelectedFunction] = useState<string | null>(null);
-  const [selectedState, setSelectedState] = useState<string | null>(null);
-  const [message, setMessage] = useState("");
-  // Using sonner toast
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [selectedFunctions, setSelectedFunctions] = useState<string[]>([]);
+  const [selectedStates, setSelectedStates] = useState<string[]>([]);
 
   const sendFeedbackMutation = trpc.feedback.send.useMutation({
     onSuccess: () => {
@@ -48,10 +45,9 @@ export function FeedbackWidget() {
         description: "Thank you for helping us improve the Lifer App.",
       });
       // Reset form
-      setSelectedArea(null);
-      setSelectedFunction(null);
-      setSelectedState(null);
-      setMessage("");
+      setSelectedAreas([]);
+      setSelectedFunctions([]);
+      setSelectedStates([]);
     },
     onError: (error: any) => {
       toast.error("Failed to send feedback", {
@@ -60,51 +56,35 @@ export function FeedbackWidget() {
     },
   });
 
-  // Generate message from selections
-  const generateMessage = () => {
-    if (!selectedArea && !selectedFunction && !selectedState) return "";
-    
-    let message = "";
-    
-    // Structure: "[State] the [function] function in the [area] area"
-    // Or: "[State] the [area] area" if no function
-    // Or: "The [area] area [function] function [state]"
-    
-    if (selectedState) {
-      message = selectedState;
-    }
-    
-    if (selectedFunction && selectedArea) {
-      message += ` the ${selectedFunction.toLowerCase()} function in the ${selectedArea.toLowerCase()} area`;
-    } else if (selectedFunction) {
-      message += ` the ${selectedFunction.toLowerCase()} function`;
-    } else if (selectedArea) {
-      message += ` the ${selectedArea.toLowerCase()} area`;
-    }
-    
-    return message.trim();
-  };
-
-  const handleSelectionChange = () => {
-    const generated = generateMessage();
-    if (generated && !message) {
-      setMessage(generated);
+  const toggleSelection = (value: string, selected: string[], setSelected: (values: string[]) => void) => {
+    if (selected.includes(value)) {
+      setSelected(selected.filter(v => v !== value));
+    } else {
+      setSelected([...selected, value]);
     }
   };
 
   const handleSend = () => {
-    if (!message.trim()) {
-      toast.error("Message required", {
-        description: "Please write a message or select options to generate one.",
+    if (selectedAreas.length === 0 && selectedFunctions.length === 0 && selectedStates.length === 0) {
+      toast.error("Selection required", {
+        description: "Please select at least one option to send feedback.",
       });
       return;
     }
 
+    // Build simple message from selected button names
+    const parts: string[] = [];
+    if (selectedAreas.length > 0) parts.push(`Areas: ${selectedAreas.join(", ")}`);
+    if (selectedFunctions.length > 0) parts.push(`Functions: ${selectedFunctions.join(", ")}`);
+    if (selectedStates.length > 0) parts.push(`States: ${selectedStates.join(", ")}`);
+    
+    const message = parts.join(" | ");
+
     sendFeedbackMutation.mutate({
-      area: selectedArea || undefined,
-      function: selectedFunction || undefined,
-      state: selectedState || undefined,
-      message: message.trim(),
+      area: selectedAreas.join(", ") || undefined,
+      function: selectedFunctions.join(", ") || undefined,
+      state: selectedStates.join(", ") || undefined,
+      message,
     });
   };
 
@@ -116,23 +96,20 @@ export function FeedbackWidget() {
           Quick Feedback
         </CardTitle>
         <CardDescription>
-          Help us improve! Select options to quickly compose your feedback.
+          Select one or more options in each category, then click Send.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Area Selection */}
         <div>
-          <label className="text-sm font-medium mb-2 block">Area</label>
+          <label className="text-sm font-medium mb-2 block">Area (select all that apply)</label>
           <div className="flex flex-wrap gap-2">
             {AREA_OPTIONS.map((area) => (
               <Button
                 key={area}
-                variant={selectedArea === area ? "default" : "outline"}
+                variant={selectedAreas.includes(area) ? "default" : "outline"}
                 size="sm"
-                onClick={() => {
-                  setSelectedArea(area);
-                  setTimeout(handleSelectionChange, 0);
-                }}
+                onClick={() => toggleSelection(area, selectedAreas, setSelectedAreas)}
               >
                 {area}
               </Button>
@@ -147,12 +124,9 @@ export function FeedbackWidget() {
             {FUNCTION_OPTIONS.map((func) => (
               <Button
                 key={func}
-                variant={selectedFunction === func ? "default" : "outline"}
+                variant={selectedFunctions.includes(func) ? "default" : "outline"}
                 size="sm"
-                onClick={() => {
-                  setSelectedFunction(func);
-                  setTimeout(handleSelectionChange, 0);
-                }}
+                onClick={() => toggleSelection(func, selectedFunctions, setSelectedFunctions)}
               >
                 {func}
               </Button>
@@ -162,17 +136,14 @@ export function FeedbackWidget() {
 
         {/* State Selection */}
         <div>
-          <label className="text-sm font-medium mb-2 block">State</label>
+          <label className="text-sm font-medium mb-2 block">State (select all that apply)</label>
           <div className="flex flex-wrap gap-2">
             {STATE_OPTIONS.map((state) => (
               <Button
                 key={state}
-                variant={selectedState === state ? "default" : "outline"}
+                variant={selectedStates.includes(state) ? "default" : "outline"}
                 size="sm"
-                onClick={() => {
-                  setSelectedState(state);
-                  setTimeout(handleSelectionChange, 0);
-                }}
+                onClick={() => toggleSelection(state, selectedStates, setSelectedStates)}
               >
                 {state}
               </Button>
@@ -180,22 +151,10 @@ export function FeedbackWidget() {
           </div>
         </div>
 
-        {/* Message */}
-        <div>
-          <label className="text-sm font-medium mb-2 block">Your Message</label>
-          <Textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Describe your feedback or let the buttons above generate a message..."
-            rows={4}
-            className="resize-none"
-          />
-        </div>
-
         {/* Send Button */}
         <Button
           onClick={handleSend}
-          disabled={sendFeedbackMutation.isPending || !message.trim()}
+          disabled={sendFeedbackMutation.isPending || (selectedAreas.length === 0 && selectedFunctions.length === 0 && selectedStates.length === 0)}
           className="w-full"
         >
           {sendFeedbackMutation.isPending ? (

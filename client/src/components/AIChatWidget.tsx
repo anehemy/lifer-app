@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { MR_MG_AVATAR, MR_MG_NAME, MR_MG_TITLE } from "@/const";
 import { useVoiceChat } from "@/hooks/useVoiceChat";
+import { useAnalytics, EventType } from "@/hooks/useAnalytics";
 
 
 interface AIChatWidgetProps {
@@ -14,6 +15,7 @@ interface AIChatWidgetProps {
 }
 
 export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps) {
+  const { logEvent } = useAnalytics();
   const [isOpen, setIsOpen] = useState(false);
   const [currentSession, setCurrentSession] = useState<number | null>(() => {
     // Load session from localStorage on mount
@@ -83,6 +85,7 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   // Use sendMessage for regular chat (uses database system prompt)
   const sendMessageMutation = trpc.aiChat.sendMessage.useMutation({
     onSuccess: (data) => {
+      logEvent(EventType.CHAT_MESSAGE_SENT, { sessionId: currentSession });
       refetchMessages();
       setMessage("");
       // Clear draft from localStorage on successful send

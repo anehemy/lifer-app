@@ -11,6 +11,7 @@ import { Play, Clock, Star, Trash2 } from "lucide-react";
 import MeditationCustomizer from "@/components/MeditationCustomizer";
 import MeditationPlayer from "@/components/MeditationPlayer";
 import { VOICE_OPTIONS, DEFAULT_VOICE_ID } from "@shared/voiceOptions";
+import { useAnalytics, EventType, usePageView } from "@/hooks/useAnalytics";
 
 const meditationTypes = [
   "Stress Release",
@@ -26,6 +27,8 @@ const meditationTypes = [
 const durations = [1, 5, 10, 15, 20, 30];
 
 export default function Meditation() {
+  usePageView("/meditation");
+  const { logEvent } = useAnalytics();
   const [selectedType, setSelectedType] = useState(meditationTypes[0]);
   const [selectedDuration, setSelectedDuration] = useState(10);
   const [selectedVoice, setSelectedVoice] = useState(DEFAULT_VOICE_ID);
@@ -88,6 +91,7 @@ export default function Meditation() {
   
   const handleCustomizerConfirm = (selectedContext: any) => {
     setShowCustomizer(false);
+    logEvent(EventType.MEDITATION_STARTED, { type: selectedType, duration: selectedDuration });
     const provider = (localStorage.getItem("voiceProvider") || "elevenlabs") as "elevenlabs" | "google" | "browser";
     const googleVoice = localStorage.getItem("googleVoice") || "en-US-Neural2-J";
     generateMeditation.mutate({
@@ -102,6 +106,7 @@ export default function Meditation() {
   };
   
   const handleMeditationComplete = () => {
+    logEvent(EventType.MEDITATION_COMPLETED, { type: selectedType, duration: selectedDuration });
     setShowPlayer(false);
     setShowReflection(true);
   };

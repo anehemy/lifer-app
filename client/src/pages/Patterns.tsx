@@ -2,8 +2,10 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { Brain, TrendingUp, Heart, Lightbulb, Target } from "lucide-react";
+import { usePageView } from "@/hooks/useAnalytics";
 
 export default function Patterns() {
+  usePageView("/patterns");
   const { data: patterns = [], isLoading } = trpc.patterns.analyze.useQuery();
   const { data: entries = [] } = trpc.journal.list.useQuery();
 

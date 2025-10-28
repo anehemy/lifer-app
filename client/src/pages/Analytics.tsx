@@ -2,13 +2,19 @@ import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { BarChart3, Users, Clock, Activity, Download } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
+import { usePageView } from "@/hooks/useAnalytics";
+import { useState } from "react";
 
 export default function Analytics() {
+  usePageView("/analytics");
   const { user } = useAuth();
   const [, setLocation] = useLocation();
+  const [activeUsersDialogOpen, setActiveUsersDialogOpen] = useState(false);
+  const [activeUsersPeriod, setActiveUsersPeriod] = useState<'today' | 'week' | 'month'>('today');
   
   // Redirect non-admin users
   if (user?.role !== "admin") {
@@ -57,33 +63,36 @@ export default function Analytics() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { setActiveUsersPeriod('today'); setActiveUsersDialogOpen(true); }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Today</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics?.activeToday || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Click to view users</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { setActiveUsersPeriod('week'); setActiveUsersDialogOpen(true); }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active This Week</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics?.activeThisWeek || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Click to view users</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { setActiveUsersPeriod('month'); setActiveUsersDialogOpen(true); }}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active This Month</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics?.activeThisMonth || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">Click to view users</p>
           </CardContent>
         </Card>
       </div>
@@ -218,6 +227,63 @@ export default function Analytics() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Active Users Dialog */}
+      <Dialog open={activeUsersDialogOpen} onOpenChange={setActiveUsersDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              Active Users - {activeUsersPeriod === 'today' ? 'Today' : activeUsersPeriod === 'week' ? 'This Week' : 'This Month'}
+            </DialogTitle>
+            <DialogDescription>
+              Users who have logged in during this period
+            </DialogDescription>
+          </DialogHeader>
+          <div className="mt-4">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>User</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Last Login</TableHead>
+                  <TableHead>Total Logins</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {userStats
+                  ?.filter((stat: any) => {
+                    if (!stat.lastLogin) return false;
+                    const lastLogin = new Date(stat.lastLogin);
+                    const now = new Date();
+                    if (activeUsersPeriod === 'today') {
+                      return lastLogin.toDateString() === now.toDateString();
+                    } else if (activeUsersPeriod === 'week') {
+                      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                      return lastLogin >= weekAgo;
+                    } else {
+                      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                      return lastLogin >= monthAgo;
+                    }
+                  })
+                  .map((stat: any) => (
+                    <TableRow key={stat.userId}>
+                      <TableCell className="font-medium">{stat.userName || "Unknown"}</TableCell>
+                      <TableCell>{stat.userEmail || "-"}</TableCell>
+                      <TableCell>{new Date(stat.lastLogin).toLocaleString()}</TableCell>
+                      <TableCell>{stat.totalLogins || 0}</TableCell>
+                    </TableRow>
+                  )) || (
+                    <TableRow>
+                      <TableCell colSpan={4} className="text-center text-muted-foreground">
+                        No active users in this period
+                      </TableCell>
+                    </TableRow>
+                  )}
+              </TableBody>
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -9,16 +9,51 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Trash2, RefreshCw, Mic, MicOff, MessageCircle, Send } from "lucide-react";
+import { Trash2, RefreshCw, Mic, MicOff, MessageCircle, Send, Sparkles } from "lucide-react";
 import LifeStoryTimeline from "@/components/LifeStoryTimeline";
+import { useAnalytics, EventType, usePageView } from "@/hooks/useAnalytics";
+
+// Template questions organized by theme
+const TEMPLATE_QUESTIONS = [
+  // Childhood & Early Life
+  "What is your earliest childhood memory?",
+  "Who was the most influential person in your childhood, and why?",
+  "What was your favorite place as a child?",
+  
+  // Turning Points
+  "Describe a moment that changed the direction of your life.",
+  "What decision are you most proud of making?",
+  "What was the hardest choice you've ever had to make?",
+  
+  // Relationships
+  "Who has had the greatest impact on who you are today?",
+  "Describe a relationship that taught you something important about yourself.",
+  "What does love mean to you?",
+  
+  // Challenges & Growth
+  "What challenge helped you discover your inner strength?",
+  "Describe a time when you failed and what you learned from it.",
+  "What fear have you overcome, and how did you do it?",
+  
+  // Values & Purpose
+  "What do you value most in life?",
+  "If you could give your younger self one piece of advice, what would it be?",
+  "What legacy do you want to leave behind?",
+  
+  // Present & Future
+  "What are you most grateful for right now?",
+  "What dream are you working toward?",
+  "Who do you want to become?",
+];
 
 export default function Journal() {
+  usePageView("/journal");
+  const { logEvent } = useAnalytics();
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false);
   const [response, setResponse] = useState("");
   const [isRecording, setIsRecording] = useState(false);
   const [recognition, setRecognition] = useState<any>(null);
-  // Removed custom Mr. MG chat - now using global AIChatWidget
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [entryToDelete, setEntryToDelete] = useState<number | null>(null);
   const [deletedEntry, setDeletedEntry] = useState<{id: number, question: string, response: string} | null>(null);
@@ -88,6 +123,7 @@ export default function Journal() {
   const createEntry = trpc.journal.create.useMutation({
     onSuccess: () => {
       toast.success("Entry saved successfully!");
+      logEvent(EventType.JOURNAL_ENTRY_CREATED, { question: currentQuestion });
       setResponse("");
       utils.journal.list.invalidate();
       utils.patterns.analyze.invalidate();
@@ -160,26 +196,27 @@ export default function Journal() {
     toast.success("Entry restored");
   };
   
-  // askMrMg mutation removed - now using global AIChatWidget
-
-  const generateQuestion = trpc.journal.generateContextualQuestion.useQuery(undefined, {
-    enabled: !currentQuestion, // Only fetch if we don't have a question
-  });
-  
-  // Set initial question when it loads
+  // Set initial template question on mount
   useEffect(() => {
-    if (generateQuestion.data && !currentQuestion) {
-      setCurrentQuestion(generateQuestion.data);
+    if (!currentQuestion) {
+      const randomIndex = Math.floor(Math.random() * TEMPLATE_QUESTIONS.length);
+      setCurrentQuestion(TEMPLATE_QUESTIONS[randomIndex]);
     }
-  }, [generateQuestion.data, currentQuestion]);
+  }, []);
   
-  const handleNextQuestion = async () => {
+  const handleNextTemplateQuestion = () => {
+    const randomIndex = Math.floor(Math.random() * TEMPLATE_QUESTIONS.length);
+    setCurrentQuestion(TEMPLATE_QUESTIONS[randomIndex]);
+  };
+  
+  const handlePersonalizedQuestion = async () => {
     setIsLoadingQuestion(true);
     try {
       const result = await utils.journal.generateContextualQuestion.fetch();
       setCurrentQuestion(result);
+      toast.success("Personalized question generated!");
     } catch (e) {
-      toast.error("Failed to generate question");
+      toast.error("Failed to generate personalized question");
     } finally {
       setIsLoadingQuestion(false);
     }
@@ -209,26 +246,27 @@ export default function Journal() {
             </div>
             <div className="flex-1">
               <CardTitle className="mb-2">{MR_MG_NAME} asks:</CardTitle>
-              {generateQuestion.isLoading && !currentQuestion ? (
-                <p className="text-lg text-muted-foreground italic">Generating a personalized question for you...</p>
-              ) : (
-                <p className="text-lg">{currentQuestion || "What would you like to explore today?"}</p>
-              )}
+              <p className="text-lg">{currentQuestion || "What would you like to explore today?"}</p>
             </div>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2 flex-wrap">
-            <Button onClick={handleNextQuestion} variant="outline" size="sm" className="flex-1 min-w-[140px]" disabled={isLoadingQuestion}>
-              <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingQuestion ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">{isLoadingQuestion ? 'Generating...' : 'Ask Another Question'}</span>
-              <span className="sm:hidden">{isLoadingQuestion ? 'Loading...' : 'New Question'}</span>
+            <Button onClick={handleNextTemplateQuestion} variant="outline" size="sm" className="flex-1 min-w-[140px]">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Next Question</span>
+              <span className="sm:hidden">Next</span>
+            </Button>
+            <Button onClick={handlePersonalizedQuestion} variant="outline" size="sm" className="flex-1 min-w-[180px]" disabled={isLoadingQuestion}>
+              <Sparkles className={`h-4 w-4 mr-2 ${isLoadingQuestion ? 'animate-pulse' : ''}`} />
+              <span className="hidden sm:inline">{isLoadingQuestion ? 'Generating...' : 'Ask for Personalized Question'}</span>
+              <span className="sm:hidden">{isLoadingQuestion ? 'Loading...' : 'Personalized'}</span>
             </Button>
             <Button onClick={() => {
               const event = new CustomEvent('openMrMgChat', { 
                 detail: { 
                   question: currentQuestion,
-                  forceNew: true // Force create new conversation instead of continuing existing
+                  forceNew: true
                 } 
               });
               window.dispatchEvent(event);
@@ -297,12 +335,11 @@ export default function Journal() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
+            <AlertDialogAction onClick={handleDeleteConfirm}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
   );
 }
+

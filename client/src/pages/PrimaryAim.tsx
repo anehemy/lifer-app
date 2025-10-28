@@ -7,6 +7,7 @@ import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Sparkles, Loader2, Lightbulb } from "lucide-react";
+import { useAnalytics, EventType, usePageView } from "@/hooks/useAnalytics";
 
 const sections = [
   { key: "personal", label: "Personal Identity", prompt: "Who do you want to be as a person? What character traits define your ideal self?", icon: "👤" },
@@ -18,6 +19,8 @@ const sections = [
 ];
 
 export default function PrimaryAim() {
+  usePageView("/primary-aim");
+  const { logEvent } = useAnalytics();
   const { data: aim } = trpc.primaryAim.get.useQuery();
   const utils = trpc.useUtils();
   
@@ -50,6 +53,7 @@ export default function PrimaryAim() {
   const upsertAim = trpc.primaryAim.upsert.useMutation({
     onSuccess: () => {
       toast.success("Primary Aim saved!");
+      logEvent(EventType.PRIMARY_AIM_UPDATED);
       utils.primaryAim.get.invalidate();
     },
   });

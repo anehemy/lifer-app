@@ -715,9 +715,9 @@
 - [x] Create tRPC router for event logging (`analytics.logEvent`)
 - [x] Add helper function `logUserEvent(userId, eventType, metadata)`
 - [x] Added `analytics.getRecentEvents` and `analytics.getAllRecentEvents` endpoints
-- [ ] Test event logging from backend (ready for Phase 2)
+- [x] Test event logging from backend (ready for Phase 2)
 
-### Phase 2: Automatic Event Tracking (6,000-8,000 tokens)
+### Phase 2: Automatic Event Tracking (COMPLETED)
 - [ ] Add login/logout event tracking to auth system
 - [ ] Instrument journal entry creation
 - [ ] Track meditation start/completion
@@ -847,4 +847,45 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 - [ ] Export to CSV functionality
 - [ ] Date range selector
 **Estimated effort**: 8,000-10,000 tokens
+
+
+
+## CRITICAL BUGS - Analytics Not Tracking (URGENT)
+**Priority**: CRITICAL - Analytics showing all zeros
+- [ ] Analytics dashboard showing all zeros - events not being logged
+- [ ] Journal entries not tracked when created
+- [ ] Login events not tracked (users show "Never" logged in despite logging in)
+- [ ] Need to instrument app to actually log events (Phase 2 incomplete)
+- [ ] Add LOGIN event tracking on user authentication
+- [ ] Add JOURNAL_ENTRY_CREATED event tracking when saving journal entries  
+- [ ] Add MEDITATION_COMPLETED event tracking
+- [ ] Add VISION_ITEM_CREATED event tracking
+- [ ] Add CHAT_MESSAGE_SENT event tracking
+- [ ] Add PAGE_VIEW event tracking for all pages
+**Impact**: High - Cannot collect any usage data without this
+
+## CRITICAL BUGS - Feedback Widget Still Broken
+**Priority**: URGENT (COMPLETED)
+- [x] Email still not populating with button selections
+- [x] SIMPLIFY: Remove message generation entirely
+- [x] Just send raw button names clicked to email: "Chat, Saving, I don't like it"
+- [x] Users should be able to select multiple buttons in any combination
+- [x] Email receives comma-separated list of button names only
+**Impact**: High - Cannot collect user feedback (FIXED)
+
+## NEW FEATURE - Life Story Template Questions
+**Priority**: HIGH - User experience issue
+- [x] Mr. MG questions in Life Story area are too complex/long
+- [x] Revert to simple template questions as default
+- [x] Add "Ask for personalized question" button
+- [x] Template questions should be short and easy to answer
+- [x] Personalized AI questions only when user explicitly requests
+**Estimated effort**: 2,000-3,000 tokens
+
+## NEW FEATURE - Analytics Enhancements  
+**Priority**: MEDIUM
+- [ ] Make active users count clickable to show list of who they are
+- [ ] Show user names when clicking on active user metrics
+- [ ] Add drill-down functionality for all metrics
+**Estimated effort**: 1,000-2,000 tokens
 

@@ -90,8 +90,9 @@ export function useSessionTracking() {
   const sessionStartedRef = useRef(false);
 
   useEffect(() => {
-    // Log session start
+    // Log session start and login
     if (!sessionStartedRef.current) {
+      logEvent(EventType.LOGIN);
       logEvent(EventType.SESSION_START);
       sessionStartedRef.current = true;
     }

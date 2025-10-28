@@ -6,8 +6,10 @@ import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import StartHereGuide from "@/components/StartHereGuide";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
+import { usePageView } from "@/hooks/useAnalytics";
 
 export default function Dashboard() {
+  usePageView("/dashboard");
   const { user } = useAuth();
   const { data: journalEntries = [] } = trpc.journal.list.useQuery();
   const { data: visionItems = [] } = trpc.vision.list.useQuery();

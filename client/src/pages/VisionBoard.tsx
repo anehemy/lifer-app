@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2, Edit, Sparkles, Image as ImageIcon } from "lucide-react";
+import { useAnalytics, EventType, usePageView } from "@/hooks/useAnalytics";
 
 const categories = [
   "Personal Growth",
@@ -23,6 +24,8 @@ const categories = [
 ];
 
 export default function VisionBoard() {
+  usePageView("/vision");
+  const { logEvent } = useAnalytics();
   const [open, setOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [title, setTitle] = useState("");
@@ -36,6 +39,7 @@ export default function VisionBoard() {
   const createItem = trpc.vision.create.useMutation({
     onSuccess: () => {
       toast.success("Vision item created!");
+      logEvent(EventType.VISION_ITEM_CREATED, { category });
       utils.vision.list.invalidate();
       resetForm();
       setOpen(false);
