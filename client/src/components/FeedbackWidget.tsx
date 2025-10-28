@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { MessageSquare, Loader2 } from "lucide-react";
@@ -38,6 +39,7 @@ export function FeedbackWidget() {
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedFunctions, setSelectedFunctions] = useState<string[]>([]);
   const [selectedStates, setSelectedStates] = useState<string[]>([]);
+  const [customMessage, setCustomMessage] = useState("");
 
   const sendFeedbackMutation = trpc.feedback.send.useMutation({
     onSuccess: () => {
@@ -48,6 +50,7 @@ export function FeedbackWidget() {
       setSelectedAreas([]);
       setSelectedFunctions([]);
       setSelectedStates([]);
+      setCustomMessage("");
     },
     onError: (error: any) => {
       toast.error("Failed to send feedback", {
@@ -78,7 +81,12 @@ export function FeedbackWidget() {
     if (selectedFunctions.length > 0) parts.push(`Functions: ${selectedFunctions.join(", ")}`);
     if (selectedStates.length > 0) parts.push(`States: ${selectedStates.join(", ")}`);
     
-    const message = parts.join(" | ");
+    let message = parts.join(" | ");
+    
+    // Add custom message if provided
+    if (customMessage.trim()) {
+      message += message ? ` | Message: ${customMessage.trim()}` : `Message: ${customMessage.trim()}`;
+    }
 
     sendFeedbackMutation.mutate({
       area: selectedAreas.join(", ") || undefined,
@@ -149,6 +157,18 @@ export function FeedbackWidget() {
               </Button>
             ))}
           </div>
+        </div>
+
+        {/* Optional Text Message */}
+        <div>
+          <label className="text-sm font-medium mb-2 block">Additional Comments (optional)</label>
+          <Textarea
+            value={customMessage}
+            onChange={(e) => setCustomMessage(e.target.value)}
+            placeholder="Add any additional details or context..."
+            rows={3}
+            className="resize-none"
+          />
         </div>
 
         {/* Send Button */}

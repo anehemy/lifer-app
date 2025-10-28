@@ -889,3 +889,13 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 - [ ] Add drill-down functionality for all metrics
 **Estimated effort**: 1,000-2,000 tokens
 
+
+
+
+## NEW FEATURE - Add Text Message to Feedback Widget
+**Priority**: MEDIUM (COMPLETED)
+- [x] Add optional text message field to feedback widget
+- [x] Allow users to add custom comments along with button selections
+- [x] Include text message in email along with button selections
+**Estimated effort**: 500 tokens
+
