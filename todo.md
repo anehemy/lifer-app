@@ -365,3 +365,13 @@
   - Meditation: Experimental - TTS providers being tested
   - Primary Aim: In Development - basic functionality available
 
+
+
+## NEW FEATURE - Mr. MG Greeting in Chat Widget ✅
+- [x] Chat widget should start with Mr. MG sending the first message (like in Life Story)
+- [x] Message should be welcoming and contextual
+- [x] Should appear when user first opens the chat widget
+- [x] Don't repeat the greeting if user already has chat history
+
+**Greeting message**: "Hello! I'm Mr. MG, your AI life mentor. I'm here to help you explore your thoughts, discover patterns, and work toward your Primary Aim. What's on your mind today?"
+

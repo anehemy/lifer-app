@@ -247,10 +247,14 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
       } else {
         // Create new session if none exists
         const mrMgAgent = { id: 1, name: MR_MG_NAME, avatar: MR_MG_AVATAR, role: "Life Mentor" };
+        
+        // If no initial question provided, use a default greeting
+        const greeting = initialQuestion || "Hello! I'm Mr. MG, your AI life mentor. I'm here to help you explore your thoughts, discover patterns, and work toward your Primary Aim. What's on your mind today?";
+        
         createSession.mutate({ 
           agentId: mrMgAgent.id,
           title: initialQuestion ? initialQuestion.substring(0, 50) + "..." : "New Conversation",
-          initialQuestion: initialQuestion // Pass the question to backend
+          initialQuestion: greeting // Pass the greeting to backend
         });
         setHasGreeted(true);
       }
