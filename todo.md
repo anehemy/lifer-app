@@ -614,3 +614,17 @@
 **Actual effort**: ~3,500 tokens
 **Impact**: High - Security improvement, follows best practices
 
+
+
+## BUG - Welcome Notice Cut Off on Mobile ✅
+**Priority**: HIGH - Affects all mobile users
+- [x] Welcome notice modal too tall on mobile screens (reduced to 85vh on mobile)
+- [x] Close button (X) hard to reach (default dialog close button always visible)
+- [x] "Got it, thanks!" button cut off (now sticky at bottom)
+- [x] Add proper scrolling for modal content (overflow-y-auto)
+- [x] Reduce max height on mobile (85vh mobile, 90vh desktop)
+- [x] Ensure close button always visible (sticky footer with border)
+- [x] Full-width button on mobile for easy tapping
+**Actual effort**: ~1,500 tokens
+**Impact**: High - First impression for mobile users
+

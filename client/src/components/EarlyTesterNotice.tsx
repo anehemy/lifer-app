@@ -19,7 +19,7 @@ export function EarlyTesterNotice() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl flex items-center gap-2">
             <Megaphone className="h-6 w-6 text-primary" />
@@ -120,8 +120,8 @@ export function EarlyTesterNotice() {
           </div>
         </div>
 
-        <div className="flex justify-end">
-          <Button onClick={() => setOpen(false)}>
+        <div className="sticky bottom-0 bg-background pt-4 pb-2 flex justify-end border-t mt-4">
+          <Button onClick={() => setOpen(false)} className="w-full sm:w-auto">
             Got it, thanks!
           </Button>
         </div>
