@@ -209,10 +209,12 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
+const resolveForgeApiUrl = () =>
   ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
     ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
     : "https://forge.manus.im/v1/chat/completions";
+
+const resolveOpenAIApiUrl = () => "https://api.openai.com/v1/chat/completions";
 
 const assertApiKey = () => {
   if (!ENV.forgeApiKey) {
@@ -266,19 +268,52 @@ const normalizeResponseFormat = ({
 };
 
 export async function invokeLLM(params: InvokeParams, retries = 3, delay = 1000): Promise<InvokeResult> {
+  // Read provider settings from database
+  const db = await import('../db').then(m => m.getDb());
+  const { globalSettings } = await import('../../drizzle/schema');
+  const { eq } = await import('drizzle-orm');
+  
+  let primaryProvider: LLMProvider = 'forge';
+  let fallbackProvider: LLMProvider | null = 'openai';
+  
+  if (db) {
+    const primarySetting = await db.select().from(globalSettings).where(eq(globalSettings.settingKey, 'llm_primary_provider'));
+    if (primarySetting.length > 0 && primarySetting[0].settingValue) {
+      primaryProvider = primarySetting[0].settingValue as LLMProvider;
+    }
+    
+    const fallbackSetting = await db.select().from(globalSettings).where(eq(globalSettings.settingKey, 'llm_fallback_provider'));
+    if (fallbackSetting.length > 0 && fallbackSetting[0].settingValue) {
+      const fallbackValue = fallbackSetting[0].settingValue;
+      fallbackProvider = fallbackValue === 'none' ? null : (fallbackValue as LLMProvider);
+    }
+  }
+  
+  // Try primary provider with retries
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      return await invokeLLMInternal(params);
+      return await invokeLLMInternal(params, primaryProvider);
     } catch (error) {
-      console.error(`[LLM] Attempt ${attempt}/${retries} failed:`, error);
+      console.error(`[LLM] ${primaryProvider} attempt ${attempt}/${retries} failed:`, error);
       
       if (attempt === retries) {
-        throw error; // Final attempt failed, throw error
+        // Primary provider exhausted all retries
+        if (fallbackProvider) {
+          console.log(`[LLM] ${primaryProvider} failed after ${retries} attempts. Trying fallback: ${fallbackProvider}`);
+          try {
+            return await invokeLLMInternal(params, fallbackProvider);
+          } catch (fallbackError) {
+            console.error(`[LLM] Fallback ${fallbackProvider} also failed:`, fallbackError);
+            throw new Error(`Both ${primaryProvider} and ${fallbackProvider} providers failed`);
+          }
+        } else {
+          throw error; // No fallback configured
+        }
       }
       
       // Exponential backoff: wait longer between each retry
       const waitTime = delay * Math.pow(2, attempt - 1);
-      console.log(`[LLM] Retrying in ${waitTime}ms...`);
+      console.log(`[LLM] Retrying ${primaryProvider} in ${waitTime}ms...`);
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
   }
@@ -286,8 +321,51 @@ export async function invokeLLM(params: InvokeParams, retries = 3, delay = 1000)
   throw new Error('All retry attempts exhausted');
 }
 
-async function invokeLLMInternal(params: InvokeParams): Promise<InvokeResult> {
-  assertApiKey();
+type LLMProvider = 'forge' | 'openai';
+
+interface ProviderConfig {
+  apiUrl: string;
+  apiKey: string;
+  model: string;
+}
+
+async function getProviderConfig(provider: LLMProvider): Promise<ProviderConfig> {
+  if (provider === 'forge') {
+    return {
+      apiUrl: resolveForgeApiUrl(),
+      apiKey: ENV.forgeApiKey || '',
+      model: 'gemini-2.5-flash',
+    };
+  } else if (provider === 'openai') {
+    // Get OpenAI key from global settings
+    const db = await import('../db').then(m => m.getDb());
+    const { globalSettings } = await import('../../drizzle/schema');
+    const { eq } = await import('drizzle-orm');
+    
+    let openaiKey = '';
+    if (db) {
+      const settings = await db.select().from(globalSettings).where(eq(globalSettings.settingKey, 'llm_openai_api_key'));
+      if (settings.length > 0 && settings[0].settingValue) {
+        openaiKey = settings[0].settingValue;
+      }
+    }
+    
+    return {
+      apiUrl: resolveOpenAIApiUrl(),
+      apiKey: openaiKey,
+      model: 'gpt-4o-mini',
+    };
+  }
+  
+  throw new Error(`Unknown provider: ${provider}`);
+}
+
+async function invokeLLMInternal(params: InvokeParams, provider: LLMProvider = 'forge'): Promise<InvokeResult> {
+  const config = await getProviderConfig(provider);
+  
+  if (!config.apiKey) {
+    throw new Error(`API key not configured for provider: ${provider}`);
+  }
 
   const {
     messages,
@@ -301,7 +379,7 @@ async function invokeLLMInternal(params: InvokeParams): Promise<InvokeResult> {
   } = params;
 
   const payload: Record<string, unknown> = {
-    model: "gemini-2.5-flash",
+    model: config.model,
     messages: messages.map(normalizeMessage),
   };
 
@@ -317,9 +395,14 @@ async function invokeLLMInternal(params: InvokeParams): Promise<InvokeResult> {
     payload.tool_choice = normalizedToolChoice;
   }
 
-  payload.max_tokens = 32768
-  payload.thinking = {
-    "budget_tokens": 128
+  // Provider-specific config
+  if (provider === 'forge') {
+    payload.max_tokens = 32768;
+    payload.thinking = {
+      "budget_tokens": 128
+    };
+  } else if (provider === 'openai') {
+    payload.max_tokens = 4096; // OpenAI default
   }
 
   const normalizedResponseFormat = normalizeResponseFormat({
@@ -333,11 +416,13 @@ async function invokeLLMInternal(params: InvokeParams): Promise<InvokeResult> {
     payload.response_format = normalizedResponseFormat;
   }
 
-  const response = await fetch(resolveApiUrl(), {
+  console.log(`[LLM] Using provider: ${provider}, model: ${config.model}`);
+  
+  const response = await fetch(config.apiUrl, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: `Bearer ${config.apiKey}`,
     },
     body: JSON.stringify(payload),
   });

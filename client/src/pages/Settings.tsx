@@ -23,12 +23,22 @@ export default function Settings() {
   const [googleVoice, setGoogleVoice] = useState("en-US-Neural2-J");
   const [elevenLabsVoice, setElevenLabsVoice] = useState("VQypEoV1u8Wo9oGgDmW0");
   
+  // LLM Provider settings
+  const [primaryLLM, setPrimaryLLM] = useState<'forge' | 'openai'>('forge');
+  const [fallbackLLM, setFallbackLLM] = useState<'forge' | 'openai' | 'none'>('openai');
+  const [openaiKey, setOpenaiKey] = useState('');
+  
   // Update state when global settings load
   useEffect(() => {
     if (globalSettings) {
       if (globalSettings.voiceProvider) setVoiceProvider(globalSettings.voiceProvider);
       if (globalSettings.googleVoice) setGoogleVoice(globalSettings.googleVoice);
       if (globalSettings.elevenLabsVoice) setElevenLabsVoice(globalSettings.elevenLabsVoice);
+      
+      // LLM Provider settings
+      if (globalSettings.llm_primary_provider) setPrimaryLLM(globalSettings.llm_primary_provider as 'forge' | 'openai');
+      if (globalSettings.llm_fallback_provider) setFallbackLLM(globalSettings.llm_fallback_provider as 'forge' | 'openai' | 'none');
+      if (globalSettings.llm_openai_api_key) setOpenaiKey(globalSettings.llm_openai_api_key);
     }
   }, [globalSettings]);
   
@@ -53,6 +63,7 @@ export default function Settings() {
   const testVoiceMutation = trpc.textToSpeech.generate.useMutation();
   const updateIntroAudioMutation = trpc.user.updateIntroAudio.useMutation();
   const updateVoiceSettingsMutation = trpc.globalSettings.updateVoiceSettings.useMutation();
+  const updateLLMSettingsMutation = trpc.globalSettings.updateLLMSettings.useMutation();
   
   useEffect(() => {
     if (mrMgAgent?.systemPrompt) {
@@ -360,6 +371,79 @@ export default function Settings() {
               </Button>
             </div>
           )}
+        </CardContent>
+      </Card>
+      )}
+      
+      {user?.role === "admin" && (
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>AI Provider Settings (Admin)</CardTitle>
+          <CardDescription>
+            Configure which AI provider to use for Mr. MG chat. Fallback provider is used if primary fails.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="primaryLLM">Primary AI Provider</Label>
+            <Select value={primaryLLM} onValueChange={(value: 'forge' | 'openai') => {
+              setPrimaryLLM(value);
+              updateLLMSettingsMutation.mutate({ primaryProvider: value });
+              toast.success(`Primary AI provider set to ${value === 'forge' ? 'Forge (Gemini)' : 'OpenAI'}`);
+            }}>
+              <SelectTrigger id="primaryLLM">
+                <SelectValue placeholder="Select primary provider" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectItem value="forge">Forge (Gemini)</SelectItem>
+                <SelectItem value="openai">OpenAI</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="fallbackLLM">Fallback AI Provider</Label>
+            <Select value={fallbackLLM} onValueChange={(value: 'forge' | 'openai' | 'none') => {
+              setFallbackLLM(value);
+              updateLLMSettingsMutation.mutate({ fallbackProvider: value });
+              if (value === 'none') {
+                toast.success('Fallback provider disabled');
+              } else {
+                toast.success(`Fallback AI provider set to ${value === 'forge' ? 'Forge (Gemini)' : 'OpenAI'}`);
+              }
+            }}>
+              <SelectTrigger id="fallbackLLM">
+                <SelectValue placeholder="Select fallback provider" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectItem value="none">None</SelectItem>
+                <SelectItem value="forge">Forge (Gemini)</SelectItem>
+                <SelectItem value="openai">OpenAI</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="openaiKey">OpenAI API Key</Label>
+            <Input 
+              id="openaiKey" 
+              type="password"
+              placeholder="sk-..." 
+              value={openaiKey}
+              onChange={(e) => {
+                setOpenaiKey(e.target.value);
+              }}
+              onBlur={() => {
+                if (openaiKey) {
+                  updateLLMSettingsMutation.mutate({ openaiApiKey: openaiKey });
+                  toast.success('OpenAI API key saved');
+                }
+              }}
+            />
+            <p className="text-sm text-muted-foreground mt-1">
+              Required if using OpenAI as primary or fallback provider
+            </p>
+          </div>
         </CardContent>
       </Card>
       )}

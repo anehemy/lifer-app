@@ -81,6 +81,39 @@ export const appRouter = router({
         }
         return { success: true };
       }),
+    updateLLMSettings: protectedProcedure
+      .input(z.object({
+        primaryProvider: z.enum(['forge', 'openai']).optional(),
+        fallbackProvider: z.enum(['forge', 'openai', 'none']).optional(),
+        openaiApiKey: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Only admins can update global settings');
+        }
+        const db = await import('./db').then(m => m.getDb());
+        if (!db) throw new Error('Database not available');
+        const { globalSettings } = await import('../drizzle/schema');
+        
+        // Update each setting
+        if (input.primaryProvider !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'llm_primary_provider', settingValue: input.primaryProvider })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.primaryProvider } });
+        }
+        if (input.fallbackProvider !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'llm_fallback_provider', settingValue: input.fallbackProvider })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.fallbackProvider } });
+        }
+        if (input.openaiApiKey !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'llm_openai_api_key', settingValue: input.openaiApiKey })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.openaiApiKey } });
+        }
+        return { success: true };
+      }),
   }),
 
   tokens: router({

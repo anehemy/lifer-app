@@ -249,3 +249,84 @@
 - [ ] Add graceful fallback when LLM completely fails (return helpful error message instead of 500)
 - [ ] Monitor if Forge API continues failing - may need alternative provider
 
+
+
+## NEW FEATURE - Multi-LLM Provider Support with Fallback
+**Goal**: Support multiple LLM providers (OpenAI, Gemini, Anthropic) with automatic fallback and provider selection in Settings.
+
+### Benefits:
+- **Reliability**: If one provider fails, automatically fallback to another
+- **Testing**: Compare which LLM gives best responses for your use case
+- **Cost optimization**: Use cheaper providers for simple tasks, premium for complex
+- **Avoid vendor lock-in**: Not dependent on single API provider
+
+### Implementation Steps:
+
+#### Step 1: Add LLM Provider Configuration to Settings
+- [ ] Add LLM provider settings to global_settings table
+  - primary_llm_provider (forge/openai/gemini/anthropic)
+  - fallback_llm_provider (same options)
+  - openai_api_key (encrypted)
+  - gemini_api_key (encrypted)
+  - anthropic_api_key (encrypted)
+
+#### Step 2: Create Admin UI for LLM Provider Management
+- [ ] Add "AI Provider" section to Settings page (admin only)
+- [ ] Dropdown to select primary provider
+- [ ] Dropdown to select fallback provider
+- [ ] Input fields for API keys (masked, encrypted storage)
+- [ ] Test connection button for each provider
+- [ ] Show current provider status (working/failing)
+
+#### Step 3: Refactor LLM Invocation Layer
+- [ ] Create provider-specific adapters:
+  - ForgeAdapter (current implementation)
+  - OpenAIAdapter (OpenAI API format)
+  - GeminiAdapter (Google Gemini API format)
+  - AnthropicAdapter (Claude API format)
+- [ ] Unified interface for all providers
+- [ ] Handle provider-specific request/response formats
+
+#### Step 4: Implement Automatic Fallback Logic
+- [ ] Try primary provider first
+- [ ] On failure, automatically try fallback provider
+- [ ] Log which provider was used for each request
+- [ ] Return error only if both providers fail
+- [ ] Add circuit breaker pattern (skip failing provider temporarily)
+
+#### Step 5: Provider Testing & Comparison
+- [ ] Add "Test Provider" button in Settings
+- [ ] Send same prompt to all configured providers
+- [ ] Display responses side-by-side for comparison
+- [ ] Show response time and token usage for each
+- [ ] Help admin choose best provider
+
+#### Step 6: Usage Analytics
+- [ ] Track which provider is used for each request
+- [ ] Show provider usage stats in admin dashboard
+- [ ] Track success/failure rates per provider
+- [ ] Show average response time per provider
+- [ ] Cost estimation per provider (if available)
+
+**Priority**: HIGH - Current Forge API failures make this critical for reliability
+
+
+
+## IMMEDIATE IMPLEMENTATION - Forge/OpenAI Toggle with Fallback ✅
+**Priority**: CRITICAL - COMPLETED!
+
+### What was built:
+- [x] Add llm_provider fields to global_settings table (primary_provider, fallback_provider, openai_api_key)
+- [x] Create OpenAI adapter alongside Forge adapter
+- [x] Add provider selection UI in Settings (admin only)
+  - Dropdown: Primary Provider (Forge/OpenAI)
+  - Dropdown: Fallback Provider (Forge/OpenAI/None)
+  - Input: OpenAI API Key (masked, saves on blur)
+- [x] Update invokeLLM to check settings and use selected provider
+- [x] Implement automatic fallback if primary fails (3 retries on primary, then fallback)
+- [x] Show which provider was used in chat (console logs)
+- [ ] Test both providers work correctly (needs OpenAI API key)
+
+**Actual tokens used**: ~22,000
+**Benefit**: Chat now has automatic fallback! If Forge fails, OpenAI takes over seamlessly.
+
