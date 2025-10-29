@@ -3,6 +3,7 @@ import { protectedProcedure, router } from "./_core/trpc";
 import { invokeLLM, getCurrentProvider, getProviderConfig } from "./_core/llm";
 import * as db from "./db";
 import { detectIntent } from "./mrMgAgent";
+import { knowledgeBase } from "./_core/knowledgeBase";
 
 export const aiChatRouter = router({
   // Get all available AI agents
@@ -179,12 +180,25 @@ export const aiChatRouter = router({
       const messageCount = messages.length;
       const approachingLimit = messageCount >= 40; // Warn at 40 out of 50 messages
       
+      // Get relevant knowledge from RAG system
+      let ragContext = '';
+      try {
+        // Build conversation summary for context
+        const recentMessages = messages.slice(-5).map(m => `${m.role}: ${m.content}`).join('\n');
+        ragContext = await knowledgeBase.getRelevantContext(recentMessages, input.message, 2);
+        console.log(`[AI Chat] RAG context retrieved: ${ragContext.length} chars`);
+      } catch (error) {
+        console.error('[AI Chat] RAG retrieval failed:', error);
+        // Continue without RAG context
+      }
+      
       // Build messages for LLM
       const llmMessages: any[] = [
         {
           role: "system",
           content: agent.systemPrompt + 
             (contextData ? "\n\nCurrent user data:" + contextData : "") +
+            (ragContext ? ragContext : "") +
             (approachingLimit ? `\n\n⚠️ IMPORTANT: This conversation has ${messageCount} messages and is approaching the limit (50 messages). After your next response, proactively tell the user: "We've had a rich conversation with many insights. Would you like me to save a summary of our discussion to your journal? Then we can start a fresh conversation to continue exploring these ideas." Use the create_conversation_summary tool if they agree.` : ""),
         },
       ];

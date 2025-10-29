@@ -351,9 +351,13 @@ interface ProviderConfig {
 
 export async function getProviderConfig(provider: LLMProvider): Promise<ProviderConfig> {
   if (provider === 'forge') {
+    const apiKey = ENV.forgeApiKey || '';
+    if (!apiKey) {
+      throw new Error('API key not configured for provider: forge');
+    }
     return {
       apiUrl: resolveForgeApiUrl(),
-      apiKey: ENV.forgeApiKey || '',
+      apiKey,
       model: 'gemini-2.5-flash',
       maxTokens: 32768,
       contextWindow: 1000000, // Gemini 2.5 Flash has 1M token context
@@ -362,6 +366,9 @@ export async function getProviderConfig(provider: LLMProvider): Promise<Provider
   } else if (provider === 'openai') {
     // Get OpenAI key from environment variable (stored in Secrets)
     const openaiKey = process.env.OPENAI_API_KEY || '';
+    if (!openaiKey) {
+      throw new Error('API key not configured for provider: openai');
+    }
     
     return {
       apiUrl: 'https://api.openai.com/v1/chat/completions',

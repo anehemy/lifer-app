@@ -929,3 +929,29 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 - [x] Show live sentence preview as user selects buttons
 **Estimated effort**: 1,000 tokens
 
+
+
+
+## CRITICAL BUG - Chat API Issues
+**Priority**: URGENT - Chat not working (RESOLVED)
+- [x] Investigate and fix chat API errors (primary provider was set to openai without API key)
+- [x] Check server logs for error details
+- [x] Test chat functionality end-to-end (switched primary to forge, disabled fallback)
+**Impact**: High - Core feature broken (FIXED)
+**Note**: When OpenAI API key is added tomorrow, can re-enable as fallback provider
+
+
+
+
+## NEW FEATURE - RAG Knowledge Base for Mr. MG
+**Priority**: HIGH - Significantly improves Mr. MG quality (COMPLETED)
+- [x] Create /server/knowledge/ directory for storing knowledge base docs
+- [x] Copy research documents into knowledge directory
+- [x] Implement text chunking for knowledge base
+- [x] Add embedding generation using Forge API
+- [x] Create semantic search/retrieval system with cosine similarity
+- [x] Integrate RAG into chat - inject relevant knowledge into context
+- [x] Update Mr. MG system prompt with enhanced personality from research (OARS framework, narrative therapy, etc.)
+- [ ] Test RAG retrieval quality and relevance (needs testing with real conversations)
+**Estimated effort**: 5,000-7,000 tokens
+
