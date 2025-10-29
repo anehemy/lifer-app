@@ -910,3 +910,22 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 - [x] Improve error logging for better diagnostics
 **Estimated effort**: 2,000 tokens
 
+
+
+
+## ACTIVE WORK - Chat Issues
+**Priority**: HIGH - User experience and reliability (COMPLETED)
+- [x] Fix chat communication errors happening frequently (added retry logic + better error messages)
+- [x] Make chat show journal question when opened directly (stored in session context, displayed in chat)
+**Estimated effort**: 2,000-3,000 tokens
+
+
+
+
+## NEW FEATURE - Feedback Widget Redesign
+**Priority**: MEDIUM - Better user engagement (COMPLETED)
+- [x] Redesign feedback widget with "Wouldn't it be nice if..." sentence flow
+- [x] Adjust button labels to create natural sentences
+- [x] Show live sentence preview as user selects buttons
+**Estimated effort**: 1,000 tokens
+

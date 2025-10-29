@@ -292,14 +292,14 @@ export async function updateAgentSystemPrompt(agentId: number, systemPrompt: str
   return true;
 }
 
-export async function createChatSession(userId: number, agentId: number, title?: string, context?: any) {
+export async function createChatSession(userId: number, agentId: number, title?: string, context?: string | null) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(chatSessions).values({
     userId,
     agentId,
     title: title || null,
-    context: context ? JSON.stringify(context) : null,
+    context: context || null,
   });
   return result[0].insertId;
 }

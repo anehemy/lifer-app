@@ -84,6 +84,8 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
 
   // Use sendMessage for regular chat (uses database system prompt)
   const sendMessageMutation = trpc.aiChat.sendMessage.useMutation({
+    retry: 2, // Automatically retry failed requests twice
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     onSuccess: (data) => {
       logEvent(EventType.CHAT_MESSAGE_SENT, { sessionId: currentSession });
       refetchMessages();
@@ -112,14 +114,41 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
         }
       }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       // Keep message in input so user doesn't lose it
-      toast.error("Message failed to send. Your text has been preserved. Error: " + error.message);
+      console.error('[Chat] Send message error:', error);
+      
+      // Provide more helpful error messages
+      let errorMessage = "Message failed to send. Your text has been preserved.";
+      if (error.message?.includes('timeout')) {
+        errorMessage += " The request timed out. Please try again.";
+      } else if (error.message?.includes('Session not found')) {
+        errorMessage += " Session expired. Please start a new conversation.";
+      } else if (error.message?.includes('network')) {
+        errorMessage += " Network error. Please check your connection.";
+      }
+      
+      toast.error(errorMessage, {
+        action: {
+          label: "Retry",
+          onClick: () => {
+            if (message.trim() && currentSession) {
+              sendMessageMutation.mutate({
+                sessionId: currentSession,
+                message: message.trim(),
+              });
+            }
+          },
+        },
+        duration: 10000,
+      });
       // Message stays in the textarea, user can retry
     },
   });
 
   const sendMessage = trpc.aiChat.sendMessage.useMutation({
+    retry: 2, // Automatically retry failed requests twice
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     onSuccess: (data) => {
       refetchMessages();
       setMessage("");
@@ -146,9 +175,34 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
         }
       }
     },
-    onError: (error) => {
+    onError: (error: any) => {
       // Keep message in input so user doesn't lose it
-      toast.error("Message failed to send. Your text has been preserved. Error: " + error.message);
+      console.error('[Chat] Send message error:', error);
+      
+      // Provide more helpful error messages
+      let errorMessage = "Message failed to send. Your text has been preserved.";
+      if (error.message?.includes('timeout')) {
+        errorMessage += " The request timed out. Please try again.";
+      } else if (error.message?.includes('Session not found')) {
+        errorMessage += " Session expired. Please start a new conversation.";
+      } else if (error.message?.includes('network')) {
+        errorMessage += " Network error. Please check your connection.";
+      }
+      
+      toast.error(errorMessage, {
+        action: {
+          label: "Retry",
+          onClick: () => {
+            if (message.trim() && currentSession) {
+              sendMessageMutation.mutate({
+                sessionId: currentSession,
+                message: message.trim(),
+              });
+            }
+          },
+        },
+        duration: 10000,
+      });
       // Message stays in the textarea, user can retry
     },
   });
@@ -243,7 +297,8 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
         createSession.mutate({ 
           agentId: mrMgAgent.id,
           title: initialQuestion ? initialQuestion.substring(0, 50) + "..." : "New Conversation",
-          initialQuestion: initialQuestion
+          initialQuestion: initialQuestion,
+          journalQuestion: initialQuestion // Store the original question
         });
         setHasGreeted(true);
       } else if (!currentSession) {
@@ -615,6 +670,32 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
             {/* Chat Messages */}
             <div className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
               <div className="space-y-4">
+                {/* Journal Question Display */}
+                {(() => {
+                  try {
+                    const session = sessions.find((s: any) => s.id === currentSession);
+                    if (session?.context) {
+                      const context = JSON.parse(session.context);
+                      if (context.journalQuestion) {
+                        return (
+                          <div className="bg-gradient-to-r from-purple-100 to-pink-100 border-2 border-purple-300 rounded-lg p-4 mb-4">
+                            <div className="flex items-start gap-2">
+                              <span className="text-2xl">{MR_MG_AVATAR}</span>
+                              <div>
+                                <p className="text-xs font-semibold text-purple-700 mb-1">Journal Question</p>
+                                <p className="text-sm font-medium italic">{context.journalQuestion}</p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                    }
+                  } catch (e) {
+                    // Ignore parsing errors
+                  }
+                  return null;
+                })()}
+                
                 {/* Initial greeting */}
                 {messages.map((msg) => (
                   <div

@@ -35,12 +35,17 @@ export const aiChatRouter = router({
       agentId: z.number(),
       title: z.string().optional(),
       initialQuestion: z.string().optional(), // Question from journal to start conversation
+      journalQuestion: z.string().optional(), // Original journal question to display in chat
     }))
     .mutation(async ({ ctx, input }) => {
+      // Store journal question in context if provided
+      const context = input.journalQuestion ? JSON.stringify({ journalQuestion: input.journalQuestion }) : null;
+      
       const sessionId = await db.createChatSession(
         ctx.user.id,
         input.agentId,
-        input.title || "New Conversation"
+        input.title || "New Conversation",
+        context
       );
       
       // If there's an initial question, add it as an assistant message
