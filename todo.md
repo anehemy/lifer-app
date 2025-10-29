@@ -989,3 +989,16 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 **Estimated effort**: 2,000 tokens
 **Implementation**: Added two buttons in Settings - "Clean Up Empty Chats" removes sessions with no user replies, "Clear All Chat History" deletes everything.
 
+
+
+
+## NEW FEATURE - Editable Announcement System
+**Priority**: HIGH - User wants to communicate updates to users (COMPLETED)
+- [x] Add announcement message editor in admin settings
+- [x] Add button next to "Start Here Guide" to show announcement
+- [x] Store announcement message in global settings (announcement_title, announcement_content, announcement_emoji, announcement_enabled)
+- [x] Make announcement dialog editable (title, content, emoji)
+- [x] Show announcement button only when enabled
+**Estimated effort**: 2,000 tokens
+**Implementation**: Admin can edit announcements in Settings. "Announcements" button appears next to "Start Here Guide" when enabled. Fully customizable title, emoji, and content.
+

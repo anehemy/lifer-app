@@ -111,6 +111,45 @@ export const appRouter = router({
         // Note: OpenAI API key is now managed in Secrets (OPENAI_API_KEY env var)
         return { success: true };
       }),
+    updateAnnouncement: protectedProcedure
+      .input(z.object({
+        title: z.string().optional(),
+        content: z.string().optional(),
+        emoji: z.string().optional(),
+        enabled: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // Check if user is admin
+        if (ctx.user.role !== 'admin') {
+          throw new Error('Only admins can update announcements');
+        }
+        const db = await import('./db').then(m => m.getDb());
+        if (!db) throw new Error('Database not available');
+        const { globalSettings } = await import('../drizzle/schema');
+        
+        // Update each announcement setting
+        if (input.title !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'announcement_title', settingValue: input.title })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.title } });
+        }
+        if (input.content !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'announcement_content', settingValue: input.content })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.content } });
+        }
+        if (input.emoji !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'announcement_emoji', settingValue: input.emoji })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.emoji } });
+        }
+        if (input.enabled !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'announcement_enabled', settingValue: input.enabled ? '1' : '0' })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.enabled ? '1' : '0' } });
+        }
+        return { success: true };
+      }),
   }),
 
   tokens: router({

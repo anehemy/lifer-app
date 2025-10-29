@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { BookOpen, X, Sparkles, Brain, Target, User, BookMarked, Play, Pause, RotateCcw } from "lucide-react";
+import { BookOpen, X, Sparkles, Brain, Target, User, BookMarked, Play, Pause, RotateCcw, Megaphone } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { trpc } from "@/lib/trpc";
@@ -10,10 +10,14 @@ import { useAuth } from "@/_core/hooks/useAuth";
 export default function StartHereGuide() {
   const { user } = useAuth();
   const [showGuide, setShowGuide] = useState(false);
+  const [showAnnouncement, setShowAnnouncement] = useState(false);
   const hasSeenGuide = user?.hasSeenWelcome || false;
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const audioRef = useRef<HTMLAudioElement>(null);
+  
+  // Get global settings for announcement
+  const { data: globalSettings } = trpc.globalSettings.getAll.useQuery();
   
   // Get intro audio URL from user profile or use default
   const introAudioUrl = user?.introAudioUrl || "/MichaelMrMGIntroV1.mp3";
@@ -50,15 +54,30 @@ export default function StartHereGuide() {
     <>
       {/* Show Guide Button (after first time) */}
       {hasSeenGuide && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setShowGuide(true)}
-          className="gap-2"
-        >
-          <BookOpen className="h-4 w-4" />
-          Start Here Guide
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowGuide(true)}
+            className="gap-2"
+          >
+            <BookOpen className="h-4 w-4" />
+            Start Here Guide
+          </Button>
+          
+          {/* Announcement Button - only show if enabled */}
+          {globalSettings?.announcement_enabled === '1' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAnnouncement(true)}
+              className="gap-2"
+            >
+              <Megaphone className="h-4 w-4" />
+              Announcements
+            </Button>
+          )}
+        </div>
       )}
 
       {/* Guide Dialog */}
@@ -262,6 +281,28 @@ export default function StartHereGuide() {
                 Let's Begin! 🚀
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Announcement Dialog */}
+      <Dialog open={showAnnouncement} onOpenChange={setShowAnnouncement}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-4xl">{globalSettings?.announcement_emoji || '📢'}</span>
+              <DialogTitle className="text-2xl">
+                {globalSettings?.announcement_title || 'Announcement'}
+              </DialogTitle>
+            </div>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {globalSettings?.announcement_content || 'No announcement at this time.'}
+            </p>
+            <Button onClick={() => setShowAnnouncement(false)} className="w-full">
+              Got it, thanks!
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

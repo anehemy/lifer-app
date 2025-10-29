@@ -33,6 +33,9 @@ export default function Settings() {
   const cleanupEmptyChats = trpc.aiChat.cleanupEmptyChats.useMutation();
   const clearAllChatHistory = trpc.aiChat.clearAllChatHistory.useMutation();
   
+  // Announcement mutation
+  const updateAnnouncementMutation = trpc.globalSettings.updateAnnouncement.useMutation();
+  
   // Update state when global settings load
   useEffect(() => {
     if (globalSettings) {
@@ -395,12 +398,75 @@ export default function Settings() {
         </CardContent>
       </Card>
       )}
-      
-      {user?.role === "admin" && (
-      <Card className="mb-6">
+
+      {/* Admin Settings - Announcements */}
+      {user?.role === 'admin' && (
+        <Card>
         <CardHeader>
-          <CardTitle>AI Provider Settings (Admin)</CardTitle>
+          <CardTitle>Announcement Settings (Admin)</CardTitle>
           <CardDescription>
+            Create and manage announcements shown to users. Use this to communicate new features, updates, or important information.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="announcementTitle">Announcement Title</Label>
+            <Input
+              id="announcementTitle"
+              value={globalSettings?.announcement_title || ''}
+              onChange={(e) => {
+                updateAnnouncementMutation.mutate({ title: e.target.value });
+              }}
+              placeholder="Welcome, Early Tester!"
+            />
+          </div>
+          <div>
+            <Label htmlFor="announcementEmoji">Emoji</Label>
+            <Input
+              id="announcementEmoji"
+              value={globalSettings?.announcement_emoji || ''}
+              onChange={(e) => {
+                updateAnnouncementMutation.mutate({ emoji: e.target.value });
+              }}
+              placeholder="🎉"
+              maxLength={4}
+            />
+          </div>
+          <div>
+            <Label htmlFor="announcementContent">Announcement Content</Label>
+            <Textarea
+              id="announcementContent"
+              value={globalSettings?.announcement_content || ''}
+              onChange={(e) => {
+                updateAnnouncementMutation.mutate({ content: e.target.value });
+              }}
+              placeholder="Thank you for being part of our testing community..."
+              rows={6}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="announcementEnabled"
+              checked={globalSettings?.announcement_enabled === '1'}
+              onChange={(e) => {
+                updateAnnouncementMutation.mutate({ enabled: e.target.checked });
+                toast.success(e.target.checked ? 'Announcement enabled' : 'Announcement disabled');
+              }}
+            />
+            <Label htmlFor="announcementEnabled" className="cursor-pointer">
+              Show announcement to users
+            </Label>
+          </div>
+        </CardContent>
+      </Card>
+      )}
+
+      {/* Admin Settings - AI Provider */}
+      {user?.role === 'admin' && (
+        <Card>
+        <CardHeader>
+          <CardTitle>AI Provider Settings (Admin)</CardTitle>      <CardDescription>
             Configure which AI provider to use for Mr. MG chat. Fallback provider is used if primary fails.
           </CardDescription>
         </CardHeader>
