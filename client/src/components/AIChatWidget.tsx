@@ -115,8 +115,31 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   const sendMessageMutation = trpc.aiChat.sendMessage.useMutation({
     retry: 2, // Automatically retry failed requests twice
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    onMutate: async (variables) => {
+      // Clear pending messages - they're about to be saved to DB
+      setPendingMessages([]);
+      
+      // Optimistically add user message to pending messages
+      const userMessage = {
+        id: Date.now(),
+        role: 'user' as const,
+        content: variables.message,
+      };
+      setPendingMessages([userMessage]);
+      return { userMessage };
+    },
     onSuccess: (data) => {
       logEvent(EventType.CHAT_MESSAGE_SENT, { sessionId: currentSession });
+      
+      // Add assistant response to pending messages
+      const assistantMessage = {
+        id: Date.now() + 1,
+        role: 'assistant' as const,
+        content: data.message,
+      };
+      setPendingMessages(prev => [...prev, assistantMessage]);
+      
+      // Refetch database messages to get any newly saved messages
       refetchMessages();
       setMessage("");
       // Clear draft from localStorage on successful send
@@ -175,90 +198,6 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     },
   });
 
-  const sendMessage = trpc.aiChat.sendMessage.useMutation({
-    retry: 2, // Automatically retry failed requests twice
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
-    onMutate: async (variables) => {
-      // Clear pending messages - they're about to be saved to DB
-      setPendingMessages([]);
-      
-      // Optimistically add user message to pending messages
-      const userMessage = {
-        id: Date.now(),
-        role: 'user' as const,
-        content: variables.message,
-      };
-      setPendingMessages([userMessage]);
-      return { userMessage };
-    },
-    onSuccess: (data) => {
-      // Add assistant response to pending messages
-      const assistantMessage = {
-        id: Date.now() + 1,
-        role: 'assistant' as const,
-        content: data.message,
-      };
-      setPendingMessages(prev => [...prev, assistantMessage]);
-      
-      // Refetch database messages to get any newly saved messages
-      refetchMessages();
-      
-      // Clear input
-      setMessage("");
-      // Clear draft from localStorage on successful send
-      localStorage.removeItem('mrMgDraftMessage');
-      
-      // Handle navigation if Mr. MG requested it
-      if (data.navigateTo) {
-        const pageMap: Record<string, string> = {
-          'dashboard': '/',
-          'life-story': '/life-story',
-          'patterns': '/patterns',
-          'vision-board': '/vision-board',
-          'meditation': '/meditation',
-          'primary-aim': '/primary-aim',
-          'settings': '/settings',
-        };
-        
-        const targetPath = pageMap[data.navigateTo];
-        if (targetPath) {
-          setTimeout(() => {
-            window.location.href = targetPath;
-          }, 1000);
-        }
-      }
-    },
-    onError: (error: any) => {
-      // Keep message in input so user doesn't lose it
-      console.error('[Chat] Send message error:', error);
-      
-      // Provide more helpful error messages
-      let errorMessage = "Message failed to send. Your text has been preserved.";
-      if (error.message?.includes('timeout')) {
-        errorMessage += " The request timed out. Please try again.";
-      } else if (error.message?.includes('Session not found')) {
-        errorMessage += " Session expired. Please start a new conversation.";
-      } else if (error.message?.includes('network')) {
-        errorMessage += " Network error. Please check your connection.";
-      }
-      
-      toast.error(errorMessage, {
-        action: {
-          label: "Retry",
-          onClick: () => {
-            if (message.trim() && currentSession) {
-              sendMessageMutation.mutate({
-                sessionId: currentSession,
-                message: message.trim(),
-              });
-            }
-          },
-        },
-        duration: 10000,
-      });
-      // Message stays in the textarea, user can retry
-    },
-  });
   
   const deleteSessionMutation = trpc.aiChat.deleteSession.useMutation({
     onSuccess: () => {

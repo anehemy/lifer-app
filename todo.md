@@ -1041,3 +1041,14 @@ No more error messages or console logs when sessions are deleted.
 **Impact**: Critical - Core feature completely broken
 **Fix**: Added pendingMessages state to display assistant responses immediately. Messages show in UI while pending, then get saved to DB when user sends next message. Optimistic UI updates for smooth UX.
 
+
+
+
+## CRITICAL BUG - Chat Response Delay
+**Priority**: URGENT - Chat doesn't show response until next message sent (FIXED)
+- [x] Assistant response not displaying immediately after user sends message
+- [x] Response only appears when user sends another message
+- [x] Pending messages optimistic UI not working correctly (was using wrong mutation)
+**Impact**: High - Makes chat appear broken/unresponsive
+**Fix**: There were two duplicate sendMessage mutations. handleSendMessage was calling sendMessageMutation (without pending logic), while sendMessage (with pending logic) was never used. Added pending messages logic to sendMessageMutation and deleted duplicate.
+
