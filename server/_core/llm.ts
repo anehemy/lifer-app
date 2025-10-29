@@ -459,10 +459,16 @@ async function invokeLLMInternal(params: InvokeParams, provider: LLMProvider = '
     });
     
     clearTimeout(timeoutId);
-
+    
     if (!response.ok) {
+      // Log full error details for debugging
       const errorText = await response.text();
-      console.error(`[LLM] API Error Response: ${errorText}`);
+      console.error(`[LLM] API Error (${provider}):`, {
+        status: response.status,
+        statusText: response.statusText,
+        url: config.apiUrl,
+        error: errorText
+      });
       throw new Error(
         `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`
       );

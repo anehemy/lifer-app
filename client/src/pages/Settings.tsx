@@ -29,6 +29,10 @@ export default function Settings() {
   const [primaryLLM, setPrimaryLLM] = useState<'forge' | 'openai'>('forge');
   const [fallbackLLM, setFallbackLLM] = useState<'forge' | 'openai' | 'none'>('openai');
   
+  // Chat cleanup mutations
+  const cleanupEmptyChats = trpc.aiChat.cleanupEmptyChats.useMutation();
+  const clearAllChatHistory = trpc.aiChat.clearAllChatHistory.useMutation();
+  
   // Update state when global settings load
   useEffect(() => {
     if (globalSettings) {
@@ -579,6 +583,46 @@ export default function Settings() {
               Download all your journal entries, vision board, and meditation sessions.
             </p>
             <Button variant="outline">Export Data</Button>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">Chat History Management</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Manage your chat history with Mr. MG. Clean up empty conversations or clear all history.
+            </p>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                onClick={async () => {
+                  if (confirm('Clean up all chat sessions that you never replied to?')) {
+                    try {
+                      await cleanupEmptyChats.mutateAsync();
+                      toast.success('Empty chats cleaned up successfully');
+                    } catch (error) {
+                      toast.error('Failed to cleanup chats');
+                    }
+                  }
+                }}
+                disabled={cleanupEmptyChats.isPending}
+              >
+                {cleanupEmptyChats.isPending ? 'Cleaning...' : 'Clean Up Empty Chats'}
+              </Button>
+              <Button 
+                variant="destructive" 
+                onClick={async () => {
+                  if (confirm('Are you sure you want to delete ALL chat history? This cannot be undone.')) {
+                    try {
+                      await clearAllChatHistory.mutateAsync();
+                      toast.success('All chat history cleared');
+                    } catch (error) {
+                      toast.error('Failed to clear chat history');
+                    }
+                  }
+                }}
+                disabled={clearAllChatHistory.isPending}
+              >
+                {clearAllChatHistory.isPending ? 'Clearing...' : 'Clear All Chat History'}
+              </Button>
+            </div>
           </div>
           <div>
             <h3 className="font-semibold mb-2 text-destructive">Delete Account</h3>

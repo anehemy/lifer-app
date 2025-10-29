@@ -968,3 +968,24 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 **Implementation**: Assistant messages saved as "pending" in memory. When user responds, both previous assistant message + current user message saved together. If user never responds, assistant message is never saved to database.
 **Implementation**: User message now saved together with assistant response atomically. If LLM fails, neither message is saved.
 
+
+
+
+## CRITICAL BUG - OpenAI Provider Not Working
+**Priority**: HIGH - User switched to OpenAI and it's failing
+- [ ] Debug OpenAI API integration
+- [ ] Check error logs for specific failure reason
+- [ ] Test OpenAI API call directly
+- [ ] Fix configuration or API call issues
+**Impact**: High - Cannot use OpenAI as provider
+
+## NEW FEATURE - Chat History Cleanup Tools
+**Priority**: HIGH - User needs to clean up chat history (COMPLETED)
+- [x] Add "Clear All Chat History" button in settings
+- [x] Add auto-cleanup function to remove chats without user replies
+- [x] Show confirmation dialog before clearing all history
+- [ ] Add option to clear individual chat sessions (not needed - can delete from chat list)
+- [ ] Run cleanup on server startup to remove orphaned chats (optional enhancement)
+**Estimated effort**: 2,000 tokens
+**Implementation**: Added two buttons in Settings - "Clean Up Empty Chats" removes sessions with no user replies, "Clear All Chat History" deletes everything.
+

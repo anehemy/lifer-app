@@ -369,6 +369,42 @@ export async function getChatMessages(sessionId: number) {
     .orderBy(chatMessages.createdAt);
 }
 
+export async function deleteAllUserChatSessions(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Get all user's chat sessions
+  const sessions = await getUserChatSessions(userId);
+  
+  // Delete all messages for each session
+  for (const session of sessions) {
+    await db.delete(chatMessages).where(eq(chatMessages.sessionId, session.id));
+  }
+  
+  // Delete all sessions
+  await db.delete(chatSessions).where(eq(chatSessions.userId, userId));
+}
+
+export async function deleteEmptyChatSessions(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Get all user's chat sessions
+  const sessions = await getUserChatSessions(userId);
+  
+  for (const session of sessions) {
+    // Get messages for this session
+    const messages = await getChatMessages(session.id);
+    
+    // Delete if no messages or only assistant messages (no user replies)
+    const hasUserMessages = messages.some(m => m.role === 'user');
+    if (!hasUserMessages) {
+      await db.delete(chatMessages).where(eq(chatMessages.sessionId, session.id));
+      await db.delete(chatSessions).where(eq(chatSessions.id, session.id));
+    }
+  }
+}
+
 export async function deleteChatSession(sessionId: number, userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

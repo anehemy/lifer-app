@@ -717,4 +717,18 @@ Key Insights: ${keyInsights ? keyInsights.join(', ') : 'none'}`;
 
       return action;
     }),
+
+  // Clear all chat history for user
+  clearAllChatHistory: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      await db.deleteAllUserChatSessions(ctx.user.id);
+      return { success: true };
+    }),
+
+  // Clean up empty chat sessions (no user replies)
+  cleanupEmptyChats: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      await db.deleteEmptyChatSessions(ctx.user.id);
+      return { success: true };
+    }),
 });
