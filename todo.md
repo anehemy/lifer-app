@@ -899,3 +899,14 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 - [x] Include text message in email along with button selections
 **Estimated effort**: 500 tokens
 
+
+
+
+## CRITICAL BUG FIX - LLM 500 Errors
+**Priority**: HIGH - Affecting user experience (COMPLETED)
+- [x] Add request timeout to prevent hanging requests (60s timeout with AbortController)
+- [x] Implement smart message truncation based on provider limits
+- [x] Add provider-specific context window management (Forge: 1M tokens, OpenAI: 128k tokens)
+- [x] Improve error logging for better diagnostics
+**Estimated effort**: 2,000 tokens
+

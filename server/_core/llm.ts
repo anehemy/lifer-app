@@ -267,6 +267,23 @@ const normalizeResponseFormat = ({
   };
 };
 
+export async function getCurrentProvider(): Promise<LLMProvider> {
+  const db = await import('../db').then(m => m.getDb());
+  const { globalSettings } = await import('../../drizzle/schema');
+  const { eq } = await import('drizzle-orm');
+  
+  let primaryProvider: LLMProvider = 'forge';
+  
+  if (db) {
+    const primarySetting = await db.select().from(globalSettings).where(eq(globalSettings.settingKey, 'llm_primary_provider'));
+    if (primarySetting.length > 0 && primarySetting[0].settingValue) {
+      primaryProvider = primarySetting[0].settingValue as LLMProvider;
+    }
+  }
+  
+  return primaryProvider;
+}
+
 export async function invokeLLM(params: InvokeParams, retries = 3, delay = 1000): Promise<InvokeResult> {
   // Read provider settings from database
   const db = await import('../db').then(m => m.getDb());
@@ -327,23 +344,32 @@ interface ProviderConfig {
   apiUrl: string;
   apiKey: string;
   model: string;
+  maxTokens: number;
+  contextWindow: number; // Total tokens for input + output
+  timeout: number; // Request timeout in milliseconds
 }
 
-async function getProviderConfig(provider: LLMProvider): Promise<ProviderConfig> {
+export async function getProviderConfig(provider: LLMProvider): Promise<ProviderConfig> {
   if (provider === 'forge') {
     return {
       apiUrl: resolveForgeApiUrl(),
       apiKey: ENV.forgeApiKey || '',
       model: 'gemini-2.5-flash',
+      maxTokens: 32768,
+      contextWindow: 1000000, // Gemini 2.5 Flash has 1M token context
+      timeout: 60000, // 60 seconds
     };
   } else if (provider === 'openai') {
     // Get OpenAI key from environment variable (stored in Secrets)
     const openaiKey = process.env.OPENAI_API_KEY || '';
     
     return {
-      apiUrl: resolveOpenAIApiUrl(),
+      apiUrl: 'https://api.openai.com/v1/chat/completions',
       apiKey: openaiKey,
       model: 'gpt-4o-mini',
+      maxTokens: 16384,
+      contextWindow: 128000, // GPT-4o-mini has 128k context
+      timeout: 60000, // 60 seconds
     };
   }
   
@@ -386,13 +412,12 @@ async function invokeLLMInternal(params: InvokeParams, provider: LLMProvider = '
   }
 
   // Provider-specific config
+  payload.max_tokens = config.maxTokens;
+  
   if (provider === 'forge') {
-    payload.max_tokens = 32768;
     payload.thinking = {
       "budget_tokens": 128
     };
-  } else if (provider === 'openai') {
-    payload.max_tokens = 4096; // OpenAI default
   }
 
   const normalizedResponseFormat = normalizeResponseFormat({
@@ -408,21 +433,37 @@ async function invokeLLMInternal(params: InvokeParams, provider: LLMProvider = '
 
   console.log(`[LLM] Using provider: ${provider}, model: ${config.model}`);
   
-  const response = await fetch(config.apiUrl, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${config.apiKey}`,
-    },
-    body: JSON.stringify(payload),
-  });
+  // Create abort controller for timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+  
+  try {
+    const response = await fetch(config.apiUrl, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${config.apiKey}`,
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`
-    );
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[LLM] API Error Response: ${errorText}`);
+      throw new Error(
+        `LLM invoke failed: ${response.status} ${response.statusText} – ${errorText}`
+      );
+    }
+
+    return (await response.json()) as InvokeResult;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error(`LLM request timeout after ${config.timeout}ms`);
+    }
+    throw error;
   }
-
-  return (await response.json()) as InvokeResult;
 }

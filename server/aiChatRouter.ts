@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "./_core/trpc";
-import { invokeLLM } from "./_core/llm";
+import { invokeLLM, getCurrentProvider, getProviderConfig } from "./_core/llm";
 import * as db from "./db";
 import { detectIntent } from "./mrMgAgent";
 
@@ -184,17 +184,50 @@ export const aiChatRouter = router({
         },
       ];
       
-      // Add conversation history (last 50 messages to keep context manageable, but trim if too long)
-      // Keep more history to maintain conversation flow
-      const recentMessages = messages.slice(-50);
-      recentMessages.forEach((msg) => {
-        if (msg.role !== "system") {
-          llmMessages.push({
-            role: msg.role,
-            content: msg.content,
-          });
+      // Smart message truncation based on estimated token count
+      // Rough estimate: 1 token ≈ 4 characters for English text
+      const estimateTokens = (text: string) => Math.ceil(text.length / 4);
+      
+      // Get current provider's context window
+      const currentProvider = await getCurrentProvider();
+      const providerConfig = await getProviderConfig(currentProvider);
+      const contextWindow = providerConfig.contextWindow;
+      
+      const systemTokens = estimateTokens(llmMessages[0].content);
+      const newMessageTokens = estimateTokens(input.message);
+      const toolsTokens = 2000; // Rough estimate for tool definitions
+      const responseReserve = providerConfig.maxTokens; // Reserve tokens for response based on provider
+      
+      // Use 50% of context window for conversation history to be safe
+      // This leaves room for system prompt, tools, and response
+      const maxHistoryTokens = Math.floor(contextWindow * 0.5) - systemTokens - newMessageTokens - toolsTokens - responseReserve;
+      
+      console.log(`[AI Chat] Provider: ${currentProvider}, Context window: ${contextWindow}, Max history tokens: ${maxHistoryTokens}`);
+      
+      // Add conversation history, truncating from the beginning if needed
+      let historyTokens = 0;
+      const messagesToInclude: any[] = [];
+      
+      // Process messages in reverse order (newest first)
+      for (let i = messages.length - 1; i >= 0; i--) {
+        const msg = messages[i];
+        if (msg.role === "system") continue;
+        
+        const msgTokens = estimateTokens(msg.content);
+        if (historyTokens + msgTokens > maxHistoryTokens) {
+          console.log(`[AI Chat] Truncating message history at ${messagesToInclude.length} messages (${historyTokens} tokens)`);
+          break;
         }
-      });
+        
+        historyTokens += msgTokens;
+        messagesToInclude.unshift({
+          role: msg.role,
+          content: msg.content,
+        });
+      }
+      
+      llmMessages.push(...messagesToInclude);
+      console.log(`[AI Chat] Including ${messagesToInclude.length} messages (≈${historyTokens} tokens) from conversation history`);
       
       // Add the current user message to LLM context
       llmMessages.push({
