@@ -91,7 +91,9 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     if (messagesError && messagesError.message.includes('Session not found')) {
       console.log('Session not found, clearing localStorage');
       localStorage.removeItem('mrMgSessionId');
+      sessionStorage.removeItem('mrMgSessionId');
       setCurrentSession(null);
+      setHasGreeted(false); // Reset so new session will be created
     }
   }, [messagesError]);
   
