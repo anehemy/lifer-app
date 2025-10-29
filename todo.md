@@ -1029,3 +1029,15 @@ No more error messages or console logs when sessions are deleted.
 **Estimated effort**: 500 tokens
 **Implementation**: Initialized announcement_title, announcement_emoji, announcement_content, and announcement_enabled with full early tester notice content. Admin can now edit this content directly in Settings.
 
+
+
+
+## CRITICAL BUG - Chat Not Working
+**Priority**: URGENT - Chat functionality broken (FIXED)
+- [x] Investigate why chat is not responding (assistant responses saved as pending, not in DB)
+- [x] Check if message saving logic changes broke chat (pending message system prevented display)
+- [x] Test chat send/receive functionality
+- [x] Fix any issues with pending message system (added local pending messages state)
+**Impact**: Critical - Core feature completely broken
+**Fix**: Added pendingMessages state to display assistant responses immediately. Messages show in UI while pending, then get saved to DB when user sends next message. Optimistic UI updates for smooth UX.
+

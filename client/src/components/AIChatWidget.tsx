@@ -30,6 +30,7 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   const [hasGreeted, setHasGreeted] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(false); // Default to OFF to prevent auto-play
   const [showConversations, setShowConversations] = useState(false);
+  const [pendingMessages, setPendingMessages] = useState<Array<{id: number, role: 'user' | 'assistant', content: string}>>([]);
   
   // Draggable chat bubble state
   const [position, setPosition] = useState(() => {
@@ -63,7 +64,7 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     { entryId: latestEntry?.id || 0 },
     { enabled: !!latestEntry?.id }
   );
-  const { data: messages = [], error: messagesError, refetch: refetchMessages } = trpc.aiChat.getMessages.useQuery(
+  const { data: dbMessages = [], error: messagesError, refetch: refetchMessages } = trpc.aiChat.getMessages.useQuery(
     { sessionId: currentSession! },
     { 
       enabled: !!currentSession,
@@ -71,6 +72,19 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
       throwOnError: false // Don't throw error to error boundary
     }
   );
+  
+  // Merge database messages with pending messages for display
+  const messages = [
+    ...dbMessages,
+    ...pendingMessages.map(pm => ({
+      id: pm.id,
+      sessionId: currentSession!,
+      role: pm.role,
+      content: pm.content,
+      metadata: null,
+      createdAt: new Date(),
+    }))
+  ];
   
   // Handle invalid session ID
   useEffect(() => {
@@ -162,8 +176,32 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   const sendMessage = trpc.aiChat.sendMessage.useMutation({
     retry: 2, // Automatically retry failed requests twice
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    onMutate: async (variables) => {
+      // Clear pending messages - they're about to be saved to DB
+      setPendingMessages([]);
+      
+      // Optimistically add user message to pending messages
+      const userMessage = {
+        id: Date.now(),
+        role: 'user' as const,
+        content: variables.message,
+      };
+      setPendingMessages([userMessage]);
+      return { userMessage };
+    },
     onSuccess: (data) => {
+      // Add assistant response to pending messages
+      const assistantMessage = {
+        id: Date.now() + 1,
+        role: 'assistant' as const,
+        content: data.message,
+      };
+      setPendingMessages(prev => [...prev, assistantMessage]);
+      
+      // Refetch database messages to get any newly saved messages
       refetchMessages();
+      
+      // Clear input
       setMessage("");
       // Clear draft from localStorage on successful send
       localStorage.removeItem('mrMgDraftMessage');
