@@ -116,17 +116,8 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     retry: 2, // Automatically retry failed requests twice
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
     onMutate: async (variables) => {
-      // Clear pending messages - they're about to be saved to DB
+      // Clear pending messages - user message will be in DB, assistant response added in onSuccess
       setPendingMessages([]);
-      
-      // Optimistically add user message to pending messages
-      const userMessage = {
-        id: Date.now(),
-        role: 'user' as const,
-        content: variables.message,
-      };
-      setPendingMessages([userMessage]);
-      return { userMessage };
     },
     onSuccess: (data) => {
       logEvent(EventType.CHAT_MESSAGE_SENT, { sessionId: currentSession });

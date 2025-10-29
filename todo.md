@@ -1092,3 +1092,14 @@ No more error messages or console logs when sessions are deleted.
 **Impact**: Medium - Mr. MG knowledge base not functioning
 **Fix**: Updated knowledgeBase.ts to use correct Forge API endpoint: ${ENV.forgeApiUrl}/v1/embeddings
 
+
+
+
+## CRITICAL BUG - Chat Messages Duplicating
+**Priority**: URGENT - User messages appearing twice in chat (FIXED)
+- [x] Investigate why user messages are duplicated in chat display
+- [x] Check if issue is with pending messages merging logic (user message added to both DB and pending)
+- [x] Fix deduplication to prevent showing same message twice
+**Impact**: Critical - Makes chat unusable, confusing UX
+**Fix**: Removed user message from pending messages in onMutate. User message is already saved to DB by backend, so only assistant response needs to be in pending state. No more duplicates!
+
