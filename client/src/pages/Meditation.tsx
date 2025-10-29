@@ -24,13 +24,13 @@ const meditationTypes = [
   "Sleep Preparation",
 ];
 
-const durations = [1, 5, 10, 15, 20, 30];
+const durations = [1, 5]; // Limited to 1 and 5 minutes for testing phase
 
 export default function Meditation() {
   usePageView("/meditation");
   const { logEvent } = useAnalytics();
   const [selectedType, setSelectedType] = useState(meditationTypes[0]);
-  const [selectedDuration, setSelectedDuration] = useState(10);
+  const [selectedDuration, setSelectedDuration] = useState(5);
   const [selectedVoice, setSelectedVoice] = useState(DEFAULT_VOICE_ID);
   const [showPlayer, setShowPlayer] = useState(false);
   const [currentSession, setCurrentSession] = useState<any>(null);

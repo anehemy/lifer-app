@@ -1103,3 +1103,26 @@ No more error messages or console logs when sessions are deleted.
 **Impact**: Critical - Makes chat unusable, confusing UX
 **Fix**: Removed user message from pending messages in onMutate. User message is already saved to DB by backend, so only assistant response needs to be in pending state. No more duplicates!
 
+
+
+
+## BUG - Audio Feedback Loop in Chat
+**Priority**: MEDIUM - Audio echoing back when mic is on
+- [ ] Investigate audio feedback loop when chat mic is enabled
+- [ ] Mr. MG's voice responses are being picked up by microphone
+- [ ] Add audio output muting during speech recognition
+- [ ] Or disable mic automatically when assistant is speaking
+**Impact**: Medium - Makes voice chat unusable, but text chat works fine
+**Note**: Deferred due to low credits, will fix later
+
+
+
+
+## FEATURE - Limit Meditation Duration Options
+**Priority**: HIGH - Prevent testers from creating long meditations (COMPLETED)
+- [x] Disable meditation creation above 5 minutes
+- [x] Keep only 1 minute and 5 minute options
+- [x] Remove 10, 15, 20+ minute options from UI
+**Impact**: Medium - Cost control for testing phase
+**Implementation**: Updated durations array to [1, 5] only, changed default from 10 to 5 minutes
+
