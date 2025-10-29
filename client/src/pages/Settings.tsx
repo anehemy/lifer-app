@@ -29,6 +29,12 @@ export default function Settings() {
   const [primaryLLM, setPrimaryLLM] = useState<'forge' | 'openai'>('forge');
   const [fallbackLLM, setFallbackLLM] = useState<'forge' | 'openai' | 'none'>('openai');
   
+  // Announcement settings local state
+  const [announcementTitle, setAnnouncementTitle] = useState('');
+  const [announcementEmoji, setAnnouncementEmoji] = useState('');
+  const [announcementContent, setAnnouncementContent] = useState('');
+  const [announcementEnabled, setAnnouncementEnabled] = useState(false);
+  
   // Chat cleanup mutations
   const cleanupEmptyChats = trpc.aiChat.cleanupEmptyChats.useMutation();
   const clearAllChatHistory = trpc.aiChat.clearAllChatHistory.useMutation();
@@ -46,6 +52,12 @@ export default function Settings() {
       // LLM Provider settings
       if (globalSettings.llm_primary_provider) setPrimaryLLM(globalSettings.llm_primary_provider as 'forge' | 'openai');
       if (globalSettings.llm_fallback_provider) setFallbackLLM(globalSettings.llm_fallback_provider as 'forge' | 'openai' | 'none');
+      
+      // Announcement settings
+      if (globalSettings.announcement_title) setAnnouncementTitle(globalSettings.announcement_title);
+      if (globalSettings.announcement_emoji) setAnnouncementEmoji(globalSettings.announcement_emoji);
+      if (globalSettings.announcement_content) setAnnouncementContent(globalSettings.announcement_content);
+      if (globalSettings.announcement_enabled) setAnnouncementEnabled(globalSettings.announcement_enabled === '1');
     }
   }, [globalSettings]);
   
@@ -413,9 +425,11 @@ export default function Settings() {
             <Label htmlFor="announcementTitle">Announcement Title</Label>
             <Input
               id="announcementTitle"
-              value={globalSettings?.announcement_title || ''}
-              onChange={(e) => {
-                updateAnnouncementMutation.mutate({ title: e.target.value });
+              value={announcementTitle}
+              onChange={(e) => setAnnouncementTitle(e.target.value)}
+              onBlur={() => {
+                updateAnnouncementMutation.mutate({ title: announcementTitle });
+                toast.success('Announcement title updated');
               }}
               placeholder="Welcome, Early Tester!"
             />
@@ -424,9 +438,11 @@ export default function Settings() {
             <Label htmlFor="announcementEmoji">Emoji</Label>
             <Input
               id="announcementEmoji"
-              value={globalSettings?.announcement_emoji || ''}
-              onChange={(e) => {
-                updateAnnouncementMutation.mutate({ emoji: e.target.value });
+              value={announcementEmoji}
+              onChange={(e) => setAnnouncementEmoji(e.target.value)}
+              onBlur={() => {
+                updateAnnouncementMutation.mutate({ emoji: announcementEmoji });
+                toast.success('Announcement emoji updated');
               }}
               placeholder="🎉"
               maxLength={4}
@@ -436,9 +452,11 @@ export default function Settings() {
             <Label htmlFor="announcementContent">Announcement Content</Label>
             <Textarea
               id="announcementContent"
-              value={globalSettings?.announcement_content || ''}
-              onChange={(e) => {
-                updateAnnouncementMutation.mutate({ content: e.target.value });
+              value={announcementContent}
+              onChange={(e) => setAnnouncementContent(e.target.value)}
+              onBlur={() => {
+                updateAnnouncementMutation.mutate({ content: announcementContent });
+                toast.success('Announcement content updated');
               }}
               placeholder="Thank you for being part of our testing community..."
               rows={6}
@@ -448,8 +466,9 @@ export default function Settings() {
             <input
               type="checkbox"
               id="announcementEnabled"
-              checked={globalSettings?.announcement_enabled === '1'}
+              checked={announcementEnabled}
               onChange={(e) => {
+                setAnnouncementEnabled(e.target.checked);
                 updateAnnouncementMutation.mutate({ enabled: e.target.checked });
                 toast.success(e.target.checked ? 'Announcement enabled' : 'Announcement disabled');
               }}

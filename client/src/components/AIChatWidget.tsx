@@ -381,13 +381,26 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
       return;
     }
     
-    // Clear session storage
+    // Clear session storage and local storage
     sessionStorage.removeItem('mrMgSessionId');
+    localStorage.removeItem('mrMgSessionId');
+    
+    // Clear pending messages
+    setPendingMessages([]);
+    
+    // Create new session directly (don't rely on state updates)
+    const mrMgAgent = { id: 1, name: MR_MG_NAME, avatar: MR_MG_AVATAR, role: "Life Mentor" };
+    const greeting = "Hello! I'm Mr. MG, your AI life mentor. I'm here to help you explore your thoughts, discover patterns, and work toward your Primary Aim. What's on your mind today?";
+    
+    createSession.mutate({ 
+      agentId: mrMgAgent.id,
+      title: "New Conversation",
+      initialQuestion: greeting
+    });
+    
+    // Reset state
     setCurrentSession(null);
     setHasGreeted(false);
-    
-    // Create new session
-    await initializeMrMgSession();
     
     toast.success("New conversation started!");
   };

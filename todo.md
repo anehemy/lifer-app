@@ -1052,3 +1052,21 @@ No more error messages or console logs when sessions are deleted.
 **Impact**: High - Makes chat appear broken/unresponsive
 **Fix**: There were two duplicate sendMessage mutations. handleSendMessage was calling sendMessageMutation (without pending logic), while sendMessage (with pending logic) was never used. Added pending messages logic to sendMessageMutation and deleted duplicate.
 
+
+
+
+## CRITICAL BUG - Clear Chat Not Working
+**Priority**: HIGH - Clear chat says "new conversation started" but doesn't work (FIXED)
+- [x] Clear chat button shows success toast but doesn't actually clear chat
+- [x] New session not being created after clearing (state updates were asynchronous)
+**Impact**: Medium - Users can't start fresh conversations
+**Fix**: Call createSession.mutate() directly instead of relying on initializeMrMgSession which checks stale state values. Also clear pending messages and both localStorage/sessionStorage.
+
+## CRITICAL BUG - Announcement Editor Not Editable
+**Priority**: HIGH - Cannot edit announcement settings (FIXED)
+- [x] Announcement content textarea is not editable (controlled inputs without local state)
+- [x] "Show announcement to users" checkbox doesn't work
+- [x] Cannot modify announcement title or emoji
+**Impact**: High - Admin cannot update announcements
+**Fix**: Added local state for announcement fields. Inputs now update local state onChange and save to database onBlur (for text fields) or onChange (for checkbox). This allows smooth editing while still persisting changes.
+
