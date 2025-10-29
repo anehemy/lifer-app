@@ -97,8 +97,20 @@ export const aiChatRouter = router({
         throw new Error("Agent not found");
       }
 
-      // Save user message
-      await db.addChatMessage(input.sessionId, "user", input.message);
+      // Save pending assistant message from previous exchange (if any)
+      // When user responds, we save the previous assistant message + current user message
+      // This ensures we only keep questions/messages that users actually responded to
+      const pendingAssistantMsg = await db.getPendingAssistantMessage(input.sessionId);
+      if (pendingAssistantMsg) {
+        // Save the previous assistant message
+        await db.addChatMessage(input.sessionId, "assistant", pendingAssistantMsg);
+        // Save the current user response
+        await db.addChatMessage(input.sessionId, "user", input.message);
+        await db.clearPendingMessages(input.sessionId);
+      } else {
+        // No pending message - this might be first message, save user message
+        await db.addChatMessage(input.sessionId, "user", input.message);
+      }
 
       // Get conversation history
       const messages = await db.getChatMessages(input.sessionId);
@@ -106,7 +118,8 @@ export const aiChatRouter = router({
       // Auto-generate title from conversation topic using AI
       if (!session.title || session.title === "New Conversation") {
         const userMessages = messages.filter(m => m.role === "user");
-        if (userMessages.length === 1) {
+        // This is the first message if there are no user messages yet (since we haven't saved current one)
+        if (userMessages.length === 0) {
           // This is the first user message - generate a topic-based title
           try {
             const titlePrompt = `Generate a short, descriptive title (3-6 words max) for a conversation that starts with this question/message: "${input.message}". Return ONLY the title, nothing else.`;
@@ -452,8 +465,8 @@ Response: ${args.response}`;
             ? finalResponse.choices[0].message.content 
             : "I've saved your story to your journal!";
           
-          // Save assistant message
-          await db.addChatMessage(input.sessionId, "assistant", assistantMessage);
+          // Save assistant message as pending - will be committed when user responds
+          await db.savePendingAssistantMessage(input.sessionId, assistantMessage);
           
           return {
             message: assistantMessage,
@@ -529,8 +542,8 @@ Response: ${mergedResponse}`;
             ? finalResponse.choices[0].message.content 
             : `I've merged ${entryIds.length} entries into one cohesive story!`;
           
-          // Save assistant message
-          await db.addChatMessage(input.sessionId, "assistant", assistantMessage);
+          // Save assistant message as pending - will be committed when user responds
+          await db.savePendingAssistantMessage(input.sessionId, assistantMessage);
           
           return {
             message: assistantMessage,
@@ -620,8 +633,8 @@ Key Insights: ${keyInsights ? keyInsights.join(', ') : 'none'}`;
             ? finalResponse.choices[0].message.content 
             : "I've saved a summary of our conversation to your journal!";
           
-          // Save assistant message
-          await db.addChatMessage(input.sessionId, "assistant", assistantMessage);
+          // Save assistant message as pending - will be committed when user responds
+          await db.savePendingAssistantMessage(input.sessionId, assistantMessage);
           
           return {
             message: assistantMessage,
@@ -634,7 +647,8 @@ Key Insights: ${keyInsights ? keyInsights.join(', ') : 'none'}`;
           const args = JSON.parse(toolCall.function.arguments);
           const { page, message } = args;
           
-          // Save the navigation message
+          // Save both user and assistant messages together
+          await db.addChatMessage(input.sessionId, "user", input.message);
           await db.addChatMessage(input.sessionId, "assistant", message);
           
           // Return navigation instruction to client
@@ -649,8 +663,8 @@ Key Insights: ${keyInsights ? keyInsights.join(', ') : 'none'}`;
       const content = responseMessage.content;
       const assistantMessage = typeof content === 'string' ? content : "I apologize, I couldn't generate a response.";
 
-      // Save assistant message
-      await db.addChatMessage(input.sessionId, "assistant", assistantMessage);
+      // Save assistant message as pending - will be committed when user responds
+      await db.savePendingAssistantMessage(input.sessionId, assistantMessage);
 
       return {
         message: assistantMessage,

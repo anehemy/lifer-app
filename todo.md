@@ -955,3 +955,16 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 - [ ] Test RAG retrieval quality and relevance (needs testing with real conversations)
 **Estimated effort**: 5,000-7,000 tokens
 
+
+
+
+## NEW FEATURE - Chat History Cleanup
+**Priority**: MEDIUM - Improves data quality (COMPLETED)
+- [x] Only save messages that users actually respond to
+- [x] Remove unanswered questions from chat history
+- [x] Clean up assistant messages without user replies
+- [x] Prevent incomplete conversations from cluttering history
+**Estimated effort**: 1,000 tokens
+**Implementation**: Assistant messages saved as "pending" in memory. When user responds, both previous assistant message + current user message saved together. If user never responds, assistant message is never saved to database.
+**Implementation**: User message now saved together with assistant response atomically. If LLM fails, neither message is saved.
+

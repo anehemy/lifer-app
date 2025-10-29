@@ -334,6 +334,22 @@ export async function updateChatSessionTitle(sessionId: number, title: string) {
     .where(eq(chatSessions.id, sessionId));
 }
 
+// In-memory storage for pending assistant messages (waiting for user to respond)
+// Key: sessionId, Value: pending assistant message content
+const pendingAssistantMessages = new Map<number, string>(); 
+
+export async function savePendingAssistantMessage(sessionId: number, content: string) {
+  pendingAssistantMessages.set(sessionId, content);
+}
+
+export async function getPendingAssistantMessage(sessionId: number): Promise<string | null> {
+  return pendingAssistantMessages.get(sessionId) || null;
+}
+
+export async function clearPendingMessages(sessionId: number) {
+  pendingAssistantMessages.delete(sessionId);
+}
+
 export async function addChatMessage(sessionId: number, role: "user" | "assistant" | "system", content: string, metadata?: any) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
