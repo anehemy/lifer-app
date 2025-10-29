@@ -67,7 +67,8 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     { sessionId: currentSession! },
     { 
       enabled: !!currentSession,
-      retry: false // Don't retry if session doesn't exist
+      retry: false, // Don't retry if session doesn't exist
+      throwOnError: false // Don't throw error to error boundary
     }
   );
   
