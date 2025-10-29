@@ -1002,3 +1002,24 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 **Estimated effort**: 2,000 tokens
 **Implementation**: Admin can edit announcements in Settings. "Announcements" button appears next to "Start Here Guide" when enabled. Fully customizable title, emoji, and content.
 
+
+
+
+## CRITICAL BUG - Session Not Found Error on Settings Page
+**Priority**: HIGH - Error appearing on Settings page
+- [ ] Investigate "Session not found" TRPCClientError on Settings page
+- [ ] Identify which tRPC call is failing
+- [ ] Fix the session lookup or query causing the error
+**Impact**: Medium - Error showing but page may still function
+
+
+
+
+## ENHANCEMENT - Pre-fill Announcement Editor with Welcome Content
+**Priority**: MEDIUM - Better UX for announcement editor (COMPLETED)
+- [x] Extract current welcome dialog content from EarlyTesterNotice
+- [x] Pre-populate announcement settings in database with welcome content
+- [x] Make announcement editor mirror existing welcome page
+**Estimated effort**: 500 tokens
+**Implementation**: Initialized announcement_title, announcement_emoji, announcement_content, and announcement_enabled with full early tester notice content. Admin can now edit this content directly in Settings.
+
