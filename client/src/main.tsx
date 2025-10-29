@@ -25,6 +25,12 @@ queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
     redirectToLoginIfUnauthorized(error);
+    
+    // Don't log "Session not found" errors - these are expected when chat sessions are cleared
+    if (error instanceof TRPCClientError && error.message.includes('Session not found')) {
+      return;
+    }
+    
     console.error("[API Query Error]", error);
   }
 });
