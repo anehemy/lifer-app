@@ -5,7 +5,11 @@
 
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import { invokeLLM } from './llm';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 interface KnowledgeChunk {
   id: string;
@@ -22,7 +26,12 @@ interface SearchResult {
 class KnowledgeBase {
   private chunks: KnowledgeChunk[] = [];
   private initialized = false;
-  private knowledgeDir = path.join(__dirname, '../knowledge');
+  private knowledgeDir: string;
+  
+  constructor() {
+    // Set knowledge directory path
+    this.knowledgeDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../knowledge');
+  }
 
   /**
    * Initialize knowledge base by loading and chunking documents
@@ -223,6 +232,11 @@ class KnowledgeBase {
     userMessage: string,
     maxChunks: number = 2
   ): Promise<string> {
+    // Initialize on first use (lazy loading)
+    if (!this.initialized) {
+      await this.initialize();
+    }
+    
     // Combine recent conversation and current message for context
     const query = `${conversationHistory}\n\nUser: ${userMessage}`;
     
