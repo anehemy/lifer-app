@@ -1070,3 +1070,25 @@ No more error messages or console logs when sessions are deleted.
 **Impact**: High - Admin cannot update announcements
 **Fix**: Added local state for announcement fields. Inputs now update local state onChange and save to database onBlur (for text fields) or onChange (for checkbox). This allows smooth editing while still persisting changes.
 
+
+
+
+## CRITICAL BUG - Journal Entries Repeating
+**Priority**: HIGH - Same journal entry showing multiple times (SKIPPED - NOT REPRODUCING)
+- [x] Investigate why journal entries are duplicated in the display (entries cleared, issue not reproducing)
+- [x] Check if duplicates exist in database or just in UI rendering (no duplicates in DB)
+- [ ] Fix query or component to show unique entries only (will address if issue reappears)
+**Impact**: High - Data quality and user experience issue
+**Note**: User cleared entries, issue not currently visible. May have been timeline + list showing same entries (intentional design). Will monitor.
+
+
+
+
+## BUG FIX - RAG Embedding API 404 Error
+**Priority**: MEDIUM - Knowledge base not working (FIXED)
+- [x] Investigate embedding API 404 errors in logs
+- [x] Fix Forge embedding endpoint URL (was /embeddings, should be /v1/embeddings)
+- [x] Test RAG initialization
+**Impact**: Medium - Mr. MG knowledge base not functioning
+**Fix**: Updated knowledgeBase.ts to use correct Forge API endpoint: ${ENV.forgeApiUrl}/v1/embeddings
+

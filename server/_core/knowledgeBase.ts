@@ -159,7 +159,7 @@ class KnowledgeBase {
     try {
       // Use Forge's embedding endpoint
       const ENV = await import('./env').then(m => m.ENV);
-      const response = await fetch(`${ENV.forgeApiUrl}/embeddings`, {
+      const response = await fetch(`${ENV.forgeApiUrl}/v1/embeddings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
