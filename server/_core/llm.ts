@@ -370,8 +370,11 @@ export async function getProviderConfig(provider: LLMProvider): Promise<Provider
       throw new Error('API key not configured for provider: openai');
     }
     
+    // Use environment base URL if available (for Manus proxy), otherwise use direct OpenAI
+    const baseUrl = process.env.OPENAI_BASE_URL || process.env.OPENAI_API_BASE || 'https://api.openai.com/v1';
+    
     return {
-      apiUrl: 'https://api.openai.com/v1/chat/completions',
+      apiUrl: `${baseUrl}/chat/completions`,
       apiKey: openaiKey,
       model: 'gpt-4o-mini',
       maxTokens: 16384,
