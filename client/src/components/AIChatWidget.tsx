@@ -63,10 +63,22 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
     { entryId: latestEntry?.id || 0 },
     { enabled: !!latestEntry?.id }
   );
-  const { data: messages = [], refetch: refetchMessages } = trpc.aiChat.getMessages.useQuery(
+  const { data: messages = [], error: messagesError, refetch: refetchMessages } = trpc.aiChat.getMessages.useQuery(
     { sessionId: currentSession! },
-    { enabled: !!currentSession }
+    { 
+      enabled: !!currentSession,
+      retry: false // Don't retry if session doesn't exist
+    }
   );
+  
+  // Handle invalid session ID
+  useEffect(() => {
+    if (messagesError && messagesError.message.includes('Session not found')) {
+      console.log('Session not found, clearing localStorage');
+      localStorage.removeItem('mrMgSessionId');
+      setCurrentSession(null);
+    }
+  }, [messagesError]);
   
   // Get list of all user's chat sessions
   const { data: sessions = [], refetch: refetchSessions } = trpc.aiChat.listSessions.useQuery(

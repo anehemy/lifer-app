@@ -1006,11 +1006,12 @@ User clicks: "Chat" + "Voice" + "I don't like it"
 
 
 ## CRITICAL BUG - Session Not Found Error on Settings Page
-**Priority**: HIGH - Error appearing on Settings page
-- [ ] Investigate "Session not found" TRPCClientError on Settings page
-- [ ] Identify which tRPC call is failing
-- [ ] Fix the session lookup or query causing the error
+**Priority**: HIGH - Error appearing on Settings page (FIXED)
+- [x] Investigate "Session not found" TRPCClientError on Settings page
+- [x] Identify which tRPC call is failing (AIChatWidget trying to load deleted session from localStorage)
+- [x] Fix the session lookup or query causing the error (added error handling to clear invalid session ID)
 **Impact**: Medium - Error showing but page may still function
+**Fix**: Added useEffect to detect invalid session errors and automatically clear localStorage. No more error messages when sessions are deleted.
 
 
 
