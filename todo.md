@@ -1257,3 +1257,8 @@ No more error messages or console logs when sessions are deleted.
 - [ ] Suggest follow-up questions (e.g., "Have you been to other places in Brazil?") (handled by Mr. MG)
 - [ ] Link new entries to the original entry that triggered the conversation (future enhancement)
 
+
+
+## Bug Fixes
+- [x] Fix z-index issue where map appears on top of chat dialog
+

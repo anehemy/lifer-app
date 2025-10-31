@@ -277,8 +277,8 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
       </div>
 
       {/* Map */}
-      <Card className="overflow-hidden">
-        <div className="h-[500px] w-full">
+      <Card className="overflow-hidden relative z-0">
+        <div className="h-[500px] w-full relative z-0">
           <MapContainer
             center={getMapCenter()}
             zoom={getMapZoom()}
