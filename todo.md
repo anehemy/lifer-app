@@ -1297,3 +1297,12 @@ No more error messages or console logs when sessions are deleted.
 - [ ] Save user's bubble arrangement positions (future enhancement)
 - [x] Show experience details on bubble click/hover
 
+
+
+## Bubble Legibility Improvements
+- [x] Increase bubble sizes for better readability
+- [x] Add 3D effects with borders and shadows
+- [x] Remove entry count numbers from bubbles
+- [x] Improve text contrast and typography
+- [x] Add depth with gradients and highlights
+

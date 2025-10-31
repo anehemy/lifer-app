@@ -152,7 +152,7 @@ export default function ExperiencesBubbleView({ entries }: ExperiencesBubbleView
           style={{ height: `${canvasSize.height}px` }}
         >
           {bubbles.map((bubble) => {
-            const size = Math.min(40 + bubble.count * 15, 120);
+            const size = Math.min(80 + bubble.count * 20, 180);
             const color = calculateProximityColor(bubble, bubbles, canvasSize.width, canvasSize.height);
             
             return (
@@ -178,21 +178,36 @@ export default function ExperiencesBubbleView({ entries }: ExperiencesBubbleView
                 whileTap={{ scale: 0.95 }}
               >
                 <div
-                  className="w-full h-full rounded-full flex items-center justify-center text-white font-medium shadow-lg transition-all duration-300 hover:shadow-xl"
+                  className="w-full h-full rounded-full flex items-center justify-center text-white font-bold shadow-2xl transition-all duration-300 hover:shadow-3xl relative overflow-hidden"
                   style={{
-                    backgroundColor: color,
-                    fontSize: `${Math.max(10, size / 8)}px`,
+                    background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`,
+                    border: '3px solid rgba(255, 255, 255, 0.3)',
+                    boxShadow: `
+                      0 8px 32px rgba(0, 0, 0, 0.2),
+                      inset 0 -4px 8px rgba(0, 0, 0, 0.1),
+                      inset 0 4px 8px rgba(255, 255, 255, 0.2)
+                    `,
                   }}
                   onClick={() => setSelectedBubble(
                     selectedBubble === bubble.experience ? null : bubble.experience
                   )}
                 >
-                  <div className="text-center px-2">
-                    <div className="font-semibold leading-tight" style={{ fontSize: `${Math.max(10, size / 7)}px` }}>
+                  {/* Glossy highlight */}
+                  <div 
+                    className="absolute top-0 left-0 w-full h-1/2 rounded-full opacity-30"
+                    style={{
+                      background: 'linear-gradient(180deg, rgba(255,255,255,0.6) 0%, transparent 100%)'
+                    }}
+                  />
+                  <div className="text-center px-3 relative z-10">
+                    <div 
+                      className="font-bold leading-tight drop-shadow-lg" 
+                      style={{ 
+                        fontSize: `${Math.max(12, size / 6)}px`,
+                        textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+                      }}
+                    >
                       {bubble.experience}
-                    </div>
-                    <div className="text-xs opacity-90 mt-1">
-                      {bubble.count}
                     </div>
                   </div>
                 </div>
