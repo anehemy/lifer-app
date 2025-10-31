@@ -1168,3 +1168,39 @@ No more error messages or console logs when sessions are deleted.
 - [x] Test knowledge base with Forge + Gemini embeddings
 - [x] Verify RAG context retrieval works with Gemini - CONFIRMED WORKING
 
+
+
+
+## Life Story Page Visual Redesign (Jan 30, 2025)
+### Phase 1: Visual Design Improvements
+- [ ] Redesign entry cards with visual hierarchy (larger question, styled response)
+- [ ] Add visual indicators for entry types (icons for experiences, challenges, growth)
+- [ ] Improve timeline visualization (actual visual timeline, not just period labels)
+- [ ] Add color coding or visual themes for different time periods
+- [ ] Enhance typography and spacing for better readability
+- [ ] Add subtle animations/transitions for card interactions
+- [ ] Improve empty state with helpful guidance for new users
+
+### Phase 2: UX Improvements
+- [ ] Add entry editing functionality (edit button on each card)
+- [ ] Implement "read more/less" for long responses
+- [ ] Add entry expansion/collapse for better scanning
+- [ ] Improve voice input button visibility and UX
+- [ ] Add quick actions menu on each card (edit, delete, chat about this)
+
+### Phase 3: Organization Features
+- [ ] Add search functionality to find specific entries
+- [ ] Implement filtering by keywords, dates, or themes
+- [ ] Add sorting options (chronological, by theme, by importance)
+- [ ] Show entry count and statistics
+- [ ] Add "combine similar entries" feature (AI-powered)
+
+
+
+
+## Life Story Page - Collapsible Periods (Jan 30, 2025)
+- [x] Add click handler to period headers to collapse/expand entries
+- [x] Show chevron icons (up/down) to indicate collapse state
+- [x] Smooth transitions when collapsing/expanding
+- [x] All periods start expanded by default
+

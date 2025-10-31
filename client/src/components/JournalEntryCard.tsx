@@ -1,8 +1,8 @@
-import { Card, CardHeader } from "@/components/ui/card";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2, Edit2, Save, X, Clock, MapPin, Sparkles, Heart, TrendingUp } from "lucide-react";
+import { Trash2, Edit2, Save, X, Clock, MapPin, Sparkles, Heart, TrendingUp, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ interface JournalEntryCardProps {
 
 export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [metadata, setMetadata] = useState({
     timeContext: entry.timeContext || "",
     placeContext: entry.placeContext || "",
@@ -82,202 +83,246 @@ export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardPr
     setIsEditing(false);
   };
 
+  // Determine if response is long enough to need expansion
+  const isLongResponse = entry.response.length > 300;
+  const displayResponse = !isExpanded && isLongResponse && !isEditing
+    ? entry.response.slice(0, 300) + "..."
+    : entry.response;
+
+  // Get theme color based on entry type
+  const getThemeColor = () => {
+    if (entry.growthTheme) return "border-l-green-500";
+    if (entry.challengeType) return "border-l-red-500";
+    if (entry.experienceType) return "border-l-yellow-500";
+    return "border-l-purple-500";
+  };
+
   return (
-    <Card>
-      <CardHeader>
+    <Card className={`transition-all duration-200 hover:shadow-lg border-l-4 ${getThemeColor()} group`}>
+      <CardHeader className="pb-3">
         <div className="flex justify-between items-start gap-4">
           <div className="flex-1">
-            <p className="text-sm text-muted-foreground mb-2">
-              {new Date(entry.createdAt).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </p>
-            <p className="font-medium text-purple-600 dark:text-purple-400 mb-2">
+            {/* Date */}
+            <div className="flex items-center gap-2 mb-3">
+              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+              <p className="text-xs text-muted-foreground font-medium">
+                {new Date(entry.createdAt).toLocaleDateString("en-US", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </p>
+            </div>
+
+            {/* Question - Larger and more prominent */}
+            <h3 className="text-lg font-semibold text-purple-600 dark:text-purple-400 mb-4 leading-relaxed">
               {entry.question}
-            </p>
+            </h3>
+
+            {/* Response */}
             {isEditing ? (
               <textarea
                 value={responseText}
                 onChange={(e) => setResponseText(e.target.value)}
-                className="w-full p-3 border rounded-md text-base min-h-[100px] mb-4"
+                className="w-full p-4 border rounded-lg text-base min-h-[150px] mb-4 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 placeholder="Enter your response..."
               />
             ) : (
-              <p className="text-base whitespace-pre-wrap mb-4">{entry.response}</p>
-            )}
-
-            {/* Metadata Section */}
-            <div className="border-t pt-4 mt-4">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="text-sm font-semibold text-muted-foreground">Context & Themes</h4>
-                {!isEditing ? (
+              <div className="mb-4">
+                <p className="text-base leading-relaxed whitespace-pre-wrap text-foreground/90">
+                  {displayResponse}
+                </p>
+                {isLongResponse && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setIsEditing(true)}
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="mt-2 text-purple-600 hover:text-purple-700"
                   >
-                    <Edit2 className="h-3 w-3 mr-1" />
-                    Edit
+                    {isExpanded ? (
+                      <>
+                        <ChevronUp className="h-4 w-4 mr-1" />
+                        Show less
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="h-4 w-4 mr-1" />
+                        Read more
+                      </>
+                    )}
                   </Button>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCancel}
-                      disabled={updateMetadata.isPending}
-                    >
-                      <X className="h-3 w-3 mr-1" />
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={handleSave}
-                      disabled={updateMetadata.isPending}
-                    >
-                      <Save className="h-3 w-3 mr-1" />
-                      Save
-                    </Button>
-                  </div>
                 )}
               </div>
+            )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Time Context */}
-                <div className="flex items-start gap-2">
-                  <Clock className="h-4 w-4 text-purple-500 mt-1 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    {isEditing ? (
-                      <div>
-                        <Label htmlFor={`time-${entry.id}`} className="text-xs">Time</Label>
-                        <Input
-                          id={`time-${entry.id}`}
-                          value={metadata.timeContext}
-                          onChange={(e) => setMetadata({ ...metadata, timeContext: e.target.value })}
-                          placeholder="e.g., childhood, 2010, age 15"
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Time</p>
-                        <p className="text-sm">{entry.timeContext || "Not specified"}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+            {/* Quick context tags - visible without expanding */}
+            {!isEditing && (entry.timeContext || entry.placeContext || entry.experienceType) && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {entry.timeContext && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
+                    <Clock className="h-3 w-3" />
+                    {entry.timeContext}
+                  </span>
+                )}
+                {entry.placeContext && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
+                    <MapPin className="h-3 w-3" />
+                    {entry.placeContext}
+                  </span>
+                )}
+                {entry.experienceType && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full text-xs font-medium">
+                    <Sparkles className="h-3 w-3" />
+                    {entry.experienceType}
+                  </span>
+                )}
+                {entry.challengeType && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full text-xs font-medium">
+                    <Heart className="h-3 w-3" />
+                    {entry.challengeType}
+                  </span>
+                )}
+                {entry.growthTheme && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
+                    <TrendingUp className="h-3 w-3" />
+                    {entry.growthTheme}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
 
-                {/* Place Context */}
-                <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 text-blue-500 mt-1 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    {isEditing ? (
-                      <div>
-                        <Label htmlFor={`place-${entry.id}`} className="text-xs">Place</Label>
-                        <Input
-                          id={`place-${entry.id}`}
-                          value={metadata.placeContext}
-                          onChange={(e) => setMetadata({ ...metadata, placeContext: e.target.value })}
-                          placeholder="e.g., New York, school"
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Place</p>
-                        <p className="text-sm">{entry.placeContext || "Not specified"}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+          {/* Action buttons */}
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {!isEditing && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsEditing(true)}
+                className="h-8 w-8 p-0"
+              >
+                <Edit2 className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
 
-                {/* Experience Type */}
-                <div className="flex items-start gap-2">
-                  <Sparkles className="h-4 w-4 text-yellow-500 mt-1 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    {isEditing ? (
-                      <div>
-                        <Label htmlFor={`experience-${entry.id}`} className="text-xs">Experience</Label>
-                        <Input
-                          id={`experience-${entry.id}`}
-                          value={metadata.experienceType}
-                          onChange={(e) => setMetadata({ ...metadata, experienceType: e.target.value })}
-                          placeholder="e.g., learning, achievement"
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Experience</p>
-                        <p className="text-sm">{entry.experienceType || "Not specified"}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+      {/* Expandable metadata section */}
+      {isEditing && (
+        <CardContent className="pt-0">
+          <div className="border-t pt-4">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-semibold text-muted-foreground">Context & Themes</h4>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCancel}
+                  disabled={updateMetadata.isPending}
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Cancel
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={updateMetadata.isPending}
+                >
+                  <Save className="h-3 w-3 mr-1" />
+                  Save
+                </Button>
+              </div>
+            </div>
 
-                {/* Challenge Type */}
-                <div className="flex items-start gap-2">
-                  <Heart className="h-4 w-4 text-red-500 mt-1 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    {isEditing ? (
-                      <div>
-                        <Label htmlFor={`challenge-${entry.id}`} className="text-xs">Challenge</Label>
-                        <Input
-                          id={`challenge-${entry.id}`}
-                          value={metadata.challengeType}
-                          onChange={(e) => setMetadata({ ...metadata, challengeType: e.target.value })}
-                          placeholder="e.g., bullying, loss"
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Challenge</p>
-                        <p className="text-sm">{entry.challengeType || "Not specified"}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Time Context */}
+              <div className="space-y-2">
+                <Label htmlFor={`time-${entry.id}`} className="text-xs flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-purple-500" />
+                  Time
+                </Label>
+                <Input
+                  id={`time-${entry.id}`}
+                  value={metadata.timeContext}
+                  onChange={(e) => setMetadata({ ...metadata, timeContext: e.target.value })}
+                  placeholder="e.g., childhood, 2010, age 15"
+                  className="h-9 text-sm"
+                />
+              </div>
 
-                {/* Growth Theme */}
-                <div className="flex items-start gap-2 md:col-span-2">
-                  <TrendingUp className="h-4 w-4 text-green-500 mt-1 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    {isEditing ? (
-                      <div>
-                        <Label htmlFor={`growth-${entry.id}`} className="text-xs">Growth</Label>
-                        <Input
-                          id={`growth-${entry.id}`}
-                          value={metadata.growthTheme}
-                          onChange={(e) => setMetadata({ ...metadata, growthTheme: e.target.value })}
-                          placeholder="e.g., resilience, patience"
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-xs text-muted-foreground">Growth</p>
-                        <p className="text-sm">{entry.growthTheme || "Not specified"}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+              {/* Place Context */}
+              <div className="space-y-2">
+                <Label htmlFor={`place-${entry.id}`} className="text-xs flex items-center gap-1">
+                  <MapPin className="h-3 w-3 text-blue-500" />
+                  Place
+                </Label>
+                <Input
+                  id={`place-${entry.id}`}
+                  value={metadata.placeContext}
+                  onChange={(e) => setMetadata({ ...metadata, placeContext: e.target.value })}
+                  placeholder="e.g., New York, school"
+                  className="h-9 text-sm"
+                />
+              </div>
+
+              {/* Experience Type */}
+              <div className="space-y-2">
+                <Label htmlFor={`experience-${entry.id}`} className="text-xs flex items-center gap-1">
+                  <Sparkles className="h-3 w-3 text-yellow-500" />
+                  Experience
+                </Label>
+                <Input
+                  id={`experience-${entry.id}`}
+                  value={metadata.experienceType}
+                  onChange={(e) => setMetadata({ ...metadata, experienceType: e.target.value })}
+                  placeholder="e.g., learning, achievement"
+                  className="h-9 text-sm"
+                />
+              </div>
+
+              {/* Challenge Type */}
+              <div className="space-y-2">
+                <Label htmlFor={`challenge-${entry.id}`} className="text-xs flex items-center gap-1">
+                  <Heart className="h-3 w-3 text-red-500" />
+                  Challenge
+                </Label>
+                <Input
+                  id={`challenge-${entry.id}`}
+                  value={metadata.challengeType}
+                  onChange={(e) => setMetadata({ ...metadata, challengeType: e.target.value })}
+                  placeholder="e.g., bullying, loss"
+                  className="h-9 text-sm"
+                />
+              </div>
+
+              {/* Growth Theme */}
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor={`growth-${entry.id}`} className="text-xs flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3 text-green-500" />
+                  Growth
+                </Label>
+                <Input
+                  id={`growth-${entry.id}`}
+                  value={metadata.growthTheme}
+                  onChange={(e) => setMetadata({ ...metadata, growthTheme: e.target.value })}
+                  placeholder="e.g., resilience, patience"
+                  className="h-9 text-sm"
+                />
               </div>
             </div>
           </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDelete}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </div>
-      </CardHeader>
+        </CardContent>
+      )}
     </Card>
   );
 }
