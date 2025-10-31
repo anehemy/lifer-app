@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, Sparkles, Heart, TrendingUp, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import PlacesMapView from "@/components/PlacesMapView";
+import ExperiencesBubbleView from "@/components/ExperiencesBubbleView";
 
 interface JournalEntry {
   id: number;
@@ -382,11 +383,15 @@ export default function LifeStoryTimeline({ entries }: LifeStoryTimelineProps) {
           </TabsContent>
 
           <TabsContent value="experiences" className="mt-0">
-            {renderCategoryView(
-              categorized.experiences,
-              <Sparkles className="h-16 w-16 mx-auto" />,
-              "No experience entries yet. Share the moments that defined you!"
-            )}
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-purple-900 dark:text-purple-100 mb-2">
+                Your Life Experiences
+              </h2>
+              <p className="text-muted-foreground">
+                Drag bubbles to group related experiences. Watch colors blend and shift as you explore connections.
+              </p>
+            </div>
+            <ExperiencesBubbleView entries={entries} />
           </TabsContent>
 
           <TabsContent value="challenges" className="mt-0">

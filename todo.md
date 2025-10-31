@@ -1286,3 +1286,14 @@ No more error messages or console logs when sessions are deleted.
 - [x] Change prompt text based on precision (warning for imprecise, invitation for precise)
 - [x] Encourage storytelling for all locations, not just imprecise ones
 
+
+
+## Interactive Experiences Visualization
+- [x] Create draggable bubble interface for experiences
+- [x] Implement color changing based on position/proximity
+- [x] Allow users to arrange bubbles freely on canvas
+- [x] Size bubbles based on number of entries
+- [x] Add visual connections between nearby bubbles (proximity-based color blending)
+- [ ] Save user's bubble arrangement positions (future enhancement)
+- [x] Show experience details on bubble click/hover
+
