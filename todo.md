@@ -1279,3 +1279,10 @@ No more error messages or console logs when sessions are deleted.
 - [x] Add Save button to update entry's placeContext
 - [x] Refresh map after location update
 
+
+
+## Keep "Tell Me More" Button for All Locations
+- [x] Show "Tell Me More" button for both imprecise and precise locations
+- [x] Change prompt text based on precision (warning for imprecise, invitation for precise)
+- [x] Encourage storytelling for all locations, not just imprecise ones
+

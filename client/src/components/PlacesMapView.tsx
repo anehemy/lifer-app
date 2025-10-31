@@ -389,23 +389,42 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
         {locations.map((location) => (
           <Card key={location.place} className="hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
-              {/* Location precision prompt */}
-              {!location.isPrecise && editingLocation !== location.place && (
-                <Alert className="mb-4 border-purple-200 bg-purple-50 dark:bg-purple-950/20">
-                  <AlertCircle className="h-4 w-4 text-purple-600" />
+              {/* Location prompt - show for all locations, different message based on precision */}
+              {editingLocation !== location.place && (
+                <Alert className={`mb-4 ${
+                  location.isPrecise 
+                    ? "border-purple-200 bg-purple-50/50 dark:bg-purple-950/10"
+                    : "border-purple-200 bg-purple-50 dark:bg-purple-950/20"
+                }`}>
+                  {location.isPrecise ? (
+                    <MessageCircle className="h-4 w-4 text-purple-600" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4 text-purple-600" />
+                  )}
                   <AlertDescription className="text-sm text-purple-800 dark:text-purple-200">
-                    <p className="font-medium mb-1">💭 "{location.place}" - Let's make this more specific</p>
-                    <p className="mb-3">Update to a precise location or explore through conversation.</p>
+                    {location.isPrecise ? (
+                      <>
+                        <p className="font-medium mb-1">📍 "{location.place}"</p>
+                        <p className="mb-3">Share your experiences and memories from this place.</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-medium mb-1">💭 "{location.place}" - Let's make this more specific</p>
+                        <p className="mb-3">Update to a precise location or explore through conversation.</p>
+                      </>
+                    )}
                     <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => startEditingLocation(location.place)}
-                        className="h-8 text-xs border-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30"
-                      >
-                        <MapPin className="h-3 w-3 mr-1.5" />
-                        Update Location
-                      </Button>
+                      {!location.isPrecise && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => startEditingLocation(location.place)}
+                          className="h-8 text-xs border-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                        >
+                          <MapPin className="h-3 w-3 mr-1.5" />
+                          Update Location
+                        </Button>
+                      )}
                       <Button
                         variant="default"
                         size="sm"
