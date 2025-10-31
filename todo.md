@@ -1262,3 +1262,20 @@ No more error messages or console logs when sessions are deleted.
 ## Bug Fixes
 - [x] Fix z-index issue where map appears on top of chat dialog
 
+
+
+## Automatic Location Update from Chat
+- [ ] Detect when user responds to location refinement question in Mr. MG chat
+- [ ] Extract precise location from user's first response
+- [ ] Automatically update the original entry's placeContext field
+- [ ] Refresh the Places map to show updated location
+- [ ] Continue conversation to gather additional stories as new entries
+
+
+
+## Manual Location Update Field
+- [x] Add inline input field next to "Tell Me More About This Place" button
+- [x] Allow users to type precise location directly
+- [x] Add Save button to update entry's placeContext
+- [x] Refresh map after location update
+

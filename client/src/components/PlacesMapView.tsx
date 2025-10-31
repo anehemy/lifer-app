@@ -3,7 +3,10 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet"
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { MapPin, Loader2, ChevronDown, ChevronUp, AlertCircle, MessageCircle } from "lucide-react";
+import { MapPin, Loader2, ChevronDown, ChevronUp, AlertCircle, MessageCircle, Check, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { trpc } from "@/lib/trpc";
+import { toast } from "sonner";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -45,6 +48,22 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [expandedEntries, setExpandedEntries] = useState<Set<number>>(new Set());
+  const [editingLocation, setEditingLocation] = useState<string | null>(null);
+  const [newLocationValue, setNewLocationValue] = useState("");
+  
+  const utils = trpc.useUtils();
+  const updateMetadata = trpc.journal.updateMetadata.useMutation({
+    onSuccess: () => {
+      toast.success("Location updated successfully!");
+      setEditingLocation(null);
+      setNewLocationValue("");
+      // Refresh journal entries to re-geocode
+      utils.journal.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error("Failed to update location: " + error.message);
+    },
+  });
 
   const toggleExpanded = (id: number) => {
     const newExpanded = new Set(expandedEntries);
@@ -196,6 +215,36 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
     return path;
   };
 
+  const startEditingLocation = (placeName: string) => {
+    setEditingLocation(placeName);
+    setNewLocationValue(placeName);
+  };
+  
+  const cancelEditingLocation = () => {
+    setEditingLocation(null);
+    setNewLocationValue("");
+  };
+  
+  const saveLocationUpdate = async (oldLocation: string, newLocation: string, entryIds: number[]) => {
+    if (!newLocation.trim()) {
+      toast.error("Location cannot be empty");
+      return;
+    }
+    
+    if (newLocation.trim() === oldLocation) {
+      cancelEditingLocation();
+      return;
+    }
+    
+    // Update all entries with this location
+    for (const entryId of entryIds) {
+      await updateMetadata.mutateAsync({
+        id: entryId,
+        placeContext: newLocation.trim(),
+      });
+    }
+  };
+  
   const handleTellMeMore = (location: LocationData) => {
     // Find the first entry to get context
     const firstEntry = location.entries[0];
@@ -341,21 +390,90 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
           <Card key={location.place} className="hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
               {/* Location precision prompt */}
-              {!location.isPrecise && (
+              {!location.isPrecise && editingLocation !== location.place && (
                 <Alert className="mb-4 border-purple-200 bg-purple-50 dark:bg-purple-950/20">
                   <AlertCircle className="h-4 w-4 text-purple-600" />
                   <AlertDescription className="text-sm text-purple-800 dark:text-purple-200">
-                    <p className="font-medium mb-1">💭 "{location.place}" - Let's explore this place together</p>
-                    <p className="mb-3">Share more about where you were and what this place means to your story.</p>
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => handleTellMeMore(location)}
-                      className="h-8 text-xs bg-purple-600 hover:bg-purple-700"
-                    >
-                      <MessageCircle className="h-3 w-3 mr-1.5" />
-                      Tell Me More About This Place
-                    </Button>
+                    <p className="font-medium mb-1">💭 "{location.place}" - Let's make this more specific</p>
+                    <p className="mb-3">Update to a precise location or explore through conversation.</p>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => startEditingLocation(location.place)}
+                        className="h-8 text-xs border-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                      >
+                        <MapPin className="h-3 w-3 mr-1.5" />
+                        Update Location
+                      </Button>
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => handleTellMeMore(location)}
+                        className="h-8 text-xs bg-purple-600 hover:bg-purple-700"
+                      >
+                        <MessageCircle className="h-3 w-3 mr-1.5" />
+                        Tell Me More
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {/* Inline location editor */}
+              {editingLocation === location.place && (
+                <Alert className="mb-4 border-purple-200 bg-purple-50 dark:bg-purple-950/20">
+                  <MapPin className="h-4 w-4 text-purple-600" />
+                  <AlertDescription className="text-sm">
+                    <p className="font-medium mb-2 text-purple-800 dark:text-purple-200">Update Location</p>
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        value={newLocationValue}
+                        onChange={(e) => setNewLocationValue(e.target.value)}
+                        placeholder="e.g., São Paulo, Brazil"
+                        className="h-8 text-sm flex-1"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            saveLocationUpdate(
+                              location.place,
+                              newLocationValue,
+                              location.entries.map(e => e.id)
+                            );
+                          } else if (e.key === 'Escape') {
+                            cancelEditingLocation();
+                          }
+                        }}
+                      />
+                      <Button
+                        size="sm"
+                        onClick={() => saveLocationUpdate(
+                          location.place,
+                          newLocationValue,
+                          location.entries.map(e => e.id)
+                        )}
+                        disabled={updateMetadata.isPending}
+                        className="h-8 px-3"
+                      >
+                        {updateMetadata.isPending ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Check className="h-3 w-3" />
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={cancelEditingLocation}
+                        disabled={updateMetadata.isPending}
+                        className="h-8 px-3"
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      This will update {location.entries.length} {location.entries.length === 1 ? 'entry' : 'entries'}
+                    </p>
                   </AlertDescription>
                 </Alert>
               )}
