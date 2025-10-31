@@ -3,7 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet"
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { MapPin, Loader2, ChevronDown, ChevronUp, AlertCircle, MessageSquare } from "lucide-react";
+import { MapPin, Loader2, ChevronDown, ChevronUp, AlertCircle, MessageCircle } from "lucide-react";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -196,14 +196,37 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
     return path;
   };
 
-  const handleUpdateLocation = (placeName: string) => {
-    // Open chat with Mr. MG - in a real implementation, we'd pre-fill the message
-    const chatButton = document.querySelector('[data-chat-button]') as HTMLButtonElement;
-    if (chatButton) {
-      chatButton.click();
+  const handleTellMeMore = (location: LocationData) => {
+    // Find the first entry to get context
+    const firstEntry = location.entries[0];
+    if (!firstEntry) return;
+    
+    // Generate a contextual question based on the entry
+    const question = generateLocationQuestion(location.place, firstEntry);
+    
+    // Open Mr. MG chat with the contextual question
+    const event = new CustomEvent('openMrMgChat', {
+      detail: {
+        question,
+        forceNew: true
+      }
+    });
+    window.dispatchEvent(event);
+  };
+  
+  const generateLocationQuestion = (place: string, entry: any): string => {
+    // Extract context from the entry
+    const timeContext = entry.timeContext || "";
+    const questionSnippet = entry.question.substring(0, 80);
+    
+    // Generate contextual question
+    if (timeContext.includes("birth") || timeContext.includes("born") || entry.response.toLowerCase().includes("born")) {
+      return `I noticed you mentioned ${place} in your entry about being born. Where specifically in ${place} were you born? Tell me about that place and what it means to you.`;
+    } else if (timeContext.includes("childhood")) {
+      return `You mentioned ${place} from your childhood. What specific place in ${place} do you remember most? Describe it and share a memory from there.`;
+    } else {
+      return `You mentioned ${place} when reflecting on "${questionSnippet}...". Where exactly in ${place} were you? Tell me more about that place and why it's significant to your story.`;
     }
-    // TODO: Pre-fill chat with message like:
-    // `Please update the location "${placeName}" in my journal to be more specific (e.g., the city or region)`
   };
 
   if (entries.length === 0) {
@@ -317,21 +340,21 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
         {locations.map((location) => (
           <Card key={location.place} className="hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
-              {/* Location precision warning */}
+              {/* Location precision prompt */}
               {!location.isPrecise && (
-                <Alert className="mb-4 border-amber-200 bg-amber-50 dark:bg-amber-950/20">
-                  <AlertCircle className="h-4 w-4 text-amber-600" />
-                  <AlertDescription className="text-sm text-amber-800 dark:text-amber-200">
-                    <p className="font-medium mb-1">📍 "{location.place}" is a large area</p>
-                    <p className="mb-2">For a more meaningful map, consider updating to a specific city or region.</p>
+                <Alert className="mb-4 border-purple-200 bg-purple-50 dark:bg-purple-950/20">
+                  <AlertCircle className="h-4 w-4 text-purple-600" />
+                  <AlertDescription className="text-sm text-purple-800 dark:text-purple-200">
+                    <p className="font-medium mb-1">💭 "{location.place}" - Let's explore this place together</p>
+                    <p className="mb-3">Share more about where you were and what this place means to your story.</p>
                     <Button
-                      variant="outline"
+                      variant="default"
                       size="sm"
-                      onClick={() => handleUpdateLocation(location.place)}
-                      className="h-7 text-xs border-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/30"
+                      onClick={() => handleTellMeMore(location)}
+                      className="h-8 text-xs bg-purple-600 hover:bg-purple-700"
                     >
-                      <MessageSquare className="h-3 w-3 mr-1" />
-                      Ask Mr. MG to Update Location
+                      <MessageCircle className="h-3 w-3 mr-1.5" />
+                      Tell Me More About This Place
                     </Button>
                   </AlertDescription>
                 </Alert>

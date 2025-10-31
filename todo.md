@@ -1246,3 +1246,14 @@ No more error messages or console logs when sessions are deleted.
 - [x] Add "Update Location" button that opens chat with pre-filled message
 - [x] Detect large geographic areas and suggest more specific alternatives
 
+
+
+## Conversational Location Refinement
+- [x] Replace "Edit Location" with "Tell Me More About This Place" button
+- [x] Open chat dialog with Mr. MG when button is clicked
+- [x] Generate contextual questions about the imprecise location (e.g., "You mentioned Brazil - where specifically were you born?")
+- [ ] Create new journal entries from user's responses (handled by existing Mr. MG chat)
+- [ ] Automatically extract precise location metadata from new entries (handled by existing AI analysis)
+- [ ] Suggest follow-up questions (e.g., "Have you been to other places in Brazil?") (handled by Mr. MG)
+- [ ] Link new entries to the original entry that triggered the conversation (future enhancement)
+
