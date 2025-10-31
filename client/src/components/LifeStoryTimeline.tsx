@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Calendar, MapPin, Sparkles, Heart, TrendingUp, Clock, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
+import PlacesMapView from "@/components/PlacesMapView";
 
 interface JournalEntry {
   id: number;
@@ -377,11 +378,7 @@ export default function LifeStoryTimeline({ entries }: LifeStoryTimelineProps) {
           </TabsContent>
 
           <TabsContent value="locations" className="mt-0">
-            {renderCategoryView(
-              categorized.locations,
-              <MapPin className="h-16 w-16 mx-auto" />,
-              "No location-related entries yet. Write about places that shaped your journey!"
-            )}
+            <PlacesMapView entries={entries} />
           </TabsContent>
 
           <TabsContent value="experiences" className="mt-0">

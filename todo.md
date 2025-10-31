@@ -1204,3 +1204,45 @@ No more error messages or console logs when sessions are deleted.
 - [x] Smooth transitions when collapsing/expanding
 - [x] All periods start expanded by default
 
+
+
+
+## Life Story Page - Search & Filter (Jan 30, 2025)
+- [ ] Add "All Entries" collapsible header
+- [ ] Implement search bar next to "All Entries"
+- [ ] Add filter dropdown (Context/Title/Content)
+- [ ] Real-time contextual search filtering
+- [ ] Filter entries by tags, question, or response text
+
+
+
+## New Feature Requests - Timeline View Modes
+- [ ] Investigate how search triggers (onChange vs Enter key)
+- [ ] Implement Places view: Filter/group entries by location tags
+- [ ] Implement Experiences view: Filter/group entries by experience tags
+- [ ] Implement Challenges view: Filter/group entries by challenge tags
+- [ ] Implement Growth view: Filter/group entries by growth tags
+- [ ] Ensure view modes change the timeline display above "All Entries" section
+
+
+
+## New Feature Requests - Interactive Timeline Visualizations
+- [ ] Design visualization architecture and data schema
+- [ ] Update database schema to store visualization metrics (difficulty, opportunity, growth dimensions, coordinates)
+- [ ] Add Google Maps API integration for Places view
+- [ ] Create Places view: Interactive map with location pins and journey path
+- [ ] Create Experiences view: Wheel of Life / Experience Constellation based on psychological research
+- [ ] Create Challenges view: Challenge-Opportunity Matrix (2x2 quadrant visualization)
+- [ ] Create Growth view: Multi-dimensional growth timeline graph
+- [ ] Add AI analysis to extract visualization metrics from journal entries
+- [ ] Implement click interactions to view entries from visualizations
+- [ ] Test all visualizations with real data
+
+
+
+## Location Precision Enhancement
+- [x] Add location precision detection (country/state vs city/address)
+- [x] Show "Refine Location" prompt for imprecise locations in Places view
+- [x] Add "Update Location" button that opens chat with pre-filled message
+- [x] Detect large geographic areas and suggest more specific alternatives
+

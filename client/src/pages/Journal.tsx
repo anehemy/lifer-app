@@ -9,7 +9,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { MR_MG_AVATAR, MR_MG_NAME } from "@/const";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { Trash2, RefreshCw, Mic, MicOff, MessageCircle, Send, Sparkles } from "lucide-react";
+import { Trash2, RefreshCw, Mic, MicOff, MessageCircle, Send, Sparkles, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import LifeStoryTimeline from "@/components/LifeStoryTimeline";
 import { useAnalytics, EventType, usePageView } from "@/hooks/useAnalytics";
 
@@ -58,6 +60,9 @@ export default function Journal() {
   const [entryToDelete, setEntryToDelete] = useState<number | null>(null);
   const [deletedEntry, setDeletedEntry] = useState<{id: number, question: string, response: string} | null>(null);
   const [undoTimeoutId, setUndoTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFilter, setSearchFilter] = useState<"all" | "context" | "title" | "content">("all");
+  const [allEntriesCollapsed, setAllEntriesCollapsed] = useState(false);
   
   // Initialize speech recognition
   useEffect(() => {
@@ -310,16 +315,87 @@ export default function Journal() {
       {/* Previous Entries - Simple List */}
       {entries.length > 0 && (
         <div>
-          <h2 className="text-2xl font-semibold mb-4">All Entries</h2>
-          <div className="space-y-4">
-            {entries.map((entry) => (
-              <JournalEntryCard
-                key={entry.id}
-                entry={entry}
-                onDelete={() => handleDeleteClick(entry.id)}
-              />
-            ))}
+          {/* All Entries Header with Search */}
+          <div className="flex items-center gap-4 mb-6">
+            <button
+              onClick={() => setAllEntriesCollapsed(!allEntriesCollapsed)}
+              className="flex items-center gap-2 text-2xl font-semibold hover:opacity-70 transition-opacity"
+            >
+              All Entries
+              {allEntriesCollapsed ? (
+                <ChevronDown className="h-5 w-5" />
+              ) : (
+                <ChevronUp className="h-5 w-5" />
+              )}
+            </button>
+            
+            <div className="flex-1 flex items-center gap-2">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search entries..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 bg-background"
+                />
+              </div>
+              
+              <Select value={searchFilter} onValueChange={(value: any) => setSearchFilter(value)}>
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Fields</SelectItem>
+                  <SelectItem value="context">Context</SelectItem>
+                  <SelectItem value="title">Title</SelectItem>
+                  <SelectItem value="content">Content</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          
+          {/* Entries List */}
+          {!allEntriesCollapsed && (
+            <div className="space-y-4">
+              {entries
+                .filter((entry) => {
+                  if (!searchQuery.trim()) return true;
+                  
+                  const query = searchQuery.toLowerCase();
+                  const contexts = [
+                    entry.timeContext,
+                    entry.placeContext,
+                    entry.experienceType,
+                    entry.challengeType,
+                    entry.growthTheme
+                  ].filter(Boolean).join(" ").toLowerCase();
+                  
+                  switch (searchFilter) {
+                    case "context":
+                      return contexts.includes(query);
+                    case "title":
+                      return entry.question.toLowerCase().includes(query);
+                    case "content":
+                      return entry.response.toLowerCase().includes(query);
+                    case "all":
+                    default:
+                      return (
+                        entry.question.toLowerCase().includes(query) ||
+                        entry.response.toLowerCase().includes(query) ||
+                        contexts.includes(query)
+                      );
+                  }
+                })
+                .map((entry) => (
+                  <JournalEntryCard
+                    key={entry.id}
+                    entry={entry}
+                    onDelete={() => handleDeleteClick(entry.id)}
+                  />
+                ))}
+            </div>
+          )}
         </div>
       )}
       
