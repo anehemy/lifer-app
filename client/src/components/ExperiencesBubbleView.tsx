@@ -180,12 +180,12 @@ export default function ExperiencesBubbleView({ entries }: ExperiencesBubbleView
                 <div
                   className="w-full h-full rounded-full flex items-center justify-center text-white font-bold shadow-2xl transition-all duration-300 hover:shadow-3xl relative overflow-hidden"
                   style={{
-                    background: `linear-gradient(135deg, ${color} 0%, ${color}dd 100%)`,
+                    backgroundColor: color,
                     border: '3px solid rgba(255, 255, 255, 0.3)',
                     boxShadow: `
                       0 8px 32px rgba(0, 0, 0, 0.2),
-                      inset 0 -4px 8px rgba(0, 0, 0, 0.1),
-                      inset 0 4px 8px rgba(255, 255, 255, 0.2)
+                      inset 0 -4px 8px rgba(0, 0, 0, 0.15),
+                      inset 0 4px 8px rgba(255, 255, 255, 0.25)
                     `,
                   }}
                   onClick={() => setSelectedBubble(
@@ -194,17 +194,18 @@ export default function ExperiencesBubbleView({ entries }: ExperiencesBubbleView
                 >
                   {/* Glossy highlight */}
                   <div 
-                    className="absolute top-0 left-0 w-full h-1/2 rounded-full opacity-30"
+                    className="absolute top-0 left-0 w-full h-1/2 rounded-full opacity-20"
                     style={{
-                      background: 'linear-gradient(180deg, rgba(255,255,255,0.6) 0%, transparent 100%)'
+                      background: 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 100%)'
                     }}
                   />
-                  <div className="text-center px-3 relative z-10">
+                  <div className="text-center px-4 relative z-10 leading-tight">
                     <div 
-                      className="font-bold leading-tight drop-shadow-lg" 
+                      className="font-bold drop-shadow-lg break-words" 
                       style={{ 
-                        fontSize: `${Math.max(12, size / 6)}px`,
-                        textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
+                        fontSize: `${Math.max(10, size / 8)}px`,
+                        textShadow: '0 2px 4px rgba(0, 0, 0, 0.4)',
+                        lineHeight: '1.1'
                       }}
                     >
                       {bubble.experience}

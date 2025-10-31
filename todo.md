@@ -1306,3 +1306,11 @@ No more error messages or console logs when sessions are deleted.
 - [x] Improve text contrast and typography
 - [x] Add depth with gradients and highlights
 
+
+
+## Bubble Color and Text Fixes
+- [x] Restore dynamic color changing (position/proximity-based)
+- [x] Reduce font size so text fits inside bubbles
+- [x] Abbreviate or wrap long experience names
+- [x] Remove gradient that's covering dynamic colors
+
