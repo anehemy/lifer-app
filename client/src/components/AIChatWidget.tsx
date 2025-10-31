@@ -32,6 +32,15 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
   const [showConversations, setShowConversations] = useState(false);
   const [pendingMessages, setPendingMessages] = useState<Array<{id: number, role: 'user' | 'assistant', content: string}>>([]);
   
+  // Chat window resize state
+  const [chatSize, setChatSize] = useState(() => {
+    const saved = localStorage.getItem('chatWindowSize');
+    return saved ? JSON.parse(saved) : { width: 450, height: 600 };
+  });
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0, corner: '' });
+  const chatCardRef = useRef<HTMLDivElement>(null);
+  
   // Draggable chat bubble state
   const [position, setPosition] = useState(() => {
     const saved = localStorage.getItem('chatBubblePosition');
@@ -238,6 +247,60 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Save chat size to localStorage
+  useEffect(() => {
+    localStorage.setItem('chatWindowSize', JSON.stringify(chatSize));
+  }, [chatSize]);
+
+  // Resize handlers
+  const startResize = (e: React.MouseEvent, corner: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+    setResizeStart({
+      x: e.clientX,
+      y: e.clientY,
+      width: chatSize.width,
+      height: chatSize.height,
+      corner
+    });
+  };
+
+  const handleResizeMove = (e: MouseEvent) => {
+    if (!isResizing) return;
+    
+    const deltaX = e.clientX - resizeStart.x;
+    const deltaY = resizeStart.y - e.clientY; // Inverted for top corners
+    
+    let newWidth = chatSize.width;
+    let newHeight = chatSize.height;
+    
+    if (resizeStart.corner === 'top-left') {
+      newWidth = Math.max(320, resizeStart.width - deltaX);
+      newHeight = Math.max(400, resizeStart.height + deltaY);
+    } else if (resizeStart.corner === 'top-right') {
+      newWidth = Math.max(320, resizeStart.width + deltaX);
+      newHeight = Math.max(400, resizeStart.height + deltaY);
+    }
+    
+    setChatSize({ width: newWidth, height: newHeight });
+  };
+
+  const handleResizeEnd = () => {
+    setIsResizing(false);
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener('mousemove', handleResizeMove);
+      window.addEventListener('mouseup', handleResizeEnd);
+      return () => {
+        window.removeEventListener('mousemove', handleResizeMove);
+        window.removeEventListener('mouseup', handleResizeEnd);
+      };
+    }
+  }, [isResizing, resizeStart, chatSize]);
 
   // Attach drag event listeners
   useEffect(() => {
@@ -571,7 +634,16 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
         <>
         {/* Mobile overlay to prevent background scroll */}
         <div className="fixed inset-0 bg-black/20 z-40 sm:hidden" onClick={() => setIsOpen(false)} />
-        <Card className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 sm:w-96 sm:h-[600px] shadow-2xl z-50 flex flex-col border-2 border-purple-200 max-h-screen">
+        <Card 
+          ref={chatCardRef}
+          className="fixed inset-0 sm:inset-auto sm:bottom-6 sm:right-6 shadow-2xl z-50 flex flex-col border-2 border-purple-200 max-h-screen"
+          style={{
+            width: window.innerWidth < 640 ? '100%' : `${chatSize.width}px`,
+            height: window.innerWidth < 640 ? '100%' : `${chatSize.height}px`,
+            minWidth: '320px',
+            minHeight: '400px',
+          }}
+        >
           <CardHeader className="border-b bg-gradient-to-r from-purple-50 to-pink-50 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -604,6 +676,28 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
               </div>
             </div>
           </CardHeader>
+          
+          {/* Resize handles - desktop only */}
+          <div className="hidden sm:block">
+            {/* Top-left resize handle */}
+            <div
+              className="absolute top-0 left-0 w-8 h-8 cursor-nwse-resize z-10"
+              onMouseDown={(e) => startResize(e, 'top-left')}
+              style={{
+                background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.4) 0%, transparent 50%)',
+                borderTopLeftRadius: '0.5rem',
+              }}
+            />
+            {/* Top-right resize handle */}
+            <div
+              className="absolute top-0 right-0 w-8 h-8 cursor-nesw-resize z-10"
+              onMouseDown={(e) => startResize(e, 'top-right')}
+              style={{
+                background: 'linear-gradient(225deg, rgba(168, 85, 247, 0.4) 0%, transparent 50%)',
+                borderTopRightRadius: '0.5rem',
+              }}
+            />
+          </div>
           
           {/* Conversations List */}
           {showConversations && (

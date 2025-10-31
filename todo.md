@@ -1126,3 +1126,18 @@ No more error messages or console logs when sessions are deleted.
 **Impact**: Medium - Cost control for testing phase
 **Implementation**: Updated durations array to [1, 5] only, changed default from 10 to 5 minutes
 
+
+
+
+## 🐛 Chat Resize Not Working
+
+- [x] **Chat window resize handles stopped working** ✅ FIXED
+  - Top-left and top-right drag handles not responding
+  - User cannot resize chat window anymore
+  - Root cause: Resize state and handlers were lost during previous changes
+  - Fix: Restored chatSize state, resize handlers, and useEffects
+  - Added purple gradient triangular handles in top corners
+  - Drag left/up (top-left) or right/up (top-right) to resize
+  - Minimum 320px × 400px, no maximum limit
+  - Size persists in localStorage
+
