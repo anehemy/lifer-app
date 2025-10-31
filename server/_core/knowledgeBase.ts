@@ -80,8 +80,8 @@ class KnowledgeBase {
       const section = sections[i].trim();
       if (!section) continue;
       
-      // If section is too long (>1500 chars), split by paragraphs
-      if (section.length > 1500) {
+      // If section is too long (>2500 chars), split by paragraphs
+      if (section.length > 2500) {
         const paragraphs = section.split(/\n\n+/);
         let currentChunk = '';
         let heading = '';
@@ -94,7 +94,7 @@ class KnowledgeBase {
           }
           
           // If adding this paragraph would exceed limit, save current chunk
-          if (currentChunk.length + para.length > 1500 && currentChunk) {
+          if (currentChunk.length + para.length > 2500 && currentChunk) {
             chunks.push({
               id: `${source}-${chunks.length}`,
               content: heading + '\n\n' + currentChunk,
@@ -153,26 +153,45 @@ class KnowledgeBase {
   }
 
   /**
-   * Get embedding vector for text using Forge API
+   * Get embedding vector for text using current LLM provider
    */
   private async getEmbedding(text: string): Promise<number[]> {
     try {
-      // Use Forge's embedding endpoint
-      const ENV = await import('./env').then(m => m.ENV);
-      const response = await fetch(`${ENV.forgeApiUrl}/v1/embeddings`, {
+      // Get current provider from LLM module
+      const { getCurrentProvider, getProviderConfig } = await import('./llm');
+      const provider = await getCurrentProvider();
+      const config = await getProviderConfig(provider);
+      
+      let embeddingEndpoint: string;
+      let embeddingModel: string;
+      
+      if (provider === 'openai') {
+        // OpenAI uses same base URL as chat, just different endpoint
+        embeddingEndpoint = config.apiUrl.replace('/chat/completions', '/embeddings');
+        embeddingModel = 'text-embedding-3-small';
+      } else {
+        // Forge (Gemini)
+        embeddingEndpoint = config.apiUrl.replace('/chat/completions', '/embeddings');
+        embeddingModel = 'text-embedding-004';
+      }
+      
+      console.log(`[KnowledgeBase] Using ${provider} embeddings: ${embeddingModel}`);
+      
+      const response = await fetch(embeddingEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${ENV.forgeApiKey}`,
+          'Authorization': `Bearer ${config.apiKey}`,
         },
         body: JSON.stringify({
-          model: 'text-embedding-004',
+          model: embeddingModel,
           input: text,
         }),
       });
       
       if (!response.ok) {
-        throw new Error(`Embedding API failed: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`Embedding API failed: ${response.status} - ${errorText}`);
       }
       
       const data = await response.json();

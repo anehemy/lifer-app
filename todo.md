@@ -1141,3 +1141,11 @@ No more error messages or console logs when sessions are deleted.
   - Minimum 320px × 400px, no maximum limit
   - Size persists in localStorage
 
+
+
+## Fixed - RAG Embedding System (Jan 30, 2025)
+- [x] Fixed RAG embedding 404 errors - now supports both OpenAI and Forge providers
+- [x] Updated chunk size from 1500 to 2500 characters for better context
+- [x] Embeddings now automatically use same provider as chat (Forge or OpenAI)
+- [x] Knowledge base will re-initialize on next chat interaction
+
