@@ -370,8 +370,11 @@ export async function getProviderConfig(provider: LLMProvider): Promise<Provider
       throw new Error('API key not configured for provider: openai');
     }
     
-    // Use environment base URL if available (for Manus proxy), otherwise use direct OpenAI
-    const baseUrl = process.env.OPENAI_BASE_URL || process.env.OPENAI_API_BASE || 'https://api.openai.com/v1';
+    // IMPORTANT: Always call OpenAI directly, ignore Manus proxy URLs
+    // The system may inject OPENAI_BASE_URL pointing to Manus proxy,
+    // but that requires sandbox tokens, not OpenAI API keys.
+    // When user selects OpenAI provider, they want to use their own API key.
+    const baseUrl = 'https://api.openai.com/v1';
     
     return {
       apiUrl: `${baseUrl}/chat/completions`,
@@ -442,6 +445,9 @@ async function invokeLLMInternal(params: InvokeParams, provider: LLMProvider = '
   }
 
   console.log(`[LLM] Using provider: ${provider}, model: ${config.model}`);
+  console.log(`[LLM] API URL: ${config.apiUrl}`);
+  console.log(`[LLM] API Key (first 10 chars): ${config.apiKey.substring(0, 10)}...`);
+  console.log(`[LLM] Request payload:`, JSON.stringify(payload, null, 2).substring(0, 500));
   
   // Create abort controller for timeout
   const controller = new AbortController();

@@ -1147,5 +1147,24 @@ No more error messages or console logs when sessions are deleted.
 - [x] Fixed RAG embedding 404 errors - now supports both OpenAI and Forge providers
 - [x] Updated chunk size from 1500 to 2500 characters for better context
 - [x] Embeddings now automatically use same provider as chat (Forge or OpenAI)
-- [x] Knowledge base will re-initialize on next chat interaction
+- [x] Knowledge base re-initialized successfully with Forge embeddings
+- [x] RAG context retrieval working - Mr. MG can answer from knowledge base
+
+
+
+## OpenAI Connection Issue - RESOLVED (Jan 30, 2025)
+- [x] Found root cause: System env vars (OPENAI_BASE_URL) forcing Manus proxy instead of direct OpenAI
+- [x] Fixed: Code now calls OpenAI directly, bypassing Manus proxy
+- [x] Secondary issue: Project-scoped API key model access permissions
+- [x] Decision: Using Forge (Gemini 2.5 Flash) as primary provider instead
+- [x] Forge provides 1M token context, excellent quality, no API key setup needed
+
+
+
+## Gemini API Integration for RAG (Jan 30, 2025)
+- [x] Test Gemini API key with native embedding endpoint
+- [x] Update RAG system to use Gemini API for embeddings when Forge is selected
+- [x] Add GEMINI_API_KEY to secrets configuration
+- [x] Test knowledge base with Forge + Gemini embeddings
+- [x] Verify RAG context retrieval works with Gemini - CONFIRMED WORKING
 

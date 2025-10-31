@@ -162,40 +162,66 @@ class KnowledgeBase {
       const provider = await getCurrentProvider();
       const config = await getProviderConfig(provider);
       
-      let embeddingEndpoint: string;
-      let embeddingModel: string;
-      
       if (provider === 'openai') {
-        // OpenAI uses same base URL as chat, just different endpoint
-        embeddingEndpoint = config.apiUrl.replace('/chat/completions', '/embeddings');
-        embeddingModel = 'text-embedding-3-small';
+        // OpenAI embeddings via OpenAI API
+        const embeddingEndpoint = config.apiUrl.replace('/chat/completions', '/embeddings');
+        const embeddingModel = 'text-embedding-3-small';
+        
+        console.log(`[KnowledgeBase] Using OpenAI embeddings: ${embeddingModel}`);
+        
+        const response = await fetch(embeddingEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${config.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: embeddingModel,
+            input: text,
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`OpenAI Embedding API failed: ${response.status} - ${errorText}`);
+        }
+        
+        const data = await response.json();
+        return data.data[0].embedding;
       } else {
-        // Forge (Gemini)
-        embeddingEndpoint = config.apiUrl.replace('/chat/completions', '/embeddings');
-        embeddingModel = 'text-embedding-004';
+        // Forge (Gemini) - use native Google Gemini API for embeddings
+        const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+        if (!GEMINI_API_KEY) {
+          throw new Error('GEMINI_API_KEY not configured. Add it to Settings → Secrets.');
+        }
+        
+        const embeddingModel = 'text-embedding-004';
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${embeddingModel}:embedContent?key=${GEMINI_API_KEY}`;
+        
+        console.log(`[KnowledgeBase] Using Gemini embeddings: ${embeddingModel}`);
+        
+        const response = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            content: {
+              parts: [{
+                text: text
+              }]
+            }
+          }),
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Gemini Embedding API failed: ${response.status} - ${errorText}`);
+        }
+        
+        const data = await response.json();
+        return data.embedding.values;
       }
-      
-      console.log(`[KnowledgeBase] Using ${provider} embeddings: ${embeddingModel}`);
-      
-      const response = await fetch(embeddingEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${config.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: embeddingModel,
-          input: text,
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Embedding API failed: ${response.status} - ${errorText}`);
-      }
-      
-      const data = await response.json();
-      return data.data[0].embedding;
     } catch (error) {
       console.error('[KnowledgeBase] Embedding generation failed:', error);
       throw error;
