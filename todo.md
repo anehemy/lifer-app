@@ -1482,3 +1482,15 @@ No more error messages or console logs when sessions are deleted.
 - [x] Remove age labels and empty year markers
 - [ ] Add UI to set/update birth year from Settings page
 
+
+
+
+## NEW FEATURE - Data Completeness System
+- [x] Create completeness calculation utility (checks for year, location, experience, challenge, growth)
+- [x] Add visual completeness indicators to journal entry cards (progress bar or badges)
+- [x] Show missing metadata tags on each entry
+- [x] Create "Complete This Entry" button that prompts for missing data
+- [ ] Add dashboard metric showing overall completion percentage
+- [x] Highlight complete vs incomplete entries on timeline (different opacity/size)
+- [x] Generate targeted questions for missing metadata (e.g., "What year did this happen?")
+

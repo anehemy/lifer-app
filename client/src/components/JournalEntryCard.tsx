@@ -3,10 +3,11 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2, Edit2, Save, X, Clock, MapPin, Sparkles, Heart, TrendingUp, ChevronDown, ChevronUp, MessageCircle } from "lucide-react";
+import { Trash2, Edit2, Save, X, Clock, MapPin, Sparkles, Heart, TrendingUp, ChevronDown, ChevronUp, MessageCircle, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { calculateCompleteness, getMissingFieldLabel, getCompletenessColor, getCompletenessBgColor } from "@shared/completeness";
 
 interface JournalEntry {
   id: number;
@@ -103,16 +104,52 @@ export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardPr
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start gap-4">
           <div className="flex-1">
-            {/* Date */}
-            <div className="flex items-center gap-2 mb-3">
-              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
-              <p className="text-xs text-muted-foreground font-medium">
-                {new Date(entry.createdAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
+            {/* Date and Completeness */}
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                <p className="text-xs text-muted-foreground font-medium">
+                  {new Date(entry.createdAt).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+              {(() => {
+                const completeness = calculateCompleteness({
+                  timeContext: entry.timeContext,
+                  placeContext: entry.placeContext,
+                  experienceType: entry.experienceType,
+                  challengeType: entry.challengeType,
+                  growthTheme: entry.growthTheme,
+                });
+                return (
+                  <div className="flex items-center gap-2">
+                    {completeness.percentage === 100 ? (
+                      <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        <span className="text-xs font-medium">Complete</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          <AlertCircle className={`h-3.5 w-3.5 ${getCompletenessColor(completeness.percentage)}`} />
+                          <span className={`text-xs font-medium ${getCompletenessColor(completeness.percentage)}`}>
+                            {completeness.percentage}%
+                          </span>
+                        </div>
+                        <div className="w-16 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                          <div 
+                            className={`h-full transition-all ${completeness.percentage === 100 ? 'bg-green-500' : completeness.percentage >= 60 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                            style={{ width: `${completeness.percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Question - Larger and more prominent */}
@@ -156,6 +193,38 @@ export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardPr
               </div>
             )}
 
+            {/* Missing data indicators */}
+            {!isEditing && (() => {
+              const completeness = calculateCompleteness({
+                timeContext: entry.timeContext,
+                placeContext: entry.placeContext,
+                experienceType: entry.experienceType,
+                challengeType: entry.challengeType,
+                growthTheme: entry.growthTheme,
+              });
+              return completeness.missingFields.length > 0 && (
+                <div className="mb-3 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-xs text-amber-700 dark:text-amber-300 font-medium mb-1">Missing information:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {completeness.missingFields.map(field => (
+                      <span key={field} className="text-xs text-amber-600 dark:text-amber-400">
+                        {getMissingFieldLabel(field)}
+                      </span>
+                    )).reduce((prev, curr) => [prev, <span key="sep" className="text-amber-400">, </span>, curr] as any)}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditing(true)}
+                    className="mt-2 h-7 text-xs text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/40"
+                  >
+                    <Edit2 className="h-3 w-3 mr-1" />
+                    Complete this entry
+                  </Button>
+                </div>
+              );
+            })()}
+            
             {/* Quick context tags - visible without expanding */}
             {!isEditing && (entry.timeContext || entry.placeContext || entry.experienceType) && (
               <div className="flex flex-wrap gap-2 mb-4">

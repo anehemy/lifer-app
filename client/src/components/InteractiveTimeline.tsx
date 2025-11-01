@@ -1,8 +1,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Sparkles, Heart, TrendingUp, Calendar, HelpCircle } from "lucide-react";
+import { MapPin, Sparkles, Heart, TrendingUp, Calendar, HelpCircle, CheckCircle2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';
+import { calculateCompleteness } from "@shared/completeness";
 
 interface JournalEntry {
   id: number;
@@ -222,14 +223,28 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
                     
                     {/* Entry dots stacked vertically */}
                     <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col-reverse gap-2">
-                      {yearEntries.slice(0, 5).map((entry, entryIndex) => (
-                        <button
-                          key={entry.id}
-                          onClick={() => setSelectedEntry(entry)}
-                          className={`w-3 h-3 rounded-full border-2 ${getEntryColor(entry)} transition-all cursor-pointer shadow-md`}
-                          title={entry.question}
-                        />
-                      ))}
+                      {yearEntries.slice(0, 5).map((entry, entryIndex) => {
+                        const completeness = calculateCompleteness({
+                          timeContext: entry.timeContext,
+                          placeContext: entry.placeContext,
+                          experienceType: entry.experienceType,
+                          challengeType: entry.challengeType,
+                          growthTheme: entry.growthTheme,
+                        });
+                        const isComplete = completeness.percentage === 100;
+                        return (
+                          <button
+                            key={entry.id}
+                            onClick={() => setSelectedEntry(entry)}
+                            className={`relative w-3 h-3 rounded-full border-2 ${getEntryColor(entry)} transition-all cursor-pointer shadow-md ${isComplete ? 'ring-2 ring-green-400' : 'opacity-60'}`}
+                            title={`${entry.question} (${completeness.percentage}% complete)`}
+                          >
+                            {isComplete && (
+                              <CheckCircle2 className="absolute -top-1 -right-1 h-2 w-2 text-green-600 bg-white rounded-full" />
+                            )}
+                          </button>
+                        );
+                      })}
                       {yearEntries.length > 5 && (
                         <div className="text-xs text-muted-foreground text-center">
                           +{yearEntries.length - 5}
