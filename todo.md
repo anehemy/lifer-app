@@ -1337,3 +1337,11 @@ No more error messages or console logs when sessions are deleted.
 - [x] Update placeContext to contain only city/state/country (e.g., "Piracicaba" not "Piracicaba, best friend's small farm, nature")
 - [x] Ensure geocoding works properly with clean location names
 
+
+
+## Bug: Geocoding API Failures
+- [x] Fix "Failed to fetch" errors in PlacesMapView geocoding
+- [x] Add rate limiting to respect Nominatim's 1 request/second limit (1.1s delay between requests)
+- [x] Add error handling and fallback for failed geocoding requests (try-catch with continue)
+- [ ] Consider caching geocoded results to reduce API calls (future enhancement)
+

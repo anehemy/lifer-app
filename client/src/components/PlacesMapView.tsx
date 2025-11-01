@@ -136,24 +136,35 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
         }
       });
 
-      // Geocode each unique place
-      const locationPromises = Array.from(placeMap.entries()).map(async ([place, placeEntries]) => {
-        const coords = await geocodePlace(place);
-        if (coords) {
-          return {
-            place,
-            lat: coords.lat,
-            lon: coords.lon,
-            isPrecise: coords.isPrecise,
-            boundingBox: coords.boundingBox,
-            entries: placeEntries,
-          };
+      // Geocode each unique place with rate limiting (1 request per second for Nominatim)
+      const validLocations: LocationData[] = [];
+      const placeEntries = Array.from(placeMap.entries());
+      
+      for (let i = 0; i < placeEntries.length; i++) {
+        const [place, entries] = placeEntries[i];
+        
+        // Add delay between requests (except for the first one)
+        if (i > 0) {
+          await new Promise(resolve => setTimeout(resolve, 1100)); // 1.1 second delay to be safe
         }
-        return null;
-      });
-
-      const results = await Promise.all(locationPromises);
-      const validLocations = results.filter((loc) => loc !== null) as LocationData[];
+        
+        try {
+          const coords = await geocodePlace(place);
+          if (coords) {
+            validLocations.push({
+              place,
+              lat: coords.lat,
+              lon: coords.lon,
+              isPrecise: coords.isPrecise,
+              boundingBox: coords.boundingBox,
+              entries,
+            });
+          }
+        } catch (error) {
+          console.error(`Failed to geocode ${place}, skipping:`, error);
+          // Continue with next location instead of failing entirely
+        }
+      }
       setLocations(validLocations);
       setIsGeocoding(false);
     };
