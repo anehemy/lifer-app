@@ -295,7 +295,9 @@ export async function invokeLLM(params: InvokeParams, retries = 3, delay = 1000)
   const { eq } = await import('drizzle-orm');
   
   let primaryProvider: LLMProvider = 'forge';
+  let primaryModel: string | undefined;
   let fallbackProvider: LLMProvider | null = 'openai';
+  let fallbackModel: string | undefined;
   
   if (db) {
     const primarySetting = await db.select().from(globalSettings).where(eq(globalSettings.settingKey, 'llm_primary_provider'));
@@ -303,17 +305,27 @@ export async function invokeLLM(params: InvokeParams, retries = 3, delay = 1000)
       primaryProvider = primarySetting[0].settingValue as LLMProvider;
     }
     
+    const primaryModelSetting = await db.select().from(globalSettings).where(eq(globalSettings.settingKey, 'llm_primary_model'));
+    if (primaryModelSetting.length > 0 && primaryModelSetting[0].settingValue) {
+      primaryModel = primaryModelSetting[0].settingValue;
+    }
+    
     const fallbackSetting = await db.select().from(globalSettings).where(eq(globalSettings.settingKey, 'llm_fallback_provider'));
     if (fallbackSetting.length > 0 && fallbackSetting[0].settingValue) {
       const fallbackValue = fallbackSetting[0].settingValue;
       fallbackProvider = fallbackValue === 'none' ? null : (fallbackValue as LLMProvider);
+    }
+    
+    const fallbackModelSetting = await db.select().from(globalSettings).where(eq(globalSettings.settingKey, 'llm_fallback_model'));
+    if (fallbackModelSetting.length > 0 && fallbackModelSetting[0].settingValue) {
+      fallbackModel = fallbackModelSetting[0].settingValue;
     }
   }
   
   // Try primary provider with retries
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      return await invokeLLMInternal(params, primaryProvider);
+      return await invokeLLMInternal(params, primaryProvider, primaryModel);
     } catch (error) {
       console.error(`[LLM] ${primaryProvider} attempt ${attempt}/${retries} failed:`, error);
       
@@ -322,7 +334,7 @@ export async function invokeLLM(params: InvokeParams, retries = 3, delay = 1000)
         if (fallbackProvider) {
           console.log(`[LLM] ${primaryProvider} failed after ${retries} attempts. Trying fallback: ${fallbackProvider}`);
           try {
-            return await invokeLLMInternal(params, fallbackProvider);
+            return await invokeLLMInternal(params, fallbackProvider, fallbackModel);
           } catch (fallbackError) {
             console.error(`[LLM] Fallback ${fallbackProvider} also failed:`, fallbackError);
             throw new Error(`Both ${primaryProvider} and ${fallbackProvider} providers failed`);
@@ -342,7 +354,7 @@ export async function invokeLLM(params: InvokeParams, retries = 3, delay = 1000)
   throw new Error('All retry attempts exhausted');
 }
 
-type LLMProvider = 'forge' | 'openai';
+type LLMProvider = 'forge' | 'openai' | 'gemini';
 
 interface ProviderConfig {
   apiUrl: string;
@@ -353,7 +365,10 @@ interface ProviderConfig {
   timeout: number; // Request timeout in milliseconds
 }
 
-export async function getProviderConfig(provider: LLMProvider): Promise<ProviderConfig> {
+export async function getProviderConfig(provider: LLMProvider, modelOverride?: string): Promise<ProviderConfig> {
+  // Use provided model override
+  const model = modelOverride;
+  
   if (provider === 'forge') {
     const apiKey = ENV.forgeApiKey || '';
     if (!apiKey) {
@@ -362,9 +377,9 @@ export async function getProviderConfig(provider: LLMProvider): Promise<Provider
     return {
       apiUrl: resolveForgeApiUrl(),
       apiKey,
-      model: 'gemini-2.5-flash',
+      model: model || 'gemini-2.0-flash-exp',
       maxTokens: 32768,
-      contextWindow: 1000000, // Gemini 2.5 Flash has 1M token context
+      contextWindow: 1000000, // Gemini has 1M token context
       timeout: 60000, // 60 seconds
     };
   } else if (provider === 'openai') {
@@ -383,9 +398,24 @@ export async function getProviderConfig(provider: LLMProvider): Promise<Provider
     return {
       apiUrl: `${baseUrl}/chat/completions`,
       apiKey: openaiKey,
-      model: 'gpt-4o-mini',
+      model: model || 'gpt-4o-mini',
       maxTokens: 16384,
       contextWindow: 128000, // GPT-4o-mini has 128k context
+      timeout: 60000, // 60 seconds
+    };
+  } else if (provider === 'gemini') {
+    // Get Gemini key from environment variable (stored in Secrets)
+    const geminiKey = process.env.GEMINI_API_KEY || '';
+    if (!geminiKey) {
+      throw new Error('API key not configured for provider: gemini. Please add GEMINI_API_KEY to Secrets.');
+    }
+    
+    return {
+      apiUrl: 'https://generativelanguage.googleapis.com/v1beta/chat/completions',
+      apiKey: geminiKey,
+      model: model || 'gemini-2.0-flash-exp',
+      maxTokens: 32768,
+      contextWindow: 1000000, // Gemini has 1M token context
       timeout: 60000, // 60 seconds
     };
   }
@@ -393,8 +423,8 @@ export async function getProviderConfig(provider: LLMProvider): Promise<Provider
   throw new Error(`Unknown provider: ${provider}`);
 }
 
-async function invokeLLMInternal(params: InvokeParams, provider: LLMProvider = 'forge'): Promise<InvokeResult> {
-  const config = await getProviderConfig(provider);
+async function invokeLLMInternal(params: InvokeParams, provider: LLMProvider = 'forge', model?: string): Promise<InvokeResult> {
+  const config = await getProviderConfig(provider, model);
   
   if (!config.apiKey) {
     throw new Error(`API key not configured for provider: ${provider}`);

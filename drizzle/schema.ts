@@ -186,6 +186,8 @@ export type InsertMeditationSession = typeof meditationSessions.$inferInsert;
 
 /**
  * Global settings (admin-only)
+ * Stores app-wide configuration including LLM provider settings
+ * Keys: llm_primary_provider, llm_primary_model, llm_fallback_provider, llm_fallback_model
  */
 export const globalSettings = mysqlTable("globalSettings", {
   id: int("id").autoincrement().primaryKey(),

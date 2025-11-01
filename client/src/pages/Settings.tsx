@@ -26,8 +26,31 @@ export default function Settings() {
   const [elevenLabsVoice, setElevenLabsVoice] = useState("VQypEoV1u8Wo9oGgDmW0");
   
   // LLM Provider settings
-  const [primaryLLM, setPrimaryLLM] = useState<'forge' | 'openai'>('forge');
-  const [fallbackLLM, setFallbackLLM] = useState<'forge' | 'openai' | 'none'>('openai');
+  const [primaryLLM, setPrimaryLLM] = useState<'forge' | 'openai' | 'gemini'>('forge');
+  const [primaryModel, setPrimaryModel] = useState<string>('gemini-2.0-flash-exp');
+  const [fallbackLLM, setFallbackLLM] = useState<'forge' | 'openai' | 'gemini' | 'none'>('openai');
+  const [fallbackModel, setFallbackModel] = useState<string>('gpt-4o-mini');
+  
+  // Model options for each provider
+  const modelOptions = {
+    forge: [
+      { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental)' },
+      { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+      { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+    ],
+    openai: [
+      { value: 'gpt-4o', label: 'GPT-4o' },
+      { value: 'gpt-4o-mini', label: 'GPT-4o Mini' },
+      { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
+      { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
+    ],
+    gemini: [
+      { value: 'gemini-2.0-flash-exp', label: 'Gemini 2.0 Flash (Experimental)' },
+      { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
+      { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash' },
+      { value: 'gemini-1.0-pro', label: 'Gemini 1.0 Pro' },
+    ],
+  };
   
   // Announcement settings local state
   const [announcementTitle, setAnnouncementTitle] = useState('');
@@ -50,8 +73,10 @@ export default function Settings() {
       if (globalSettings.elevenLabsVoice) setElevenLabsVoice(globalSettings.elevenLabsVoice);
       
       // LLM Provider settings
-      if (globalSettings.llm_primary_provider) setPrimaryLLM(globalSettings.llm_primary_provider as 'forge' | 'openai');
-      if (globalSettings.llm_fallback_provider) setFallbackLLM(globalSettings.llm_fallback_provider as 'forge' | 'openai' | 'none');
+      if (globalSettings.llm_primary_provider) setPrimaryLLM(globalSettings.llm_primary_provider as 'forge' | 'openai' | 'gemini');
+      if (globalSettings.llm_primary_model) setPrimaryModel(globalSettings.llm_primary_model);
+      if (globalSettings.llm_fallback_provider) setFallbackLLM(globalSettings.llm_fallback_provider as 'forge' | 'openai' | 'gemini' | 'none');
+      if (globalSettings.llm_fallback_model) setFallbackModel(globalSettings.llm_fallback_model);
       
       // Announcement settings
       if (globalSettings.announcement_title) setAnnouncementTitle(globalSettings.announcement_title);
@@ -492,30 +517,55 @@ export default function Settings() {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="primaryLLM">Primary AI Provider</Label>
-            <Select value={primaryLLM} onValueChange={(value: 'forge' | 'openai') => {
+            <Select value={primaryLLM} onValueChange={(value: 'forge' | 'openai' | 'gemini') => {
               setPrimaryLLM(value);
-              updateLLMSettingsMutation.mutate({ primaryProvider: value });
-              toast.success(`Primary AI provider set to ${value === 'forge' ? 'Forge (Gemini)' : 'OpenAI'}`);
+              // Set default model for the provider
+              const defaultModel = modelOptions[value][0].value;
+              setPrimaryModel(defaultModel);
+              updateLLMSettingsMutation.mutate({ primaryProvider: value, primaryModel: defaultModel });
+              toast.success(`Primary AI provider set to ${value === 'forge' ? 'Forge (Gemini)' : value === 'gemini' ? 'Gemini Direct' : 'OpenAI'}`);
             }}>
               <SelectTrigger id="primaryLLM">
                 <SelectValue placeholder="Select primary provider" />
               </SelectTrigger>
               <SelectContent position="popper">
-                <SelectItem value="forge">Forge (Gemini)</SelectItem>
+                <SelectItem value="forge">Forge (Gemini via Manus)</SelectItem>
                 <SelectItem value="openai">OpenAI</SelectItem>
+                <SelectItem value="gemini">Gemini Direct</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label htmlFor="primaryModel">Primary Model</Label>
+            <Select value={primaryModel} onValueChange={(value: string) => {
+              setPrimaryModel(value);
+              updateLLMSettingsMutation.mutate({ primaryModel: value });
+              toast.success(`Primary model set to ${modelOptions[primaryLLM].find(m => m.value === value)?.label}`);
+            }}>
+              <SelectTrigger id="primaryModel">
+                <SelectValue placeholder="Select model" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                {modelOptions[primaryLLM].map(model => (
+                  <SelectItem key={model.value} value={model.value}>{model.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           
           <div>
             <Label htmlFor="fallbackLLM">Fallback AI Provider</Label>
-            <Select value={fallbackLLM} onValueChange={(value: 'forge' | 'openai' | 'none') => {
+            <Select value={fallbackLLM} onValueChange={(value: 'forge' | 'openai' | 'gemini' | 'none') => {
               setFallbackLLM(value);
-              updateLLMSettingsMutation.mutate({ fallbackProvider: value });
-              if (value === 'none') {
-                toast.success('Fallback provider disabled');
+              if (value !== 'none') {
+                const defaultModel = modelOptions[value][0].value;
+                setFallbackModel(defaultModel);
+                updateLLMSettingsMutation.mutate({ fallbackProvider: value, fallbackModel: defaultModel });
+                toast.success(`Fallback AI provider set to ${value === 'forge' ? 'Forge (Gemini)' : value === 'gemini' ? 'Gemini Direct' : 'OpenAI'}`);
               } else {
-                toast.success(`Fallback AI provider set to ${value === 'forge' ? 'Forge (Gemini)' : 'OpenAI'}`);
+                updateLLMSettingsMutation.mutate({ fallbackProvider: value });
+                toast.success('Fallback provider disabled');
               }
             }}>
               <SelectTrigger id="fallbackLLM">
@@ -523,11 +573,32 @@ export default function Settings() {
               </SelectTrigger>
               <SelectContent position="popper">
                 <SelectItem value="none">None</SelectItem>
-                <SelectItem value="forge">Forge (Gemini)</SelectItem>
+                <SelectItem value="forge">Forge (Gemini via Manus)</SelectItem>
                 <SelectItem value="openai">OpenAI</SelectItem>
+                <SelectItem value="gemini">Gemini Direct</SelectItem>
               </SelectContent>
             </Select>
           </div>
+          
+          {fallbackLLM !== 'none' && (
+            <div>
+              <Label htmlFor="fallbackModel">Fallback Model</Label>
+              <Select value={fallbackModel} onValueChange={(value: string) => {
+                setFallbackModel(value);
+                updateLLMSettingsMutation.mutate({ fallbackModel: value });
+                toast.success(`Fallback model set to ${modelOptions[fallbackLLM].find(m => m.value === value)?.label}`);
+              }}>
+                <SelectTrigger id="fallbackModel">
+                  <SelectValue placeholder="Select model" />
+                </SelectTrigger>
+                <SelectContent position="popper">
+                  {modelOptions[fallbackLLM].map(model => (
+                    <SelectItem key={model.value} value={model.value}>{model.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           
           <div className="p-4 border rounded-lg bg-muted/50">
             <Label>OpenAI API Key</Label>

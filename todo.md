@@ -1555,3 +1555,15 @@ No more error messages or console logs when sessions are deleted.
 - [x] Ensure empty tags show placeholder text like "Add time", "Add place", etc. instead of hiding the tag
 - [ ] KNOWN ISSUE: Browser caching preventing tag changes from showing - code is correct but requires hard refresh or cache clear
 
+
+
+
+## Feature: Admin LLM Configuration
+- [x] Add database fields to store primary provider, primary model, fallback provider, fallback model
+- [x] Create backend API endpoints to save and retrieve LLM configuration
+- [x] Build admin settings UI with provider dropdowns (OpenAI, Forge/Gemini, Gemini Direct)
+- [x] Add model selection dropdowns that update based on selected provider
+- [x] Update LLM invocation logic to use configured provider and model
+- [ ] Test with different provider/model combinations
+- [ ] Fix: Primary Model field appears empty on page load
+

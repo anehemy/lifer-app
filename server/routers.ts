@@ -91,8 +91,10 @@ export const appRouter = router({
       }),
     updateLLMSettings: protectedProcedure
       .input(z.object({
-        primaryProvider: z.enum(['forge', 'openai']).optional(),
-        fallbackProvider: z.enum(['forge', 'openai', 'none']).optional(),
+        primaryProvider: z.enum(['forge', 'openai', 'gemini']).optional(),
+        primaryModel: z.string().optional(),
+        fallbackProvider: z.enum(['forge', 'openai', 'gemini', 'none']).optional(),
+        fallbackModel: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         // Check if user is admin
@@ -109,12 +111,21 @@ export const appRouter = router({
             .values({ settingKey: 'llm_primary_provider', settingValue: input.primaryProvider })
             .onDuplicateKeyUpdate({ set: { settingValue: input.primaryProvider } });
         }
+        if (input.primaryModel !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'llm_primary_model', settingValue: input.primaryModel })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.primaryModel } });
+        }
         if (input.fallbackProvider !== undefined) {
           await db.insert(globalSettings)
             .values({ settingKey: 'llm_fallback_provider', settingValue: input.fallbackProvider })
             .onDuplicateKeyUpdate({ set: { settingValue: input.fallbackProvider } });
         }
-        // Note: OpenAI API key is now managed in Secrets (OPENAI_API_KEY env var)
+        if (input.fallbackModel !== undefined) {
+          await db.insert(globalSettings)
+            .values({ settingKey: 'llm_fallback_model', settingValue: input.fallbackModel })
+            .onDuplicateKeyUpdate({ set: { settingValue: input.fallbackModel } });
+        }
         return { success: true };
       }),
     updateAnnouncement: protectedProcedure
