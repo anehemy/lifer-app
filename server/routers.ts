@@ -1187,6 +1187,10 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
       const count = await scanAndCreateNotifications(ctx.user.id);
       return { notificationsCreated: count };
     }),
+    scanForMissingData: protectedProcedure.mutation(async ({ ctx }) => {
+      const count = await scanAndCreateNotifications(ctx.user.id);
+      return { notificationsCreated: count };
+    }),
     list: protectedProcedure.query(async ({ ctx }) => {
       return await getActiveNotifications(ctx.user.id);
     }),
