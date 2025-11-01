@@ -1526,3 +1526,12 @@ No more error messages or console logs when sessions are deleted.
 - [x] Trigger notification scan automatically when viewing journal
 - [x] Show notification count in sidebar badge
 
+
+
+
+## UX Improvements - Alerts & Timeline
+- [x] Rename "Data Completion" to "Alerts" in sidebar
+- [x] Show actual questions in alert notification cards (e.g., "When did this happen?" instead of generic "Answer Now")
+- [x] Add "Complete Data" button to incomplete journal entry cards that links to alerts page
+- [x] Fix timeline hover text showing "name of place" and "name of experience" - should show actual values
+

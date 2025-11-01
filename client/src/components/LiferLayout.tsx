@@ -64,7 +64,7 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
     { path: "/vision", icon: Sparkles, label: "Vision Board" },
     { path: "/meditation", icon: User, label: "Meditation" },
     { path: "/primary-aim", icon: Target, label: "Primary Aim" },
-    { path: "/notifications", icon: Bell, label: "Data Completion", badge: notificationCount },
+    { path: "/notifications", icon: Bell, label: "Alerts", badge: notificationCount },
     { path: "/settings", icon: Settings, label: "Settings" },
   ];
 

@@ -3,7 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trash2, Edit2, Save, X, Clock, MapPin, Sparkles, Heart, TrendingUp, ChevronDown, ChevronUp, MessageCircle, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Trash2, Edit2, Save, X, Clock, MapPin, Sparkles, Heart, TrendingUp, ChevronDown, ChevronUp, MessageCircle, AlertCircle, CheckCircle2, Bell } from "lucide-react";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -212,15 +212,16 @@ export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardPr
                       </span>
                     )).reduce((prev, curr) => [prev, <span key="sep" className="text-amber-400">, </span>, curr] as any)}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditing(true)}
-                    className="mt-2 h-7 text-xs text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/40"
-                  >
-                    <Edit2 className="h-3 w-3 mr-1" />
-                    Complete this entry
-                  </Button>
+                  <a href="/notifications">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 h-7 text-xs text-amber-700 hover:text-amber-800 hover:bg-amber-100 dark:text-amber-300 dark:hover:bg-amber-900/40"
+                    >
+                      <Bell className="h-3 w-3 mr-1" />
+                      Complete this entry
+                    </Button>
+                  </a>
                 </div>
               );
             })()}

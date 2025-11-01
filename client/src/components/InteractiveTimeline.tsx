@@ -237,7 +237,13 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
                             key={entry.id}
                             onClick={() => setSelectedEntry(entry)}
                             className={`relative w-3 h-3 rounded-full border-2 ${getEntryColor(entry)} transition-all cursor-pointer shadow-md ${isComplete ? 'ring-2 ring-green-400' : 'opacity-60'}`}
-                            title={`${entry.question} (${completeness.percentage}% complete)`}
+                            title={[
+                              entry.placeContext && `📍 ${entry.placeContext}`,
+                              entry.experienceType && `✨ ${entry.experienceType}`,
+                              entry.challengeType && `💪 ${entry.challengeType}`,
+                              entry.growthTheme && `🌱 ${entry.growthTheme}`,
+                              `${completeness.percentage}% complete`
+                            ].filter(Boolean).join(' • ')}
                           >
                             {isComplete && (
                               <CheckCircle2 className="absolute -top-1 -right-1 h-2 w-2 text-green-600 bg-white rounded-full" />

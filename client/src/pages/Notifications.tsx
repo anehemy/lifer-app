@@ -95,7 +95,7 @@ export default function Notifications() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Data Completion</h1>
+            <h1 className="text-3xl font-bold">Alerts</h1>
             <p className="text-muted-foreground mt-1">
               Complete missing information from your journal entries
             </p>
