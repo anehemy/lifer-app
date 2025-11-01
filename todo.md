@@ -1671,3 +1671,11 @@ No more error messages or console logs when sessions are deleted.
 - [x] Timeline dots don't show descriptions/tooltips on hover
 - [x] Investigate Timeline component tooltip implementation
 - [x] Add proper tooltip display with entry details (question, response preview, metadata, completion %)
+
+## Timeline Enhancement - Visible Labels
+- [x] Add visible text labels to timeline dots showing metadata
+- [x] Labels should change based on selected filter (Places/Experiences/Challenges/Growth)
+- [x] When "All Events" selected, show most prominent metadata
+- [x] When specific filter selected, show that dimension's text
+- [x] Style labels to be readable but not cluttered (10px font, 120px max width, truncated)
+- [x] Position labels near dots without overlapping (flex layout with gap)

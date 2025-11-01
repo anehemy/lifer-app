@@ -242,17 +242,39 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
                           entry.growthTheme && `🌱 ${entry.growthTheme}`,
                         ].filter(Boolean);
                         
+                        // Get visible label based on selected dimension
+                        const getVisibleLabel = () => {
+                          if (selectedDimension === 'places' && entry.placeContext) return entry.placeContext;
+                          if (selectedDimension === 'experiences' && entry.experienceType) return entry.experienceType;
+                          if (selectedDimension === 'challenges' && entry.challengeType) return entry.challengeType;
+                          if (selectedDimension === 'growth' && entry.growthTheme) return entry.growthTheme;
+                          // For "all", show the first available metadata
+                          if (selectedDimension === 'all') {
+                            return entry.placeContext || entry.experienceType || entry.challengeType || entry.growthTheme || null;
+                          }
+                          return null;
+                        };
+                        
+                        const visibleLabel = getVisibleLabel();
+                        
                         return (
                           <Tooltip key={entry.id}>
                             <TooltipTrigger asChild>
-                              <button
-                                onClick={() => setSelectedEntry(entry)}
-                                className={`relative w-3 h-3 rounded-full border-2 ${getEntryColor(entry)} transition-all cursor-pointer shadow-md ${isComplete ? 'ring-2 ring-green-400' : 'opacity-60'}`}
-                              >
-                                {isComplete && (
-                                  <CheckCircle2 className="absolute -top-1 -right-1 h-2 w-2 text-green-600 bg-white rounded-full" />
+                              <div className="relative flex items-center gap-2">
+                                <button
+                                  onClick={() => setSelectedEntry(entry)}
+                                  className={`relative w-3 h-3 rounded-full border-2 ${getEntryColor(entry)} transition-all cursor-pointer shadow-md ${isComplete ? 'ring-2 ring-green-400' : 'opacity-60'} flex-shrink-0`}
+                                >
+                                  {isComplete && (
+                                    <CheckCircle2 className="absolute -top-1 -right-1 h-2 w-2 text-green-600 bg-white rounded-full" />
+                                  )}
+                                </button>
+                                {visibleLabel && (
+                                  <span className="text-[10px] font-medium text-foreground/80 whitespace-nowrap bg-background/90 px-1.5 py-0.5 rounded shadow-sm border border-border/50 max-w-[120px] truncate">
+                                    {visibleLabel}
+                                  </span>
                                 )}
-                              </button>
+                              </div>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-xs">
                               <div className="space-y-1">
