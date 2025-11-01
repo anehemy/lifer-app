@@ -1666,3 +1666,8 @@ No more error messages or console logs when sessions are deleted.
 - [x] Make Start Here Guide button more prominent with blue-green gradient (cyan-teal-emerald)
 - [x] Make Announcements button more prominent with blue-purple gradient (blue-indigo-purple)
 - [x] Add hover effects and shadows for better visibility (scale, shadow-xl)
+
+## Timeline Visualization Bug
+- [x] Timeline dots don't show descriptions/tooltips on hover
+- [x] Investigate Timeline component tooltip implementation
+- [x] Add proper tooltip display with entry details (question, response preview, metadata, completion %)

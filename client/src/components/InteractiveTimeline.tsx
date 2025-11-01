@@ -1,5 +1,6 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { MapPin, Sparkles, Heart, TrendingUp, Calendar, HelpCircle, CheckCircle2 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from 'react-markdown';
@@ -232,23 +233,44 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
                           growthTheme: entry.growthTheme,
                         });
                         const isComplete = completeness.percentage === 100;
+                        
+                        // Build tooltip content
+                        const tooltipParts = [
+                          entry.placeContext && `📍 ${entry.placeContext}`,
+                          entry.experienceType && `✨ ${entry.experienceType}`,
+                          entry.challengeType && `💪 ${entry.challengeType}`,
+                          entry.growthTheme && `🌱 ${entry.growthTheme}`,
+                        ].filter(Boolean);
+                        
                         return (
-                          <button
-                            key={entry.id}
-                            onClick={() => setSelectedEntry(entry)}
-                            className={`relative w-3 h-3 rounded-full border-2 ${getEntryColor(entry)} transition-all cursor-pointer shadow-md ${isComplete ? 'ring-2 ring-green-400' : 'opacity-60'}`}
-                            title={[
-                              entry.placeContext && `📍 ${entry.placeContext}`,
-                              entry.experienceType && `✨ ${entry.experienceType}`,
-                              entry.challengeType && `💪 ${entry.challengeType}`,
-                              entry.growthTheme && `🌱 ${entry.growthTheme}`,
-                              `${completeness.percentage}% complete`
-                            ].filter(Boolean).join(' • ')}
-                          >
-                            {isComplete && (
-                              <CheckCircle2 className="absolute -top-1 -right-1 h-2 w-2 text-green-600 bg-white rounded-full" />
-                            )}
-                          </button>
+                          <Tooltip key={entry.id}>
+                            <TooltipTrigger asChild>
+                              <button
+                                onClick={() => setSelectedEntry(entry)}
+                                className={`relative w-3 h-3 rounded-full border-2 ${getEntryColor(entry)} transition-all cursor-pointer shadow-md ${isComplete ? 'ring-2 ring-green-400' : 'opacity-60'}`}
+                              >
+                                {isComplete && (
+                                  <CheckCircle2 className="absolute -top-1 -right-1 h-2 w-2 text-green-600 bg-white rounded-full" />
+                                )}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <div className="space-y-1">
+                                <p className="font-semibold text-sm">{entry.question}</p>
+                                <p className="text-xs opacity-90">
+                                  {entry.response.substring(0, 100)}{entry.response.length > 100 ? '...' : ''}
+                                </p>
+                                {tooltipParts.length > 0 && (
+                                  <div className="text-xs opacity-75 pt-1 border-t border-white/20">
+                                    {tooltipParts.join(' • ')}
+                                  </div>
+                                )}
+                                <div className="text-xs opacity-75">
+                                  {completeness.percentage}% complete
+                                </div>
+                              </div>
+                            </TooltipContent>
+                          </Tooltip>
                         );
                       })}
                       {yearEntries.length > 5 && (
