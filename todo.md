@@ -1575,3 +1575,18 @@ No more error messages or console logs when sessions are deleted.
 - [x] Remove repetitive text in cards - question appears twice (in title and "Entry:" section)
 - [x] Simplify card display: show metadata field name + question once + existing answer
 
+
+
+
+## Feature: Interactive Bubble Manipulation (Patterns Page)
+- [ ] Add zoom in/out controls to bubble visualization
+- [ ] Add pan/drag functionality to navigate the bubble space
+- [ ] Implement multi-selection (shift-click or lasso drag)
+- [ ] Create "Combine" button that appears when multiple bubbles are selected
+- [ ] Add popping animation when bubbles are combined
+- [ ] Create AI endpoint to suggest names for combined experience groups
+- [ ] Update database schema to support combined/grouped experiences
+- [ ] Sync journal entries when bubbles are combined (update experienceType field)
+- [ ] Show visual feedback for selected bubbles (highlight/border)
+- [ ] Add undo functionality for bubble combinations
+
