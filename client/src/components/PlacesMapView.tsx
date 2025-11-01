@@ -411,135 +411,135 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
         {locations.map((location) => (
           <Card key={location.place} className="hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
-              <>
-              {/* Location prompt - show for all locations, different message based on precision */}
-              {editingLocation !== location.place && (
-                <Alert className={`mb-4 ${
-                  location.isPrecise 
-                    ? "border-purple-200 bg-purple-50/50 dark:bg-purple-950/10"
-                    : "border-purple-200 bg-purple-50 dark:bg-purple-950/20"
-                }`}>
-                  {location.isPrecise ? (
-                    <MessageCircle className="h-4 w-4 text-purple-600" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4 text-purple-600" />
-                  )}
-                  <AlertDescription className="text-sm text-purple-800 dark:text-purple-200">
-                    {location.isPrecise ? (
-                      <>
-                        <p className="font-medium mb-1">📍 "{location.place}"</p>
-                        <p className="mb-3">Share your experiences and memories from this place.</p>
-                      </>
-                    ) : (
-                      <>
-                        <p className="font-medium mb-1">💭 "{location.place}" - Let's make this more specific</p>
-                        <p className="mb-3">Update to a precise location or explore through conversation.</p>
-                      </>
-                    )}
-                    <div className="flex gap-2">
-                      {!location.isPrecise && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => startEditingLocation(location.place)}
-                          className="h-8 text-xs border-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30"
-                        >
-                          <MapPin className="h-3 w-3 mr-1.5" />
-                          Update Location
-                        </Button>
-                      )}
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => handleTellMeMore(location)}
-                        className="h-8 text-xs bg-purple-600 hover:bg-purple-700"
-                      >
-                        <MessageCircle className="h-3 w-3 mr-1.5" />
-                        Tell Me More
-                      </Button>
-                    </div>
-                  </AlertDescription>
-                </Alert>
-              )}
-              
-              {/* Inline location editor */}
-              {editingLocation === location.place && (
-                <Alert className="mb-4 border-purple-200 bg-purple-50 dark:bg-purple-950/20">
-                  <MapPin className="h-4 w-4 text-purple-600" />
-                  <AlertDescription className="text-sm">
-                    <p className="font-medium mb-2 text-purple-800 dark:text-purple-200">Update Location</p>
-                    <div className="flex gap-2 items-center">
-                      <Input
-                        value={newLocationValue}
-                        onChange={(e) => setNewLocationValue(e.target.value)}
-                        placeholder="e.g., São Paulo, Brazil"
-                        className="h-8 text-sm flex-1"
-                        autoFocus
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            saveLocationUpdate(
-                              location.place,
-                              newLocationValue,
-                              location.entries.map(e => e.id)
-                            );
-                          } else if (e.key === 'Escape') {
-                            cancelEditingLocation();
-                          }
-                        }}
-                      />
-                      <Button
-                        size="sm"
-                        onClick={() => saveLocationUpdate(
-                          location.place,
-                          newLocationValue,
-                          location.entries.map(e => e.id)
-                        )}
-                        disabled={updateMetadata.isPending}
-                        className="h-8 px-3"
-                      >
-                        {updateMetadata.isPending ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : (
-                          <Check className="h-3 w-3" />
-                        )}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={cancelEditingLocation}
-                        disabled={updateMetadata.isPending}
-                        className="h-8 px-3"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      This will update {location.entries.length} {location.entries.length === 1 ? 'entry' : 'entries'}
-                    </p>
-                  </AlertDescription>
-                </Alert>
-              )}
-
+              {/* Collapsed header - just location name and count */}
               <button
                 onClick={() => toggleLocationExpanded(location.place)}
-                className="flex items-start gap-3 mb-4 w-full text-left hover:bg-purple-50 dark:hover:bg-purple-950/20 rounded-md p-2 -ml-2 transition-colors"
+                className="flex items-center gap-3 w-full text-left hover:bg-purple-50 dark:hover:bg-purple-950/20 rounded-md p-2 -ml-2 transition-colors"
               >
-                <MapPin className="h-5 w-5 text-purple-600 mt-0.5" />
+                <MapPin className="h-5 w-5 text-purple-600" />
                 <div className="flex-1">
-                  <h4 className="font-semibold text-lg">{location.place}</h4>
-                  <p className="text-xs text-muted-foreground">
-                    {location.entries.length} {location.entries.length === 1 ? 'entry' : 'entries'}
-                  </p>
+                  <span className="font-semibold">{location.place}</span>
+                  <span className="text-sm text-muted-foreground ml-2">• {location.entries.length} {location.entries.length === 1 ? 'entry' : 'entries'}</span>
                 </div>
                 {expandedLocations.has(location.place) ? (
-                  <ChevronUp className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
                 ) : (
-                  <ChevronDown className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
                 )}
               </button>
 
               {expandedLocations.has(location.place) && (
-                <div className="space-y-3 ml-8">
+                <div className="space-y-3 mt-4">
+                  {/* Location prompt - only show when expanded */}
+                  {editingLocation !== location.place && (
+                    <Alert className={`${
+                      location.isPrecise 
+                        ? "border-purple-200 bg-purple-50/50 dark:bg-purple-950/10"
+                        : "border-purple-200 bg-purple-50 dark:bg-purple-950/20"
+                    }`}>
+                      {location.isPrecise ? (
+                        <MessageCircle className="h-4 w-4 text-purple-600" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4 text-purple-600" />
+                      )}
+                      <AlertDescription className="text-sm text-purple-800 dark:text-purple-200">
+                        {location.isPrecise ? (
+                          <>
+                            <p className="font-medium mb-1">📍 "{location.place}"</p>
+                            <p className="mb-3">Share your experiences and memories from this place.</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-medium mb-1">💭 "{location.place}" - Let's make this more specific</p>
+                            <p className="mb-3">Update to a precise location or explore through conversation.</p>
+                          </>
+                        )}
+                        <div className="flex gap-2">
+                          {!location.isPrecise && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => startEditingLocation(location.place)}
+                              className="h-8 text-xs border-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30"
+                            >
+                              <MapPin className="h-3 w-3 mr-1.5" />
+                              Update Location
+                            </Button>
+                          )}
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => handleTellMeMore(location)}
+                            className="h-8 text-xs bg-purple-600 hover:bg-purple-700"
+                          >
+                            <MessageCircle className="h-3 w-3 mr-1.5" />
+                            Tell Me More
+                          </Button>
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {/* Inline location editor - only show when expanded */}
+                  {editingLocation === location.place && (
+                    <Alert className="border-purple-200 bg-purple-50 dark:bg-purple-950/20">
+                      <MapPin className="h-4 w-4 text-purple-600" />
+                      <AlertDescription className="text-sm">
+                        <p className="font-medium mb-2 text-purple-800 dark:text-purple-200">Update Location</p>
+                        <div className="flex gap-2 items-center">
+                          <Input
+                            value={newLocationValue}
+                            onChange={(e) => setNewLocationValue(e.target.value)}
+                            placeholder="e.g., São Paulo, Brazil"
+                            className="h-8 text-sm flex-1"
+                            autoFocus
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                saveLocationUpdate(
+                                  location.place,
+                                  newLocationValue,
+                                  location.entries.map(e => e.id)
+                                );
+                              } else if (e.key === 'Escape') {
+                                cancelEditingLocation();
+                              }
+                            }}
+                          />
+                          <Button
+                            size="sm"
+                            onClick={() => saveLocationUpdate(
+                              location.place,
+                              newLocationValue,
+                              location.entries.map(e => e.id)
+                            )}
+                            disabled={updateMetadata.isPending}
+                            className="h-8 px-3"
+                          >
+                            {updateMetadata.isPending ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <Check className="h-3 w-3" />
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={cancelEditingLocation}
+                            disabled={updateMetadata.isPending}
+                            className="h-8 px-3"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          This will update {location.entries.length} {location.entries.length === 1 ? 'entry' : 'entries'}
+                        </p>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Entry cards */}
+                  <div className="space-y-3 ml-8">
                 {location.entries.map((entry) => {
                   const isExpanded = expandedEntries.has(entry.id);
                   const isLongResponse = entry.response.length > 150;
@@ -581,9 +581,9 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
                     </div>
                   );
                 })}
+                  </div>
                 </div>
               )}
-              </>
             </CardContent>
           </Card>
         ))}

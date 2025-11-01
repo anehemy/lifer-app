@@ -1352,3 +1352,8 @@ No more error messages or console logs when sessions are deleted.
 - [x] Show entry count but hide full entry cards until user expands
 - [ ] Investigate duplicate Piracicaba entries (same question, different metadata variations)
 
+
+
+## UI Improvements
+- [x] Make location sections in Places view ultra-minimal when collapsed - showing only location name and entry count on a single line
+
