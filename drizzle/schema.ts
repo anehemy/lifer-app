@@ -20,6 +20,7 @@ export const users = mysqlTable("users", {
   aiTokens: int("aiTokens").default(1000).notNull(), // AI usage tokens
   hasSeenWelcome: boolean("hasSeenWelcome").default(false).notNull(), // Track if user has seen welcome guide
   introAudioUrl: text("introAudioUrl"), // Custom intro audio URL for Start Here guide
+  birthYear: int("birthYear"), // User's birth year for timeline visualization
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

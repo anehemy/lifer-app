@@ -21,12 +21,13 @@ interface JournalEntry {
 
 interface LifeStoryTimelineProps {
   entries: JournalEntry[];
+  birthYear?: number | null;
   onViewModeChange?: (mode: ViewMode) => void;
 }
 
 type ViewMode = "timeline" | "locations" | "experiences" | "challenges" | "growth";
 
-export default function LifeStoryTimeline({ entries, onViewModeChange }: LifeStoryTimelineProps) {
+export default function LifeStoryTimeline({ entries, birthYear, onViewModeChange }: LifeStoryTimelineProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("timeline");
   
   const handleViewModeChange = (mode: ViewMode) => {
@@ -385,7 +386,7 @@ export default function LifeStoryTimeline({ entries, onViewModeChange }: LifeSto
                 {/* Interactive Timeline Visualization */}
                 <div>
                   <h3 className="text-xl font-semibold mb-4">Timeline Visualization</h3>
-                  <InteractiveTimeline entries={entries} />
+                  <InteractiveTimeline entries={entries} birthYear={birthYear} />
                 </div>
                 
                 {/* Traditional Timeline View */}

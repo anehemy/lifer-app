@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import LifeStoryTimeline from "@/components/LifeStoryTimeline";
 import { useAnalytics, EventType, usePageView } from "@/hooks/useAnalytics";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 // Template questions organized by theme
 const TEMPLATE_QUESTIONS = [
@@ -51,6 +52,7 @@ const TEMPLATE_QUESTIONS = [
 export default function Journal() {
   usePageView("/journal");
   const { logEvent } = useAnalytics();
+  const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [isLoadingQuestion, setIsLoadingQuestion] = useState(false);
   const [response, setResponse] = useState("");
@@ -312,6 +314,7 @@ export default function Journal() {
       {entries.length > 0 && (
         <LifeStoryTimeline 
           entries={entries} 
+          birthYear={user?.birthYear}
           onViewModeChange={(mode) => setSelectedCategory(mode)}
         />
       )}

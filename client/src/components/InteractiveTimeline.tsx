@@ -1,7 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Sparkles, Heart, TrendingUp, Calendar } from "lucide-react";
+import { MapPin, Sparkles, Heart, TrendingUp, Calendar, HelpCircle } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import ReactMarkdown from 'react-markdown';
 
 interface JournalEntry {
   id: number;
@@ -17,29 +18,21 @@ interface JournalEntry {
 
 interface InteractiveTimelineProps {
   entries: JournalEntry[];
-  birthYear?: number;
+  birthYear?: number | null;
 }
 
 type DimensionFilter = "all" | "places" | "experiences" | "challenges" | "growth";
 
+// Extract year from text (e.g., "in 2010" or "2010")
+function extractYearFromText(text: string): number | null {
+  const yearMatch = text.match(/\b(19\d{2}|20\d{2})\b/);
+  return yearMatch ? parseInt(yearMatch[0]) : null;
+}
+
 export default function InteractiveTimeline({ entries, birthYear }: InteractiveTimelineProps) {
-  // Calculate birth year from earliest entry or use default
-  const calculatedBirthYear = birthYear || (() => {
-    if (entries.length === 0) return new Date().getFullYear() - 30; // Default to 30 years ago
-    
-    const earliestYear = Math.min(...entries.map(e => new Date(e.createdAt).getFullYear()));
-    // Assume earliest entry is from at least age 10, so birth year is earliestYear - 10
-    return earliestYear - 20; // Conservative estimate
-  })();
-  
-  const actualBirthYear = calculatedBirthYear;
   const [selectedDimension, setSelectedDimension] = useState<DimensionFilter>("all");
   const [selectedEntry, setSelectedEntry] = useState<JournalEntry | null>(null);
   const timelineRef = useRef<HTMLDivElement>(null);
-  
-  // Calculate year range
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: currentYear - actualBirthYear + 1 }, (_, i) => actualBirthYear + i);
   
   // Filter entries by dimension
   const filteredEntries = entries.filter(entry => {
@@ -51,33 +44,89 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
     return false;
   });
   
-  // Position entries on timeline
-  const getEntryPosition = (entry: JournalEntry) => {
-    const entryYear = new Date(entry.createdAt).getFullYear();
-    const yearIndex = entryYear - actualBirthYear;
-    const totalYears = currentYear - actualBirthYear;
-    return (yearIndex / totalYears) * 100;
+  // Extract all unique years from entries
+  const yearsWithEntries = new Set<number>();
+  
+  filteredEntries.forEach(entry => {
+    // Add year from createdAt
+    const createdYear = new Date(entry.createdAt).getFullYear();
+    yearsWithEntries.add(createdYear);
+    
+    // Try to extract year from timeContext (e.g., "2010", "in 2010")
+    if (entry.timeContext) {
+      const yearFromContext = extractYearFromText(entry.timeContext);
+      if (yearFromContext) yearsWithEntries.add(yearFromContext);
+    }
+    
+    // Try to extract year from response text
+    const yearFromResponse = extractYearFromText(entry.response);
+    if (yearFromResponse) yearsWithEntries.add(yearFromResponse);
+  });
+  
+  // Convert to sorted array
+  const years = Array.from(yearsWithEntries).sort((a, b) => a - b);
+  
+  // If no entries, show empty state
+  if (years.length === 0) {
+    return (
+      <Card>
+        <CardContent className="pt-6 text-center text-muted-foreground">
+          <Calendar className="h-16 w-16 mx-auto mb-4 opacity-30" />
+          <p>Start journaling to see your timeline visualization</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  // Get entries for a specific year
+  const getEntriesForYear = (year: number) => {
+    return filteredEntries.filter(entry => {
+      const createdYear = new Date(entry.createdAt).getFullYear();
+      if (createdYear === year) return true;
+      
+      // Check if year is mentioned in timeContext or response
+      const yearFromContext = entry.timeContext ? extractYearFromText(entry.timeContext) : null;
+      const yearFromResponse = extractYearFromText(entry.response);
+      
+      return yearFromContext === year || yearFromResponse === year;
+    });
   };
   
   // Get color based on dimension
   const getEntryColor = (entry: JournalEntry) => {
-    if (entry.growthTheme) return "bg-green-500 border-green-600";
-    if (entry.challengeType) return "bg-red-500 border-red-600";
-    if (entry.experienceType) return "bg-yellow-500 border-yellow-600";
-    if (entry.placeContext) return "bg-blue-500 border-blue-600";
-    return "bg-purple-500 border-purple-600";
+    if (entry.growthTheme) return "bg-green-500 border-green-600 hover:bg-green-600";
+    if (entry.challengeType) return "bg-red-500 border-red-600 hover:bg-red-600";
+    if (entry.experienceType) return "bg-yellow-500 border-yellow-600 hover:bg-yellow-600";
+    if (entry.placeContext) return "bg-blue-500 border-blue-600 hover:bg-blue-600";
+    return "bg-purple-500 border-purple-600 hover:bg-purple-600";
   };
   
-  // Auto-scroll to current year on mount
+  // Auto-scroll to most recent year on mount
   useEffect(() => {
-    if (timelineRef.current) {
-      const currentYearPosition = ((currentYear - actualBirthYear) / (currentYear - actualBirthYear)) * timelineRef.current.scrollWidth;
-      timelineRef.current.scrollLeft = currentYearPosition - timelineRef.current.clientWidth / 2;
+    if (timelineRef.current && years.length > 0) {
+      const mostRecentYearIndex = years.length - 1;
+      const scrollPosition = mostRecentYearIndex * 200; // 200px per year marker
+      timelineRef.current.scrollLeft = scrollPosition - timelineRef.current.clientWidth / 2;
     }
-  }, [actualBirthYear, currentYear]);
+  }, [years]);
+  
+  const currentYear = new Date().getFullYear();
   
   return (
     <div className="space-y-6">
+      {/* Birth Year Indicator */}
+      {birthYear ? (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Calendar className="h-4 w-4" />
+          <span>Timeline starts from {birthYear} (your birth year)</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
+          <HelpCircle className="h-4 w-4" />
+          <span>Birth year not set - timeline shows years from journal entries only</span>
+        </div>
+      )}
+      
       {/* Dimension Filters */}
       <div className="flex flex-wrap gap-2">
         <Button
@@ -87,7 +136,7 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
           className="flex items-center gap-2"
         >
           <Calendar className="h-4 w-4" />
-          All Events
+          All Events ({filteredEntries.length})
         </Button>
         <Button
           variant={selectedDimension === "places" ? "default" : "outline"}
@@ -132,84 +181,64 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
         <CardContent className="p-0">
           <div 
             ref={timelineRef}
-            className="overflow-x-auto overflow-y-hidden"
-            style={{ height: "300px" }}
+            className="overflow-x-auto overflow-y-hidden py-8"
+            style={{ height: "250px" }}
           >
             <div 
-              className="relative h-full"
+              className="relative h-full px-8"
               style={{ 
-                minWidth: `${years.length * 120}px`,
-                backgroundImage: "linear-gradient(to right, rgba(168, 85, 247, 0.1) 1px, transparent 1px)",
-                backgroundSize: "120px 100%"
+                minWidth: `${years.length * 200}px`,
               }}
             >
               {/* Horizontal timeline line */}
-              <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-purple-400 via-purple-500 to-purple-400"></div>
+              <div className="absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-purple-400 via-purple-500 to-purple-400 transform -translate-y-1/2"></div>
               
-              {/* Year markers */}
-              {years.map((year, index) => (
-                <div
-                  key={year}
-                  className="absolute top-1/2 transform -translate-y-1/2"
-                  style={{ left: `${index * 120}px` }}
-                >
-                  {/* Year marker dot */}
-                  <div className="w-3 h-3 bg-purple-500 rounded-full border-2 border-white shadow-md"></div>
-                  
-                  {/* Year label */}
-                  <div className="absolute top-8 left-1/2 transform -translate-x-1/2 text-xs font-medium text-muted-foreground whitespace-nowrap">
-                    {year}
-                  </div>
-                  
-                  {/* Age label */}
-                  <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground/70 whitespace-nowrap">
-                    Age {year - actualBirthYear}
-                  </div>
-                </div>
-              ))}
-              
-              {/* Entry markers */}
-              {filteredEntries.map((entry) => {
-                const entryYear = new Date(entry.createdAt).getFullYear();
-                const yearIndex = entryYear - actualBirthYear;
-                const leftPosition = yearIndex * 120;
+              {/* Year markers with entries */}
+              {years.map((year, index) => {
+                const yearEntries = getEntriesForYear(year);
+                const isCurrentYear = year === currentYear;
                 
                 return (
                   <div
-                    key={entry.id}
-                    className="absolute top-1/2 transform -translate-y-1/2 cursor-pointer group"
-                    style={{ left: `${leftPosition}px` }}
-                    onClick={() => setSelectedEntry(entry)}
+                    key={year}
+                    className="absolute top-1/2 transform -translate-y-1/2"
+                    style={{ left: `${index * 200 + 100}px` }}
                   >
-                    {/* Entry dot */}
-                    <div 
-                      className={`w-4 h-4 rounded-full border-2 ${getEntryColor(entry)} shadow-lg group-hover:scale-150 transition-transform z-10`}
-                    ></div>
+                    {/* Year marker */}
+                    <div className={`w-4 h-4 rounded-full border-2 border-white shadow-md ${isCurrentYear ? 'bg-red-500 ring-4 ring-red-300' : 'bg-purple-500'}`}></div>
                     
-                    {/* Hover preview */}
-                    <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
-                      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-3 min-w-[200px] max-w-[300px] border">
-                        <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1">
-                          {entry.question}
-                        </p>
-                        <p className="text-xs text-muted-foreground line-clamp-2">
-                          {entry.response}
-                        </p>
+                    {/* Year label */}
+                    <div className="absolute top-8 left-1/2 transform -translate-x-1/2 whitespace-nowrap">
+                      <div className={`text-sm font-bold ${isCurrentYear ? 'text-red-600 dark:text-red-400' : 'text-foreground'}`}>
+                        {year}
+                        {isCurrentYear && <span className="ml-1 text-xs">(Today)</span>}
                       </div>
+                      {birthYear && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Age {year - birthYear}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Entry dots stacked vertically */}
+                    <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col-reverse gap-2">
+                      {yearEntries.slice(0, 5).map((entry, entryIndex) => (
+                        <button
+                          key={entry.id}
+                          onClick={() => setSelectedEntry(entry)}
+                          className={`w-3 h-3 rounded-full border-2 ${getEntryColor(entry)} transition-all cursor-pointer shadow-md`}
+                          title={entry.question}
+                        />
+                      ))}
+                      {yearEntries.length > 5 && (
+                        <div className="text-xs text-muted-foreground text-center">
+                          +{yearEntries.length - 5}
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
               })}
-              
-              {/* Current year indicator */}
-              <div
-                className="absolute top-0 bottom-0 w-0.5 bg-red-500 opacity-50"
-                style={{ left: `${(currentYear - actualBirthYear) * 120}px` }}
-              >
-                <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 text-xs font-bold text-red-600 whitespace-nowrap">
-                  Today
-                </div>
-              </div>
             </div>
           </div>
         </CardContent>
@@ -231,9 +260,9 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
                 <h3 className="text-lg font-semibold text-purple-600 dark:text-purple-400 mb-2">
                   {selectedEntry.question}
                 </h3>
-                <p className="text-base leading-relaxed text-foreground/90">
-                  {selectedEntry.response}
-                </p>
+                <div className="text-base leading-relaxed prose prose-sm max-w-none text-foreground/90">
+                  <ReactMarkdown>{selectedEntry.response}</ReactMarkdown>
+                </div>
               </div>
               <Button
                 variant="ghost"
@@ -246,6 +275,12 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
             
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mt-4">
+              {selectedEntry.timeContext && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
+                  <Calendar className="h-3 w-3" />
+                  {selectedEntry.timeContext}
+                </span>
+              )}
               {selectedEntry.placeContext && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
                   <MapPin className="h-3 w-3" />

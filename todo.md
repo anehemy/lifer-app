@@ -1472,3 +1472,13 @@ No more error messages or console logs when sessions are deleted.
 - [x] Add hover/click to view entry details
 - [x] Auto-scroll to current date on load
 
+
+
+
+## Timeline Redesign - Show Only Relevant Years
+- [x] Add birth year field to user profile (with "?" if unknown)
+- [x] Update timeline to show only years that have journal entries
+- [x] Extract year mentions from journal entry content (e.g., "2010" from "I lived in Piacenza in 2010")
+- [x] Remove age labels and empty year markers
+- [ ] Add UI to set/update birth year from Settings page
+
