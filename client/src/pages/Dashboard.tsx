@@ -7,6 +7,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import StartHereGuide from "@/components/StartHereGuide";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { usePageView } from "@/hooks/useAnalytics";
+import ShareThought from "@/components/ShareThought";
 
 export default function Dashboard() {
   usePageView("/dashboard");
@@ -43,6 +44,9 @@ export default function Dashboard() {
         </div>
         <StartHereGuide />
       </div>
+
+      {/* Share a Thought - Prominent placement */}
+      <ShareThought compact onSuccess={() => {}} />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

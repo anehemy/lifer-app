@@ -1590,3 +1590,57 @@ No more error messages or console logs when sessions are deleted.
 - [ ] Show visual feedback for selected bubbles (highlight/border)
 - [ ] Add undo functionality for bubble combinations
 
+
+
+
+## Feature: Share a Thought (Free-form Input)
+**Goal**: Allow users to share thoughts freely without answering specific questions. AI analyzes and proposes where to store it.
+
+### Phase 1: Database & User Preferences
+- [x] Add auto_approve_thoughts boolean field to users table (default: false)
+- [x] Create migration to add field
+
+### Phase 2: Backend API
+- [x] Create analyzeThought endpoint that:
+  - Takes free-form text input
+  - Uses LLM to extract metadata (time, place, experience, challenge, growth)
+  - Proposes journal entry structure
+  - Returns proposed entry for user review
+- [x] Create saveThought endpoint that:
+  - Saves approved thought as journal entry
+  - Updates user's auto_approve preference if changed
+
+### Phase 3: ShareThought Component
+- [x] Create ShareThought.tsx component with:
+  - Text area for free-form input
+  - Minimal Mr. MG avatar/presence
+  - Submit button
+  - Loading state while AI analyzes
+  - Review card showing proposed metadata
+  - Approve/Edit/Reject buttons
+  - "Always auto-approve" checkbox
+  - Success/error feedback
+
+### Phase 4: Dashboard Integration
+- [x] Add ShareThought component to Dashboard
+- [x] Place prominently in center/top area
+- [x] Style as inviting "Share a thought..." prompt
+- [x] Show Mr. MG's small avatar nearby
+
+### Phase 5: Life Story Page Integration
+- [x] Add toggle at top of Life Story page
+- [x] Toggle between "Guided Questions" and "Share a Thought" modes
+- [x] Show ShareThought component when in free-form mode
+- [x] Maintain existing guided question flow as default
+
+### Phase 6: Auto-approve Flow
+- [x] When auto-approve is enabled, skip review step
+- [x] Show brief confirmation toast instead
+- [ ] Allow user to disable auto-approve in Settings
+
+### Phase 7: Testing
+- [ ] Test thought analysis with various input types
+- [ ] Test approval/rejection flow
+- [ ] Test auto-approve preference persistence
+- [ ] Test integration on both Dashboard and Life Story page
+

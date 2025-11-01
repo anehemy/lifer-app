@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `autoApproveThoughts` boolean DEFAULT false NOT NULL;

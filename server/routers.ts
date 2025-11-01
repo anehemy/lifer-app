@@ -589,6 +589,97 @@ Respond to their message with wisdom, empathy, and insight. Keep responses conve
         const content = response.choices[0].message.content;
         return { response: typeof content === 'string' ? content : "" };
       }),
+    analyzeThought: protectedProcedure
+      .input(z.object({ thought: z.string() }))
+      .mutation(async ({ ctx, input }) => {        const { invokeLLM } = await import("./_core/llm");
+        const { normalizeLocation } = await import("../shared/textUtils");
+        
+        // Use AI to analyze the thought and propose metadata
+        const analysisPrompt = `You are Mr. MG, helping a user journal their life story. They shared this free-form thought:
+
+"${input.thought}"
+
+Analyze this thought and propose how to store it as a journal entry. Return ONLY a JSON object:
+{
+  "question": "A question that this thought answers (e.g., 'What did you learn from...')",
+  "response": "The user's thought, possibly rephrased for clarity",
+  "timeContext": "time period if mentioned (e.g., 'childhood', '2010', 'recently')",
+  "placeContext": "location if mentioned (e.g., 'New York', 'home', 'office')",
+  "experienceType": "type of experience (e.g., 'learning', 'relationship', 'achievement')",
+  "challengeType": "challenge if any (e.g., 'conflict', 'failure', 'loss')",
+  "growthTheme": "growth/lesson (e.g., 'resilience', 'self-discovery', 'courage')",
+  "acknowledgment": "Brief 1-sentence acknowledgment from Mr. MG"
+}
+
+Use null for fields that don't apply.`;
+        
+        try {
+          const result = await invokeLLM({
+            messages: [{ role: "user", content: analysisPrompt }],
+          });
+          
+          const content = result.choices[0]?.message?.content;
+          if (typeof content === 'string') {
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const analysis = JSON.parse(jsonMatch[0]);
+              
+              // Normalize location
+              if (analysis.placeContext) {
+                analysis.placeContext = normalizeLocation(analysis.placeContext);
+              }
+              
+              return analysis;
+            }
+          }
+        } catch (e) {
+          console.error('Failed to analyze thought:', e);
+        }
+        
+        // Fallback if AI fails
+        return {
+          question: "What's on your mind?",
+          response: input.thought,
+          timeContext: null,
+          placeContext: null,
+          experienceType: null,
+          challengeType: null,
+          growthTheme: null,
+          acknowledgment: "Thank you for sharing that with me."
+        };
+      }),
+    saveThought: protectedProcedure
+      .input(z.object({
+        question: z.string(),
+        response: z.string(),
+        timeContext: z.string().nullable(),
+        placeContext: z.string().nullable(),
+        experienceType: z.string().nullable(),
+        challengeType: z.string().nullable(),
+        growthTheme: z.string().nullable(),
+        autoApprove: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { createJournalEntry } = await import("./db");
+        const db = await import('./db').then(m => m.getDb());
+        if (!db) throw new Error('Database not available');
+        
+        const { autoApprove, ...entryData } = input;
+        
+        // Save the journal entry
+        const entry = await createJournalEntry({ userId: ctx.user.id, ...entryData });
+        
+        // Update user's auto-approve preference if provided
+        if (autoApprove !== undefined) {
+          const { users } = await import('../drizzle/schema');
+          const { eq } = await import('drizzle-orm');
+          await db.update(users)
+            .set({ autoApproveThoughts: autoApprove })
+            .where(eq(users.id, ctx.user.id));
+        }
+        
+        return entry;
+      }),
   }),  vision: router({
     list: protectedProcedure.query(async ({ ctx }) => {
       const { getUserVisionItems } = await import("./db");

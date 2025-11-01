@@ -21,6 +21,7 @@ export const users = mysqlTable("users", {
   hasSeenWelcome: boolean("hasSeenWelcome").default(false).notNull(), // Track if user has seen welcome guide
   introAudioUrl: text("introAudioUrl"), // Custom intro audio URL for Start Here guide
   birthYear: int("birthYear"), // User's birth year for timeline visualization
+  autoApproveThoughts: boolean("autoApproveThoughts").default(false).notNull(), // Auto-approve free-form thoughts without review
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),

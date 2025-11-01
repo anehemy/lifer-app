@@ -15,6 +15,8 @@ import { Input } from "@/components/ui/input";
 import LifeStoryTimeline from "@/components/LifeStoryTimeline";
 import { useAnalytics, EventType, usePageView } from "@/hooks/useAnalytics";
 import { useAuth } from "@/_core/hooks/useAuth";
+import ShareThought from "@/components/ShareThought";
+import { Switch } from "@/components/ui/switch";
 
 // Template questions organized by theme
 const TEMPLATE_QUESTIONS = [
@@ -66,6 +68,7 @@ export default function Journal() {
   const [searchFilter, setSearchFilter] = useState<"all" | "context" | "title" | "content">("all");
   const [allEntriesCollapsed, setAllEntriesCollapsed] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<"timeline" | "locations" | "experiences" | "challenges" | "growth">("timeline");
+  const [mode, setMode] = useState<"guided" | "freeform">("guided");
   
   // Initialize speech recognition
   useEffect(() => {
@@ -248,13 +251,34 @@ export default function Journal() {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-4xl font-bold mb-2">Your Life Story</h1>
-        <p className="text-muted-foreground">Guided by {MR_MG_NAME}</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-4xl font-bold mb-2">Your Life Story</h1>
+          <p className="text-muted-foreground">Guided by {MR_MG_NAME}</p>
+        </div>
+        
+        {/* Mode Toggle */}
+        <div className="flex items-center gap-3 bg-card border rounded-lg px-4 py-2">
+          <span className="text-sm font-medium">
+            {mode === "guided" ? "Guided" : "Free-form"}
+          </span>
+          <Switch
+            checked={mode === "freeform"}
+            onCheckedChange={(checked) => setMode(checked ? "freeform" : "guided")}
+          />
+        </div>
       </div>
 
-      {/* Mr. MG Question Card */}
-      <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
+      {/* Conditional: Guided Mode or Free-form Mode */}
+      {mode === "freeform" ? (
+        <ShareThought onSuccess={() => {
+          utils.journal.list.invalidate();
+          toast.success("Thought saved!");
+        }} />
+      ) : (
+        <>
+          {/* Mr. MG Question Card */}
+          <Card className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20">
         <CardHeader>
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 rounded-full flex items-center justify-center text-4xl bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-800 dark:to-purple-900">
@@ -317,6 +341,8 @@ export default function Journal() {
           </div>
         </CardContent>
       </Card>
+        </>
+      )}
 
       {/* Timeline Visualization */}
       {entries.length > 0 && (
