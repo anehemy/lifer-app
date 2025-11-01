@@ -272,7 +272,9 @@ Return ONLY the question, nothing else.`;
           return "What would you like to explore today?";
         }
       }),
-    generateContextualQuestion: protectedProcedure.query(async ({ ctx }) => {
+    generateContextualQuestion: protectedProcedure
+      .input(z.object({ category: z.enum(["timeline", "locations", "experiences", "challenges", "growth"]).optional() }).optional())
+      .query(async ({ ctx, input }) => {
       const db = await import('./db').then(m => m.getDb());
       if (!db) return "What would you like to explore today?";
       
@@ -308,16 +310,31 @@ Return ONLY the question, nothing else.`;
         context += `Patterns discovered: ${patterns.join(', ')}\n\n`;
       }
       
+      // Category-specific focus
+      const categoryFocus = {
+        locations: "Focus on PLACES and LOCATIONS that shaped them. Ask about specific places, spaces, or geographic locations that influenced their journey.",
+        experiences: "Focus on EXPERIENCES and life events. Ask about moments, activities, or experiences that defined who they are.",
+        challenges: "Focus on CHALLENGES and obstacles they've overcome. Ask about struggles, difficulties, or tough situations that made them stronger.",
+        growth: "Focus on PERSONAL GROWTH and lessons learned. Ask about transformations, insights, or wisdom gained through their journey.",
+        timeline: "Ask about their life journey in general, connecting different aspects of their story."
+      };
+      
+      const category = input?.category || "timeline";
+      const focusInstruction = categoryFocus[category];
+      
       // Generate contextual question
       const prompt = `You are Mr. MG, the AI avatar of Michael E. Gerber, author of The E-Myth. Based on this user's journey, generate ONE thoughtful, personalized question that will help them discover more about themselves.
 
 ${context || "This user is just starting their journey."}
+
+${focusInstruction}
 
 Generate a question that:
 1. Connects to their existing reflections, vision, or patterns (if any)
 2. Encourages deeper self-discovery about who they are and what they want
 3. Feels warm, insightful, and genuinely curious
 4. Is specific to their journey, not generic
+5. MUST relate to the focus area specified above
 
 Return ONLY the question (1-2 sentences max), nothing else.`;
       

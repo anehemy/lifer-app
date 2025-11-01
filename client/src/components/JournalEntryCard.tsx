@@ -1,4 +1,5 @@
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
+import ReactMarkdown from 'react-markdown';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -129,9 +130,9 @@ export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardPr
               />
             ) : (
               <div className="mb-4">
-                <p className="text-base leading-relaxed whitespace-pre-wrap text-foreground/90">
-                  {displayResponse}
-                </p>
+                <div className="text-base leading-relaxed prose prose-sm max-w-none text-foreground/90">
+                  <ReactMarkdown>{displayResponse}</ReactMarkdown>
+                </div>
                 {isLongResponse && (
                   <Button
                     variant="ghost"

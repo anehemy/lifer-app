@@ -1,4 +1,5 @@
 import { trpc } from "@/lib/trpc";
+import ReactMarkdown from 'react-markdown';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
@@ -805,7 +806,9 @@ export default function AIChatWidget({ sidebarOpen = false }: AIChatWidgetProps)
                           <span className="text-xs font-medium">{MR_MG_NAME}</span>
                         </div>
                       )}
-                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                      <div className="text-sm prose prose-sm max-w-none">
+                        <ReactMarkdown>{msg.content}</ReactMarkdown>
+                      </div>
                     </div>
                   </div>
                 ))}

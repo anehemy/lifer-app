@@ -63,6 +63,7 @@ export default function Journal() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFilter, setSearchFilter] = useState<"all" | "context" | "title" | "content">("all");
   const [allEntriesCollapsed, setAllEntriesCollapsed] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<"timeline" | "locations" | "experiences" | "challenges" | "growth">("timeline");
   
   // Initialize speech recognition
   useEffect(() => {
@@ -217,7 +218,7 @@ export default function Journal() {
   const handlePersonalizedQuestion = async () => {
     setIsLoadingQuestion(true);
     try {
-      const result = await utils.journal.generateContextualQuestion.fetch();
+      const result = await utils.journal.generateContextualQuestion.fetch({ category: selectedCategory });
       setCurrentQuestion(result);
       toast.success("Personalized question generated!");
     } catch (e) {
@@ -309,7 +310,10 @@ export default function Journal() {
 
       {/* Timeline Visualization */}
       {entries.length > 0 && (
-        <LifeStoryTimeline entries={entries} />
+        <LifeStoryTimeline 
+          entries={entries} 
+          onViewModeChange={(mode) => setSelectedCategory(mode)}
+        />
       )}
       
       {/* Previous Entries - Simple List */}

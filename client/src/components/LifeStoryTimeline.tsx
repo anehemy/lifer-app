@@ -20,12 +20,18 @@ interface JournalEntry {
 
 interface LifeStoryTimelineProps {
   entries: JournalEntry[];
+  onViewModeChange?: (mode: ViewMode) => void;
 }
 
 type ViewMode = "timeline" | "locations" | "experiences" | "challenges" | "growth";
 
-export default function LifeStoryTimeline({ entries }: LifeStoryTimelineProps) {
+export default function LifeStoryTimeline({ entries, onViewModeChange }: LifeStoryTimelineProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("timeline");
+  
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    onViewModeChange?.(mode);
+  };
   const [expandedEntries, setExpandedEntries] = useState<Set<number>>(new Set());
   const [collapsedPeriods, setCollapsedPeriods] = useState<Set<string>>(new Set());
   
@@ -337,7 +343,7 @@ export default function LifeStoryTimeline({ entries }: LifeStoryTimelineProps) {
         <p className="text-muted-foreground text-sm">{description}</p>
       </div>
 
-      <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as ViewMode)} className="w-full">
+      <Tabs value={viewMode} onValueChange={(v) => handleViewModeChange(v as ViewMode)} className="w-full">
         <TabsList className="grid w-full grid-cols-5 h-auto">
           <TabsTrigger value="timeline" className="flex flex-col sm:flex-row items-center gap-1.5 py-2">
             <Clock className="h-4 w-4" />
