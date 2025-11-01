@@ -1314,3 +1314,19 @@ No more error messages or console logs when sessions are deleted.
 - [x] Abbreviate or wrap long experience names
 - [x] Remove gradient that's covering dynamic colors
 
+
+
+## Bug: OAuth Callback Error
+- [x] Investigate "OAuth callback failed" error (database connection reset)
+- [x] Check server logs for authentication issues (found ECONNRESET)
+- [x] Verify OAuth configuration and environment variables (OAuth config is fine, was DB issue)
+- [x] Restart server to fix database connection
+
+
+
+## Bug: Forge API Errors on Journal Page
+- [x] Investigate "Both forge and forge providers failed" errors (null content part in LLM response)
+- [x] Check which tRPC procedures are calling forge API (sendMessage in aiChatRouter)
+- [x] Verify BUILT_IN_FORGE_API_KEY and BUILT_IN_FORGE_API_URL environment variables (working)
+- [x] Add error handling for forge API failures (added null check in normalizeContentPart)
+

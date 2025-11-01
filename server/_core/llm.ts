@@ -114,9 +114,13 @@ const ensureArray = (
   value: MessageContent | MessageContent[]
 ): MessageContent[] => (Array.isArray(value) ? value : [value]);
 
-const normalizeContentPart = (
-  part: MessageContent
-): TextContent | ImageContent | FileContent => {
+const normalizeContentPart = (part: MessageContent): TextContent | ImageContent | FileContent => {
+  // Handle null/undefined parts
+  if (!part) {
+    console.warn('[LLM] Received null/undefined content part, converting to empty text');
+    return { type: "text", text: "" };
+  }
+  
   if (typeof part === "string") {
     return { type: "text", text: part };
   }
