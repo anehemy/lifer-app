@@ -287,8 +287,8 @@ export default function StartHereGuide() {
 
       {/* Announcement Dialog */}
       <Dialog open={showAnnouncement} onOpenChange={setShowAnnouncement}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
+        <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <div className="flex items-center gap-3 mb-2">
               <span className="text-4xl">{globalSettings?.announcement_emoji || '📢'}</span>
               <DialogTitle className="text-2xl">
@@ -296,10 +296,12 @@ export default function StartHereGuide() {
               </DialogTitle>
             </div>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-4 overflow-y-auto flex-1 pr-2">
             <p className="text-muted-foreground whitespace-pre-wrap">
               {globalSettings?.announcement_content || 'No announcement at this time.'}
             </p>
+          </div>
+          <div className="flex-shrink-0 pt-4">
             <Button onClick={() => setShowAnnouncement(false)} className="w-full">
               Got it, thanks!
             </Button>

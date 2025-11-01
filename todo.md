@@ -1679,3 +1679,8 @@ No more error messages or console logs when sessions are deleted.
 - [x] When specific filter selected, show that dimension's text
 - [x] Style labels to be readable but not cluttered (10px font, 120px max width, truncated)
 - [x] Position labels near dots without overlapping (flex layout with gap)
+
+## Announcements Dialog Bug
+- [x] Announcements dialog has overflow text that's not displaying properly
+- [x] Add proper scrolling to dialog content (max-h-[80vh], overflow-y-auto)
+- [x] Ensure all announcement text is readable (flex layout with scrollable middle section)
