@@ -48,6 +48,7 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [expandedEntries, setExpandedEntries] = useState<Set<number>>(new Set());
+  const [expandedLocations, setExpandedLocations] = useState<Set<string>>(new Set());
   const [editingLocation, setEditingLocation] = useState<string | null>(null);
   const [newLocationValue, setNewLocationValue] = useState("");
   
@@ -73,6 +74,16 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
       newExpanded.add(id);
     }
     setExpandedEntries(newExpanded);
+  };
+  
+  const toggleLocationExpanded = (place: string) => {
+    const newExpanded = new Set(expandedLocations);
+    if (newExpanded.has(place)) {
+      newExpanded.delete(place);
+    } else {
+      newExpanded.add(place);
+    }
+    setExpandedLocations(newExpanded);
   };
 
   // Geocode place names to coordinates using Nominatim (free OpenStreetMap service)
@@ -400,6 +411,7 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
         {locations.map((location) => (
           <Card key={location.place} className="hover:shadow-md transition-shadow">
             <CardContent className="pt-6">
+              <>
               {/* Location prompt - show for all locations, different message based on precision */}
               {editingLocation !== location.place && (
                 <Alert className={`mb-4 ${
@@ -508,17 +520,26 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
                 </Alert>
               )}
 
-              <div className="flex items-start gap-3 mb-4">
+              <button
+                onClick={() => toggleLocationExpanded(location.place)}
+                className="flex items-start gap-3 mb-4 w-full text-left hover:bg-purple-50 dark:hover:bg-purple-950/20 rounded-md p-2 -ml-2 transition-colors"
+              >
                 <MapPin className="h-5 w-5 text-purple-600 mt-0.5" />
-                <div>
+                <div className="flex-1">
                   <h4 className="font-semibold text-lg">{location.place}</h4>
                   <p className="text-xs text-muted-foreground">
                     {location.entries.length} {location.entries.length === 1 ? 'entry' : 'entries'}
                   </p>
                 </div>
-              </div>
+                {expandedLocations.has(location.place) ? (
+                  <ChevronUp className="h-5 w-5 text-muted-foreground mt-0.5" />
+                ) : (
+                  <ChevronDown className="h-5 w-5 text-muted-foreground mt-0.5" />
+                )}
+              </button>
 
-              <div className="space-y-3 ml-8">
+              {expandedLocations.has(location.place) && (
+                <div className="space-y-3 ml-8">
                 {location.entries.map((entry) => {
                   const isExpanded = expandedEntries.has(entry.id);
                   const isLongResponse = entry.response.length > 150;
@@ -560,7 +581,9 @@ export default function PlacesMapView({ entries }: PlacesMapViewProps) {
                     </div>
                   );
                 })}
-              </div>
+                </div>
+              )}
+              </>
             </CardContent>
           </Card>
         ))}

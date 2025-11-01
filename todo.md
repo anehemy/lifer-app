@@ -1345,3 +1345,10 @@ No more error messages or console logs when sessions are deleted.
 - [x] Add error handling and fallback for failed geocoding requests (try-catch with continue)
 - [ ] Consider caching geocoded results to reduce API calls (future enhancement)
 
+
+
+## Places Map Improvements
+- [x] Make entry lists under each location collapsible/minimized by default
+- [x] Show entry count but hide full entry cards until user expands
+- [ ] Investigate duplicate Piracicaba entries (same question, different metadata variations)
+
