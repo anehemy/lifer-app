@@ -177,19 +177,20 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
           Growth
         </Button>
       </div>
-      
-      {/* Timeline Container */}
+           {/* Timeline Container */}
       <Card className="overflow-hidden">
         <CardContent className="p-0">
           <div 
             ref={timelineRef}
-            className="overflow-x-auto overflow-y-hidden py-8"
-            style={{ height: "250px" }}
+            className="overflow-x-auto overflow-y-hidden py-8 px-4"
+            style={{ height: "280px" }}
           >
             <div 
-              className="relative h-full px-8"
-              style={{ 
-                minWidth: `${years.length * 200}px`,
+              className="relative"
+              style={{
+                minWidth: `${years.length * 150 + 100}px`,
+                width: "100%",
+                height: "100%"
               }}
             >
               {/* Horizontal timeline line */}
@@ -204,7 +205,7 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
                   <div
                     key={year}
                     className="absolute top-1/2 transform -translate-y-1/2"
-                    style={{ left: `${index * 200 + 100}px` }}
+                    style={{ left: `${index * 150 + 50}px` }}
                   >
                     {/* Year marker */}
                     <div className={`w-4 h-4 rounded-full border-2 border-white shadow-md ${isCurrentYear ? 'bg-red-500 ring-4 ring-red-300' : 'bg-purple-500'}`}></div>
