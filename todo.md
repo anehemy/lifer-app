@@ -1494,3 +1494,17 @@ No more error messages or console logs when sessions are deleted.
 - [x] Highlight complete vs incomplete entries on timeline (different opacity/size)
 - [x] Generate targeted questions for missing metadata (e.g., "What year did this happen?")
 
+
+
+
+## NEW FEATURE - Smart Notification System for Missing Data
+- [x] Create notifications table in database schema
+- [x] Build background scanner that detects entries with null metadata fields
+- [x] Generate notifications for each missing field (no AI, just template questions)
+- [x] Create Notifications page/section in app
+- [x] Build quick-fill forms (date picker, location input, dropdowns for types)
+- [x] Implement direct database update (bypass AI completely)
+- [x] Add notification dismissal and auto-dismiss on completion
+- [x] Show notification count badge in navigation
+- [ ] Add notification preferences (auto-scan frequency, which fields to prompt for)
+

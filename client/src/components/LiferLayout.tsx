@@ -2,7 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { APP_TITLE, getLoginUrl } from "@/const";
-import { BookOpen, Brain, Home, Loader2, LogOut, Menu, Settings, Sparkles, Target, User, X } from "lucide-react";
+import { Bell, BookOpen, Brain, Home, Loader2, LogOut, Menu, Settings, Sparkles, Target, User, X } from "lucide-react";
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import AIChatWidget from "@/components/AIChatWidget";
@@ -16,6 +16,10 @@ interface LiferLayoutProps {
 export default function LiferLayout({ children }: LiferLayoutProps) {
   const { user, loading, isAuthenticated, logout } = useAuth();
   const { data: tokenBalance } = trpc.tokens.getBalance.useQuery(undefined, { enabled: isAuthenticated });
+  const { data: notificationCount = 0 } = trpc.notifications.count.useQuery(undefined, { 
+    enabled: isAuthenticated,
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   
@@ -60,6 +64,7 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
     { path: "/vision", icon: Sparkles, label: "Vision Board" },
     { path: "/meditation", icon: User, label: "Meditation" },
     { path: "/primary-aim", icon: Target, label: "Primary Aim" },
+    { path: "/notifications", icon: Bell, label: "Data Completion", badge: notificationCount },
     { path: "/settings", icon: Settings, label: "Settings" },
   ];
 
@@ -98,45 +103,48 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
               <Link key={item.path} href={item.path}>
                 <div
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer ${
+                  className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-md"
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 shadow-sm'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span className="font-medium">{item.label}</span>
+                  <div className="flex items-center gap-3">
+                    <Icon className="h-5 w-5" />
+                    <span className="font-medium">{item.label}</span>
+                  </div>
+                  {item.badge && item.badge > 0 && (
+                    <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                      {item.badge}
+                    </span>
+                  )}
                 </div>
               </Link>
             );
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-800">
+        {/* User Section */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur">
           <div className="flex items-center gap-3 mb-3">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold">
-              {user?.name?.[0]?.toUpperCase() || "U"}
-            </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.name || "User"}</p>
+              <p className="text-sm font-medium truncate">{user?.name || 'User'}</p>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
           </div>
+          
           {/* Token Balance */}
           <Link href="/tokens">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors cursor-pointer">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent transition-colors cursor-pointer mb-2">
               <span className="text-sm font-medium">🪙 {tokenBalance?.balance || 0} tokens</span>
             </div>
           </Link>
 
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="w-full"
-            onClick={() => {
-              logout();
-              window.location.href = "/";
-            }}
+            onClick={logout}
+            className="w-full justify-start"
           >
             <LogOut className="h-4 w-4 mr-2" />
             Sign Out
@@ -146,11 +154,13 @@ export default function LiferLayout({ children }: LiferLayoutProps) {
 
       {/* Main Content */}
       <main className="lg:ml-64 min-h-screen">
-        <div className="container py-8">{children}</div>
+        <div className="p-4 lg:p-8">
+          {children}
+        </div>
       </main>
 
       {/* AI Chat Widget */}
-      <AIChatWidget sidebarOpen={sidebarOpen} />
+      <AIChatWidget />
       
       {/* Early Tester Notice */}
       <EarlyTesterNotice />

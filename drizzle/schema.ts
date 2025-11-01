@@ -89,6 +89,22 @@ export type VisionItem = typeof visionItems.$inferSelect;
 export type InsertVisionItem = typeof visionItems.$inferInsert;
 
 /**
+ * Data completion notifications - prompts users to fill missing metadata
+ */
+export const dataNotifications = mysqlTable("dataNotifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  entryId: int("entryId").notNull().references(() => journalEntries.id, { onDelete: "cascade" }),
+  fieldName: varchar("fieldName", { length: 64 }).notNull(), // e.g., "timeContext", "placeContext"
+  promptQuestion: text("promptQuestion").notNull(), // e.g., "When did this happen?"
+  isDismissed: boolean("isDismissed").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type DataNotification = typeof dataNotifications.$inferSelect;
+export type InsertDataNotification = typeof dataNotifications.$inferInsert;
+
+/**
  * Primary Aim canvas and statement
  */
 export const primaryAims = mysqlTable("primaryAims", {

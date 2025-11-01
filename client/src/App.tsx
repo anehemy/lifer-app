@@ -15,6 +15,7 @@ import Tokens from "./pages/Tokens";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import Analytics from "./pages/Analytics";
+import Notifications from "./pages/Notifications";
 
 function Router() {
   return (
@@ -27,6 +28,7 @@ function Router() {
         <Route path="/meditation" component={Meditation} />
         <Route path="/primary-aim" component={PrimaryAim} />
         <Route path="/tokens" component={Tokens} />
+        <Route path="/notifications" component={Notifications} />
         <Route path="/settings" component={Settings} />
         <Route path="/admin" component={Admin} />
         <Route path="/analytics" component={Analytics} />

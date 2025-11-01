@@ -6,6 +6,12 @@ import { aiChatRouter } from "./aiChatRouter";
 import { analyticsRouter } from "./analyticsRouter";
 import { feedbackRouter } from "./feedbackRouter";
 import { z } from "zod";
+import { 
+  scanAndCreateNotifications, 
+  getActiveNotifications, 
+  dismissNotification, 
+  getNotificationCount 
+} from "./notificationsDb";
 
 export const appRouter = router({
   system: systemRouter,
@@ -492,6 +498,14 @@ Response: ${input.response}`;
             eq(journalEntries.id, id),
             eq(journalEntries.userId, ctx.user.id)
           ));
+        
+        // Auto-dismiss notifications for fields that were just filled
+        const { autoDismissForField } = await import('./notificationsDb');
+        for (const [fieldName, value] of Object.entries(metadata)) {
+          if (value !== undefined && value !== null && value !== '') {
+            await autoDismissForField(ctx.user.id, id, fieldName);
+          }
+        }
         
         return { success: true };
       }),
@@ -1166,6 +1180,26 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
   aiChat: aiChatRouter,
   analytics: analyticsRouter,
   feedback: feedbackRouter,
+
+  // Data Completion Notifications
+  notifications: router({
+    scan: protectedProcedure.mutation(async ({ ctx }) => {
+      const count = await scanAndCreateNotifications(ctx.user.id);
+      return { notificationsCreated: count };
+    }),
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return await getActiveNotifications(ctx.user.id);
+    }),
+    count: protectedProcedure.query(async ({ ctx }) => {
+      return await getNotificationCount(ctx.user.id);
+    }),
+    dismiss: protectedProcedure
+      .input(z.object({ notificationId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const success = await dismissNotification(input.notificationId, ctx.user.id);
+        return { success };
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;
