@@ -1330,3 +1330,10 @@ No more error messages or console logs when sessions are deleted.
 - [x] Verify BUILT_IN_FORGE_API_KEY and BUILT_IN_FORGE_API_URL environment variables (working)
 - [x] Add error handling for forge API failures (added null check in normalizeContentPart)
 
+
+
+## Bug: Location Metadata Too Descriptive
+- [x] Fix AI metadata extraction prompt to only extract geographic location names
+- [x] Update placeContext to contain only city/state/country (e.g., "Piracicaba" not "Piracicaba, best friend's small farm, nature")
+- [x] Ensure geocoding works properly with clean location names
+

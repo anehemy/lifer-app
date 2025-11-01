@@ -414,7 +414,7 @@ export const aiChatRouter = router({
           const metadataPrompt = `Analyze this journal entry and extract contextual metadata. Return ONLY a JSON object with these fields (use null if not applicable):
 {
   "timeContext": "time period mentioned (e.g., 'childhood', '2010', 'age 15', 'summer')",
-  "placeContext": "location mentioned (e.g., 'New York', 'grandfather's garage', 'school')",
+  "placeContext": "ONLY the geographic location name for map geocoding (e.g., 'New York', 'Piracicaba', 'Tokyo, Japan'). Do NOT include descriptions like 'grandfather's garage' or 'best friend's farm' - use ONLY city/state/country names",
   "experienceType": "type of experience (e.g., 'learning', 'relationship', 'achievement', 'loss', 'struggle with time management')",
   "challengeType": "challenge faced if any (e.g., 'bullying', 'failure', 'conflict', 'loss', 'not following through on commitments')",
   "growthTheme": "growth or lesson (e.g., 'resilience', 'patience', 'self-discovery', 'courage', 'alignment creates time')"
@@ -483,7 +483,7 @@ Response: ${args.response}`;
           const metadataPrompt = `Analyze this journal entry and extract contextual metadata. Return ONLY a JSON object with these fields (use null if not applicable):
 {
   "timeContext": "time period mentioned (e.g., 'childhood', '2010', 'age 15', 'summer')",
-  "placeContext": "location mentioned (e.g., 'New York', 'grandfather's garage', 'school')",
+  "placeContext": "ONLY the geographic location name for map geocoding (e.g., 'New York', 'Piracicaba', 'Tokyo, Japan'). Do NOT include descriptions like 'grandfather's garage' or 'best friend's farm' - use ONLY city/state/country names",
   "experienceType": "type of experience (e.g., 'learning', 'relationship', 'achievement', 'loss')",
   "challengeType": "challenge faced if any (e.g., 'bullying', 'failure', 'conflict', 'loss')",
   "growthTheme": "growth or lesson (e.g., 'resilience', 'patience', 'self-discovery', 'courage')"
@@ -578,7 +578,7 @@ Response: ${mergedResponse}`;
           const metadataPrompt = `Analyze this conversation summary and extract contextual metadata. Return ONLY a JSON object with these fields (use null if not applicable):
 {
   "timeContext": "time period mentioned (e.g., 'childhood', '2010', 'age 15', 'summer')",
-  "placeContext": "location mentioned (e.g., 'New York', 'grandfather's garage', 'school')",
+  "placeContext": "ONLY the geographic location name for map geocoding (e.g., 'New York', 'Piracicaba', 'Tokyo, Japan'). Do NOT include descriptions like 'grandfather's garage' or 'best friend's farm' - use ONLY city/state/country names",
   "experienceType": "type of experience discussed (e.g., 'learning', 'relationship', 'achievement', 'loss', 'career exploration')",
   "challengeType": "main challenge discussed if any (e.g., 'bullying', 'failure', 'conflict', 'loss', 'time management')",
   "growthTheme": "growth or lesson from conversation (e.g., 'resilience', 'patience', 'self-discovery', 'courage', 'alignment')"
