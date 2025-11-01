@@ -437,6 +437,12 @@ Response: ${args.response}`;
             console.error('Failed to extract metadata:', e);
           }
           
+          // Normalize location to prevent accent-based duplicates
+          const { normalizeLocation } = await import('../shared/textUtils');
+          if (metadata && metadata.placeContext) {
+            metadata.placeContext = normalizeLocation(metadata.placeContext);
+          }
+          
           // Save to journal with metadata
           await db.createJournalEntry({
             userId: ctx.user.id,
@@ -504,6 +510,12 @@ Response: ${mergedResponse}`;
             }
           } catch (e) {
             console.error('Failed to extract metadata for merged entry:', e);
+          }
+          
+          // Normalize location to prevent accent-based duplicates
+          const { normalizeLocation: normalizeLoc } = await import('../shared/textUtils');
+          if (mergedMetadata && mergedMetadata.placeContext) {
+            mergedMetadata.placeContext = normalizeLoc(mergedMetadata.placeContext);
           }
           
           // Create the merged entry with metadata
@@ -600,6 +612,12 @@ Key Insights: ${keyInsights ? keyInsights.join(', ') : 'none'}`;
             }
           } catch (e) {
             console.error('Failed to extract metadata for conversation summary:', e);
+          }
+          
+          // Normalize location to prevent accent-based duplicates
+          const { normalizeLocation: normalizeLocationUtil } = await import('../shared/textUtils');
+          if (summaryMetadata && summaryMetadata.placeContext) {
+            summaryMetadata.placeContext = normalizeLocationUtil(summaryMetadata.placeContext);
           }
           
           // Save summary to journal with metadata

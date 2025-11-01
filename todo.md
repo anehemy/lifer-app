@@ -1357,3 +1357,11 @@ No more error messages or console logs when sessions are deleted.
 ## UI Improvements
 - [x] Make location sections in Places view ultra-minimal when collapsed - showing only location name and entry count on a single line
 
+## Data Quality Improvements
+- [x] Normalize location names by removing accents to prevent duplicates (e.g., "São Paulo" vs "Sao Paulo")
+
+
+
+## Data Quality Improvements
+- [ ] Normalize location names by removing accents to prevent duplicates (e.g., "São Paulo" vs "Sao Paulo")
+

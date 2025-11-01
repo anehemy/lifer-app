@@ -366,6 +366,7 @@ Return ONLY the question (1-2 sentences max), nothing else.`;
       .mutation(async ({ ctx, input }) => {
         const { createJournalEntry } = await import("./db");
         const { invokeLLM } = await import("./_core/llm");
+        const { normalizeLocation } = await import("../shared/textUtils");
         
         // Extract metadata from response using AI
         const metadataPrompt = `Analyze this journal entry and extract contextual metadata. Return ONLY a JSON object with these fields (use null if not applicable):
@@ -396,6 +397,11 @@ Response: ${input.response}`;
           console.error('Failed to extract metadata:', e);
         }
         
+        // Normalize location to prevent accent-based duplicates
+        if (metadata && 'placeContext' in metadata && metadata.placeContext) {
+          metadata.placeContext = normalizeLocation(metadata.placeContext);
+        }
+        
         return createJournalEntry({ userId: ctx.user.id, ...input, ...metadata });
       }),
     delete: protectedProcedure
@@ -418,6 +424,7 @@ Response: ${input.response}`;
       .mutation(async ({ ctx, input }) => {
         const db = await import('./db').then(m => m.getDb());
         if (!db) throw new Error('Database not available');
+        const { normalizeLocation } = await import('../shared/textUtils');
         
         const { journalEntries } = await import('../drizzle/schema');
         const { eq, and } = await import('drizzle-orm');
@@ -426,7 +433,7 @@ Response: ${input.response}`;
           .set({
             response: input.response,
             timeContext: input.timeContext,
-            placeContext: input.placeContext,
+            placeContext: normalizeLocation(input.placeContext),
             experienceType: input.experienceType,
             challengeType: input.challengeType,
             growthTheme: input.growthTheme,
@@ -453,8 +460,15 @@ Response: ${input.response}`;
         if (!db) throw new Error('Database not available');
         const { journalEntries } = await import('../drizzle/schema');
         const { eq, and } = await import('drizzle-orm');
+        const { normalizeLocation } = await import('../shared/textUtils');
         
         const { id, ...metadata } = input;
+        
+        // Normalize location to prevent accent-based duplicates
+        if (metadata.placeContext !== undefined) {
+          metadata.placeContext = normalizeLocation(metadata.placeContext);
+        }
+        
         await db.update(journalEntries)
           .set(metadata)
           .where(and(
