@@ -380,7 +380,19 @@ export default function LifeStoryTimeline({ entries, onViewModeChange }: LifeSto
                 </CardContent>
               </Card>
             ) : (
-              renderTimelineView()
+              <div className="space-y-8">
+                {/* Interactive Timeline Visualization */}
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">Timeline Visualization</h3>
+                  <InteractiveTimeline entries={entries} />
+                </div>
+                
+                {/* Traditional Timeline View */}
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">Detailed Entries</h3>
+                  {renderTimelineView()}
+                </div>
+              </div>
             )}
           </TabsContent>
 

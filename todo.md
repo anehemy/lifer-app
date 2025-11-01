@@ -1465,10 +1465,10 @@ No more error messages or console logs when sessions are deleted.
 - [x] Implement category-aware questions - Mr. MG questions should match selected Life Story category (Places, Experiences, Growth, Challenges)
 
 ## NEW FEATURE - Interactive Timeline Visualization
-- [ ] Build horizontal scrollable timeline starting from birth
-- [ ] Plot journal entries on timeline by date
-- [ ] Add dimension selector (Places, Experiences, Growth, Challenges, All)
-- [ ] Color code events by dimension type
-- [ ] Add hover/click to view entry details
-- [ ] Auto-scroll to current date on load
+- [x] Build horizontal scrollable timeline starting from birth
+- [x] Plot journal entries on timeline by date
+- [x] Add dimension selector (Places, Experiences, Growth, Challenges, All)
+- [x] Color code events by dimension type
+- [x] Add hover/click to view entry details
+- [x] Auto-scroll to current date on load
 
