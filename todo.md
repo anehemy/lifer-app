@@ -1365,3 +1365,85 @@ No more error messages or console logs when sessions are deleted.
 ## Data Quality Improvements
 - [ ] Normalize location names by removing accents to prevent duplicates (e.g., "São Paulo" vs "Sao Paulo")
 
+
+
+
+## FUTURE IMPROVEMENTS - Location Data Import
+**Goal**: Allow users to import location history from Google/Facebook data exports to auto-populate Places and generate contextual journal prompts.
+
+### Benefits:
+- Privacy-first approach (user downloads their own data, no OAuth needed)
+- Years of historical location data imported at once
+- Automatic journal prompt suggestions based on places visited
+- Timeline enrichment with location context
+- Photo metadata extraction for additional location data
+
+### Implementation Steps:
+
+#### Phase 1: Data Upload & Storage
+- [ ] Create file upload interface for data archives (ZIP support)
+- [ ] Support Google Takeout format (JSON location history)
+- [ ] Support Facebook data export format (JSON check-ins, locations)
+- [ ] Parse and validate uploaded data files
+- [ ] Store raw import data temporarily for processing
+
+#### Phase 2: Location History Parser
+- [ ] Parse Google Location History JSON format
+- [ ] Parse Facebook check-ins and tagged locations
+- [ ] Extract location coordinates, timestamps, place names
+- [ ] Handle different date/time formats from both platforms
+- [ ] Deduplicate location entries
+
+#### Phase 3: Photo Metadata Extraction
+- [ ] Extract EXIF location data from uploaded photos
+- [ ] Parse Google Photos metadata JSON
+- [ ] Parse Facebook photo location data
+- [ ] Match photos to location timeline
+
+#### Phase 4: AI Analysis & Enrichment
+- [ ] Analyze location patterns (frequent places, time periods)
+- [ ] Identify significant locations (home, work, travel destinations)
+- [ ] Calculate time spent at each location
+- [ ] Detect trips and travel patterns
+- [ ] Generate location-based insights
+
+#### Phase 5: Journal Prompt Generation
+- [ ] Generate contextual prompts based on location history
+  - "Tell me about your time in Paris in 2019"
+  - "What memories do you have from your visits to grandmother's house?"
+- [ ] Prioritize prompts by location significance
+- [ ] Group prompts by time period and place
+- [ ] Allow user to accept/reject suggested prompts
+
+#### Phase 6: Auto-populate Metadata
+- [ ] When user writes entries, suggest locations from history
+- [ ] Auto-fill placeContext based on timeContext and location data
+- [ ] Show "You were in [Location] during this time" hints
+- [ ] Allow manual override of suggested locations
+
+#### Phase 7: Timeline Visualization
+- [ ] Display imported locations on Places map
+- [ ] Show location clusters and travel routes
+- [ ] Integrate with existing timeline views
+- [ ] Add "imported from Google/Facebook" badges
+- [ ] Allow filtering by data source
+
+#### Phase 8: Privacy & Data Management
+- [ ] Clear imported raw data after processing
+- [ ] Allow user to delete imported location history
+- [ ] Show what data was imported and when
+- [ ] Export processed location data
+- [ ] GDPR compliance for data handling
+
+**Priority**: FUTURE - High value feature for later implementation
+**Estimated Effort**: Large (2-3 weeks of development)
+
+
+
+
+## CRITICAL BUG - Journal Entry Duplication
+- [x] Deleted journal entries reappearing (Piracicaba example)
+- [x] Audit all code paths that create journal entries
+- [x] Find root cause of duplication
+- [x] Fix duplication bug to prevent entries from being recreated after deletion
+

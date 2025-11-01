@@ -128,6 +128,25 @@ export async function createJournalEntry(entry: InsertJournalEntry): Promise<Jou
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
+  // Check for duplicate entry (same user, question, and response)
+  const [existingEntry] = await db
+    .select()
+    .from(journalEntries)
+    .where(
+      and(
+        eq(journalEntries.userId, entry.userId!),
+        eq(journalEntries.question, entry.question),
+        eq(journalEntries.response, entry.response)
+      )
+    )
+    .limit(1);
+  
+  // If duplicate exists, return it instead of creating a new one
+  if (existingEntry) {
+    console.log('[createJournalEntry] Duplicate entry detected, returning existing entry:', existingEntry.id);
+    return existingEntry;
+  }
+  
   await db.insert(journalEntries).values(entry);
   
   // Get the most recently created entry for this user
