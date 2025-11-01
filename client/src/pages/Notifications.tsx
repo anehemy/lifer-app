@@ -47,7 +47,7 @@ export default function Notifications() {
 
     // Update the journal entry
     await updateMetadata.mutateAsync({
-      entryId: notification.entryId,
+      id: notification.entryId,
       [notification.fieldName]: inputValue,
     });
 

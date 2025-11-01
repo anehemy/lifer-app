@@ -1535,3 +1535,23 @@ No more error messages or console logs when sessions are deleted.
 - [x] Add "Complete Data" button to incomplete journal entry cards that links to alerts page
 - [x] Fix timeline hover text showing "name of place" and "name of experience" - should show actual values
 
+
+
+
+## CRITICAL BUG - Completeness Calculation
+- [ ] Fix completeness calculation to require ALL 5 fields (time, place, experience, challenge, growth)
+- [ ] Entry should only show "Complete" when all 5 fields are populated
+- [ ] Always display all 5 metadata tags on journal cards, even when empty
+- [ ] Show placeholder text for empty fields (e.g., "Add time", "Add place", "Add experience", etc.)
+- [ ] Update calculateCompleteness function in shared/completeness.ts
+- [ ] Update JournalEntryCard.tsx to always render all 5 tags
+
+
+
+
+## Bug Fixes - November 1, 2025
+- [x] Fix /notifications (Alerts) page error: "Invalid input: expected number, received undefined" for id parameter
+- [x] Fix journal entry cards to always show all 5 metadata tags (time, place, experience, challenge, growth) even when empty
+- [x] Ensure empty tags show placeholder text like "Add time", "Add place", etc. instead of hiding the tag
+- [ ] KNOWN ISSUE: Browser caching preventing tag changes from showing - code is correct but requires hard refresh or cache clear
+
