@@ -1644,3 +1644,20 @@ No more error messages or console logs when sessions are deleted.
 - [ ] Test auto-approve preference persistence
 - [ ] Test integration on both Dashboard and Life Story page
 
+
+
+
+## BUG - Share a Thought Toggle Missing
+- [x] Life Story page not showing Guided/Free-form toggle at top
+- [x] Toggle should appear in top right corner next to page title
+- [x] Fix Journal.tsx to render the toggle properly
+- NOTE: Toggle is working correctly, appears as "Guided" button with switch in top right
+
+
+
+
+## UX Enhancement - Prominent Toggle
+- [x] Make Guided/Free-form toggle more visually prominent
+- [x] Add colorful gradient (yellow-to-orange-to-red gradient)
+- [x] Increase size and add animation/effects to draw attention (hover scale, shadow)
+

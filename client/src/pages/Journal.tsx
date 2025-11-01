@@ -257,14 +257,15 @@ export default function Journal() {
           <p className="text-muted-foreground">Guided by {MR_MG_NAME}</p>
         </div>
         
-        {/* Mode Toggle */}
-        <div className="flex items-center gap-3 bg-card border rounded-lg px-4 py-2">
-          <span className="text-sm font-medium">
-            {mode === "guided" ? "Guided" : "Free-form"}
+        {/* Mode Toggle - Prominent with Gradient */}
+        <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-xl px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <span className="text-lg font-bold text-white drop-shadow-md">
+            {mode === "guided" ? "✨ Guided" : "💭 Free-form"}
           </span>
           <Switch
             checked={mode === "freeform"}
             onCheckedChange={(checked) => setMode(checked ? "freeform" : "guided")}
+            className="data-[state=checked]:bg-white data-[state=unchecked]:bg-white/50"
           />
         </div>
       </div>
