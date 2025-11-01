@@ -57,24 +57,24 @@ export default function StartHereGuide() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            size="sm"
+            size="default"
             onClick={() => setShowGuide(true)}
-            className="gap-2"
+            className="gap-2 bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-white border-none hover:from-cyan-600 hover:via-teal-600 hover:to-emerald-600 shadow-lg hover:shadow-xl hover:scale-105 transition-all font-semibold"
           >
-            <BookOpen className="h-4 w-4" />
-            Start Here Guide
+            <BookOpen className="h-5 w-5" />
+            🎯 Start Here Guide
           </Button>
           
           {/* Announcement Button - only show if enabled */}
           {globalSettings?.announcement_enabled === '1' && (
             <Button
               variant="outline"
-              size="sm"
+              size="default"
               onClick={() => setShowAnnouncement(true)}
-              className="gap-2"
+              className="gap-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 text-white border-none hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 shadow-lg hover:shadow-xl hover:scale-105 transition-all font-semibold"
             >
-              <Megaphone className="h-4 w-4" />
-              Announcements
+              <Megaphone className="h-5 w-5" />
+              📢 Announcements
             </Button>
           )}
         </div>

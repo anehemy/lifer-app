@@ -1661,3 +1661,8 @@ No more error messages or console logs when sessions are deleted.
 - [x] Add colorful gradient (yellow-to-orange-to-red gradient)
 - [x] Increase size and add animation/effects to draw attention (hover scale, shadow)
 
+
+## Dashboard Button Prominence
+- [x] Make Start Here Guide button more prominent with blue-green gradient (cyan-teal-emerald)
+- [x] Make Announcements button more prominent with blue-purple gradient (blue-indigo-purple)
+- [x] Add hover effects and shadows for better visibility (scale, shadow-xl)
