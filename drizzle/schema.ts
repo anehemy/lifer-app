@@ -214,3 +214,40 @@ export const userEvents = mysqlTable("userEvents", {
 
 export type UserEvent = typeof userEvents.$inferSelect;
 export type InsertUserEvent = typeof userEvents.$inferInsert;
+
+/**
+ * Experience analysis data - AI-extracted psychological dimensions
+ * Based on Event Characteristics Questionnaire (ECQ) and Life Themes framework
+ */
+export const experienceAnalyses = mysqlTable("experienceAnalyses", {
+  id: int("id").autoincrement().primaryKey(),
+  entryId: int("entryId").notNull().unique().references(() => journalEntries.id, { onDelete: "cascade" }),
+  userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  
+  // ECQ Dimensions (9 psychological characteristics)
+  valence: mysqlEnum("valence", ["positive", "negative", "neutral"]),
+  impact: int("impact"), // 1-10 scale
+  predictability: int("predictability"), // 1-10 scale
+  challenge: int("challenge"), // 1-10 scale
+  emotionalSignificance: int("emotionalSignificance"), // 1-10 scale
+  worldviewChange: int("worldviewChange"), // 1-10 scale
+  
+  // Life Themes (6 core human concerns)
+  primaryTheme: mysqlEnum("primaryTheme", ["Love", "Value", "Power", "Freedom", "Truth", "Justice"]),
+  secondaryThemes: text("secondaryThemes"), // JSON array
+  
+  // Pattern Recognition
+  experienceArchetype: varchar("experienceArchetype", { length: 255 }), // e.g., "Loss and Recovery"
+  keywords: text("keywords"), // JSON array of key concepts
+  emotionalTone: varchar("emotionalTone", { length: 100 }),
+  
+  // Clustering
+  clusterId: int("clusterId"), // For grouping similar experiences
+  semanticEmbedding: text("semanticEmbedding"), // JSON array of embedding vector
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type ExperienceAnalysis = typeof experienceAnalyses.$inferSelect;
+export type InsertExperienceAnalysis = typeof experienceAnalyses.$inferInsert;

@@ -5,6 +5,7 @@ import { publicProcedure, protectedProcedure, router } from "./_core/trpc";
 import { aiChatRouter } from "./aiChatRouter";
 import { analyticsRouter } from "./analyticsRouter";
 import { feedbackRouter } from "./feedbackRouter";
+import { experiencesRouter } from "./experiencesRouter";
 import { z } from "zod";
 import { 
   scanAndCreateNotifications, 
@@ -1306,6 +1307,9 @@ Start directly with the meditation. For example: "Begin by finding a comfortable
         return { success };
       }),
   }),
+
+  // Experience Analysis (Bubble Game Phase 1)
+  experiences: experiencesRouter,
 });
 
 export type AppRouter = typeof appRouter;

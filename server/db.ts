@@ -24,6 +24,9 @@ import {
   userEvents,
   InsertUserEvent,
   UserEvent,
+  experienceAnalyses,
+  InsertExperienceAnalysis,
+  ExperienceAnalysis,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
@@ -99,6 +102,51 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     console.error("[Database] Failed to upsert user:", error);
     throw error;
   }
+}
+
+// Experience Analysis Helpers
+
+export async function saveExperienceAnalysis(analysis: InsertExperienceAnalysis): Promise<ExperienceAnalysis> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Check if analysis already exists
+  const existing = await db.select().from(experienceAnalyses).where(eq(experienceAnalyses.entryId, analysis.entryId)).limit(1);
+  
+  if (existing.length > 0) {
+    // Update existing
+    await db.update(experienceAnalyses)
+      .set(analysis)
+      .where(eq(experienceAnalyses.entryId, analysis.entryId));
+    return (await db.select().from(experienceAnalyses).where(eq(experienceAnalyses.entryId, analysis.entryId)).limit(1))[0];
+  } else {
+    // Insert new
+    await db.insert(experienceAnalyses).values(analysis);
+    return (await db.select().from(experienceAnalyses).where(eq(experienceAnalyses.entryId, analysis.entryId)).limit(1))[0];
+  }
+}
+
+export async function getExperienceAnalysis(entryId: number): Promise<ExperienceAnalysis | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(experienceAnalyses).where(eq(experienceAnalyses.entryId, entryId)).limit(1);
+  return result[0];
+}
+
+export async function getUserExperienceAnalyses(userId: number): Promise<ExperienceAnalysis[]> {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(experienceAnalyses).where(eq(experienceAnalyses.userId, userId));
+}
+
+export async function getJournalEntryById(entryId: number): Promise<JournalEntry | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  
+  const result = await db.select().from(journalEntries).where(eq(journalEntries.id, entryId)).limit(1);
+  return result[0];
 }
 
 export async function getUserByOpenId(openId: string) {
