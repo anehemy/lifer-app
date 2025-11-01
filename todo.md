@@ -1508,3 +1508,21 @@ No more error messages or console logs when sessions are deleted.
 - [x] Show notification count badge in navigation
 - [ ] Add notification preferences (auto-scan frequency, which fields to prompt for)
 
+
+
+
+## BUG FIX - Revert View Visualizations
+- [ ] Restore Places view to show map visualization (not timeline)
+- [ ] Restore Experiences view to original bubble/card visualization (not timeline)
+- [ ] Keep timeline visualization only in "All Events" (Timeline) tab
+
+
+
+
+## BUG FIX - Completeness Display Issues
+- [x] Fix completeness calculation - entries with null fields should NOT show as "Complete"
+- [x] Hide "null" tags - don't show tags for empty fields, just leave them blank
+- [x] Make missing field indicators clickable to quickly fill data
+- [x] Trigger notification scan automatically when viewing journal
+- [x] Show notification count in sidebar badge
+

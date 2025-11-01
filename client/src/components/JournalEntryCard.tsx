@@ -226,33 +226,33 @@ export default function JournalEntryCard({ entry, onDelete }: JournalEntryCardPr
             })()}
             
             {/* Quick context tags - visible without expanding */}
-            {!isEditing && (entry.timeContext || entry.placeContext || entry.experienceType) && (
+            {!isEditing && (entry.timeContext || entry.placeContext || entry.experienceType || entry.challengeType || entry.growthTheme) && (
               <div className="flex flex-wrap gap-2 mb-4">
-                {entry.timeContext && (
+                {entry.timeContext && entry.timeContext !== 'null' && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
                     <Clock className="h-3 w-3" />
                     {entry.timeContext}
                   </span>
                 )}
-                {entry.placeContext && (
+                {entry.placeContext && entry.placeContext !== 'null' && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs font-medium">
                     <MapPin className="h-3 w-3" />
                     {entry.placeContext}
                   </span>
                 )}
-                {entry.experienceType && (
+                {entry.experienceType && entry.experienceType !== 'null' && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full text-xs font-medium">
                     <Sparkles className="h-3 w-3" />
                     {entry.experienceType}
                   </span>
                 )}
-                {entry.challengeType && (
+                {entry.challengeType && entry.challengeType !== 'null' && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full text-xs font-medium">
                     <Heart className="h-3 w-3" />
                     {entry.challengeType}
                   </span>
                 )}
-                {entry.growthTheme && (
+                {entry.growthTheme && entry.growthTheme !== 'null' && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-medium">
                     <TrendingUp className="h-3 w-3" />
                     {entry.growthTheme}

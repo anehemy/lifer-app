@@ -128,6 +128,14 @@ export default function Journal() {
   const utils = trpc.useUtils();
   
   const { data: entries = [] } = trpc.journal.list.useQuery();
+  const scanForMissingData = trpc.notifications.scanForMissingData.useMutation();
+  
+  // Automatically scan for missing data when entries load
+  useEffect(() => {
+    if (entries.length > 0) {
+      scanForMissingData.mutate();
+    }
+  }, [entries.length]);
   const createEntry = trpc.journal.create.useMutation({
     onSuccess: () => {
       toast.success("Entry saved successfully!");
