@@ -5,6 +5,7 @@ import { Calendar, MapPin, Sparkles, Heart, TrendingUp, Clock, ChevronDown, Chev
 import { useState } from "react";
 import PlacesMapView from "@/components/PlacesMapView";
 import ExperiencesBubbleView from "@/components/ExperiencesBubbleView";
+import InteractiveTimeline from "@/components/InteractiveTimeline";
 
 interface JournalEntry {
   id: number;
