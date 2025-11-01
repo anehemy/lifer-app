@@ -1567,3 +1567,11 @@ No more error messages or console logs when sessions are deleted.
 - [ ] Test with different provider/model combinations
 - [ ] Fix: Primary Model field appears empty on page load
 
+
+
+
+## UX Improvements - Alerts Page Cards
+- [x] Make notification cards responsive width (currently too narrow)
+- [x] Remove repetitive text in cards - question appears twice (in title and "Entry:" section)
+- [x] Simplify card display: show metadata field name + question once + existing answer
+

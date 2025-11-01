@@ -91,7 +91,7 @@ export default function Notifications() {
 
   return (
     <DashboardLayout>
-      <div className="container max-w-4xl py-8">
+      <div className="container py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -147,18 +147,18 @@ export default function Notifications() {
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-2 mb-3">
                         {getFieldIcon(notification.fieldName)}
-                        <h3 className="font-semibold text-amber-700 dark:text-amber-400">
+                        <h3 className="font-semibold text-lg">
                           {notification.promptQuestion}
                         </h3>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        <strong>Entry:</strong> {notification.entryQuestion}
-                      </p>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {notification.entryResponse}
-                      </p>
+                      <div className="bg-muted/50 rounded-lg p-3 mb-2">
+                        <p className="text-sm font-medium text-muted-foreground mb-1">Your journal entry:</p>
+                        <p className="text-sm line-clamp-3">
+                          {notification.entryResponse}
+                        </p>
+                      </div>
                     </div>
                     {editingId !== notification.id && (
                       <Button
