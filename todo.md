@@ -1447,3 +1447,12 @@ No more error messages or console logs when sessions are deleted.
 - [x] Find root cause of duplication
 - [x] Fix duplication bug to prevent entries from being recreated after deletion
 
+
+
+
+## CRITICAL BUG - LLM API Failures
+- [x] "Both forge and forge providers failed" error in journal page
+- [x] Check if OpenAI fallback is configured properly
+- [x] Add graceful error handling when both providers fail
+- [x] Show user-friendly error message instead of crashing
+
