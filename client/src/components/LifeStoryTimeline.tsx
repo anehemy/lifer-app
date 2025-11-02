@@ -22,19 +22,26 @@ interface JournalEntry {
 interface LifeStoryTimelineProps {
   entries: JournalEntry[];
   birthYear?: number | null;
+  viewMode?: ViewMode; // Add viewMode prop for controlled component
   onViewModeChange?: (mode: ViewMode) => void;
 }
 
 type ViewMode = "timeline" | "locations" | "experiences" | "challenges" | "growth";
 
-export default function LifeStoryTimeline({ entries, birthYear, onViewModeChange }: LifeStoryTimelineProps) {
-  const [viewMode, setViewMode] = useState<ViewMode>("timeline");
+export default function LifeStoryTimeline({ entries, birthYear, viewMode: controlledViewMode, onViewModeChange }: LifeStoryTimelineProps) {
+  // Use controlled viewMode if provided, otherwise use internal state
+  const [internalViewMode, setInternalViewMode] = useState<ViewMode>("timeline");
+  const viewMode = controlledViewMode ?? internalViewMode;
   
   const handleViewModeChange = (mode: ViewMode) => {
     console.log('[LifeStoryTimeline] handleViewModeChange called with mode:', mode);
-    setViewMode(mode);
+    // Only update internal state if not controlled
+    if (controlledViewMode === undefined) {
+      setInternalViewMode(mode);
+    }
+    // Always notify parent
     onViewModeChange?.(mode);
-    console.log('[LifeStoryTimeline] viewMode state updated to:', mode);
+    console.log('[LifeStoryTimeline] viewMode updated to:', mode);
   };
   const [expandedEntries, setExpandedEntries] = useState<Set<number>>(new Set());
   const [collapsedPeriods, setCollapsedPeriods] = useState<Set<string>>(new Set());

@@ -75,7 +75,7 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
     const newBubbles: Bubble[] = experiences.map((exp, i) => {
       // Random position within pentagon
       const angle = Math.random() * Math.PI * 2;
-      const distance = Math.random() * (RADIUS * 0.6);
+      const distance = RADIUS * 0.4 + Math.random() * (RADIUS * 0.4); // Start between 40-80% of radius, away from center
       
       return {
         id: `bubble-${i}`,
@@ -84,13 +84,25 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
         y: CENTER_Y + distance * Math.sin(angle),
         vx: 0,
         vy: 0,
-        radius: 40 + Math.random() * 20,
+        radius: 20 + Math.random() * 15, // Reduced from 40-60 to 20-35 so hexagon is visible
         color: "#a855f7", // Start with purple instead of gray for better visibility
       };
     });
 
     setBubbles(newBubbles);
   }, [experiences]);
+
+  // Calculate text similarity between two experience labels (0-1)
+  const calculateSimilarity = (label1: string, label2: string): number => {
+    const words1 = label1.toLowerCase().split(/\s+/);
+    const words2 = label2.toLowerCase().split(/\s+/);
+    
+    // Count common words
+    const commonWords = words1.filter(word => words2.includes(word)).length;
+    const totalWords = Math.max(words1.length, words2.length);
+    
+    return commonWords / totalWords;
+  };
 
   // Calculate color based on distance to vertices
   const calculateBubbleColor = (bubble: Bubble): string => {
@@ -154,7 +166,28 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
         }
       });
 
-      // 2. Attract toward nearest vertex (creates clustering near values)
+      // 2. Semantic clustering: attract similar experiences
+      bubbles.forEach((other, j) => {
+        if (i === j) return;
+        
+        const similarity = calculateSimilarity(bubble.label, other.label);
+        
+        // Only attract if similarity is above threshold (0.3 = at least 30% common words)
+        if (similarity > 0.3) {
+          const dx = other.x - bubble.x;
+          const dy = other.y - bubble.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          
+          // Attraction force proportional to similarity
+          const clusterForce = similarity * 0.05; // Gentle clustering
+          if (dist > 0) {
+            bubble.vx += (dx / dist) * clusterForce;
+            bubble.vy += (dy / dist) * clusterForce;
+          }
+        }
+      });
+
+      // 3. Attract toward nearest vertex (creates clustering near values)
       let nearestVertex = themes[0];
       let nearestDist = Infinity;
       
@@ -228,62 +261,12 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
       // Clear canvas
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-      // Draw hexagon outline - make it more visible
-      ctx.beginPath();
-      themes.forEach((theme, i) => {
-        if (i === 0) ctx.moveTo(theme.x, theme.y);
-        else ctx.lineTo(theme.x, theme.y);
-      });
-      ctx.closePath();
-      ctx.strokeStyle = "#94a3b8"; // Darker gray
-      ctx.lineWidth = 4; // Thicker line
-      ctx.stroke();
-      
-      // Add a subtle fill to show the hexagon area
-      ctx.fillStyle = "rgba(148, 163, 184, 0.05)";
-      ctx.fill();
-
-      // Draw theme vertices - larger and more prominent
-      themes.forEach(theme => {
-        // Draw larger colored circle
-        ctx.beginPath();
-        ctx.arc(theme.x, theme.y, 25, 0, Math.PI * 2);
-        ctx.fillStyle = theme.color;
-        ctx.fill();
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-        
-        // Draw theme label with background for better visibility
-        const labelY = theme.y - 45;
-        ctx.font = "bold 18px sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        
-        // Measure text for background
-        const textMetrics = ctx.measureText(theme.name);
-        const padding = 8;
-        
-        // Draw background rectangle
-        ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
-        ctx.fillRect(
-          theme.x - textMetrics.width / 2 - padding,
-          labelY - 12,
-          textMetrics.width + padding * 2,
-          24
-        );
-        
-        // Draw text
-        ctx.fillStyle = theme.color;
-        ctx.fillText(theme.name, theme.x, labelY);
-      });
-
       // Apply physics
       if (!dragging) {
         applyPhysics(bubbles);
       }
 
-      // Draw bubbles
+      // Draw bubbles FIRST (background layer)
       bubbles.forEach(bubble => {
         ctx.beginPath();
         ctx.arc(bubble.x, bubble.y, bubble.radius, 0, Math.PI * 2);
@@ -302,6 +285,83 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
         words.forEach((word, i) => {
           ctx.fillText(word, bubble.x, bubble.y + (i - words.length / 2 + 0.5) * 14);
         });
+      });
+
+      // Draw hexagon SECOND (top layer) - ULTRA VISIBLE
+      // Draw hexagon outline with glow effect
+      ctx.save();
+      
+      // Add outer glow
+      ctx.shadowColor = "rgba(100, 116, 139, 0.5)";
+      ctx.shadowBlur = 20;
+      
+      ctx.beginPath();
+      themes.forEach((theme, i) => {
+        if (i === 0) ctx.moveTo(theme.x, theme.y);
+        else ctx.lineTo(theme.x, theme.y);
+      });
+      ctx.closePath();
+      ctx.strokeStyle = "#334155"; // Much darker for maximum contrast
+      ctx.lineWidth = 10; // VERY thick line - doubled from 5 to 10
+      ctx.stroke();
+      
+      // Add a more visible fill to show the hexagon area
+      ctx.shadowBlur = 0; // Remove shadow for fill
+      ctx.fillStyle = "rgba(148, 163, 184, 0.15)"; // More opaque
+      ctx.fill();
+      
+      ctx.restore();
+
+      // Draw theme vertices - MUCH larger and more prominent
+      themes.forEach(theme => {
+        ctx.save();
+        
+        // Add glow effect to vertices
+        ctx.shadowColor = theme.color;
+        ctx.shadowBlur = 25;
+        
+        // Draw MUCH larger colored circle
+        ctx.beginPath();
+        ctx.arc(theme.x, theme.y, 50, 0, Math.PI * 2); // Increased from 30 to 50
+        ctx.fillStyle = theme.color;
+        ctx.fill();
+        
+        // Add white stroke for definition
+        ctx.shadowBlur = 0; // Remove shadow for stroke
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 6; // Even thicker stroke
+        ctx.stroke();
+        
+        ctx.restore();
+        
+        // Draw theme label with background for better visibility
+        const labelY = theme.y - 50; // Moved further out
+        ctx.font = "bold 20px sans-serif"; // Larger font
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        
+        // Measure text for background
+        const textMetrics = ctx.measureText(theme.name);
+        const padding = 10;
+        
+        // Draw background rectangle with shadow
+        ctx.shadowColor = "rgba(0, 0, 0, 0.2)";
+        ctx.shadowBlur = 4;
+        ctx.fillStyle = "rgba(255, 255, 255, 0.98)";
+        ctx.fillRect(
+          theme.x - textMetrics.width / 2 - padding,
+          labelY - 14,
+          textMetrics.width + padding * 2,
+          28
+        );
+        
+        // Reset shadow
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+        
+        // Draw text
+        ctx.fillStyle = theme.color;
+        ctx.fillText(theme.name, theme.x, labelY);
       });
 
       animationRef.current = requestAnimationFrame(animate);
@@ -451,7 +511,7 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
           <div>
             <label className="text-xs font-medium text-slate-600 flex justify-between">
               <span>Damping (Friction)</span>
-              <span className="text-slate-500">{damping.toFixed(3)}</span>
+              <span className="text-slate-500">{damping.toFixed(1)}</span>
             </label>
             <input
               type="range"

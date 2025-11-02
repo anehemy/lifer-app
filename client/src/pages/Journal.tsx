@@ -350,6 +350,7 @@ export default function Journal() {
         <LifeStoryTimeline 
           entries={entries} 
           birthYear={user?.birthYear}
+          viewMode={selectedCategory}
           onViewModeChange={(mode) => setSelectedCategory(mode)}
         />
       )}
