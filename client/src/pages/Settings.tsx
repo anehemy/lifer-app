@@ -741,6 +741,29 @@ export default function Settings() {
             <Button variant="outline">Export Data</Button>
           </div>
           <div>
+            <h3 className="font-semibold mb-2">Re-analyze Journal Entries</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              Re-analyze all journal entries to extract comma-separated experience keywords for the bubble visualization. This will update the experienceType field for all entries.
+            </p>
+            <Button 
+              variant="outline"
+              onClick={async () => {
+                if (confirm(`Re-analyze all ${user?.name || 'your'} journal entries? This will update experience keywords using the latest AI analysis.`)) {
+                  try {
+                    toast.info('Re-analyzing entries... This may take a minute.');
+                    const result = await trpc.journal.reanalyzeExperienceTypes.mutate();
+                    toast.success(`Successfully re-analyzed ${result.updatedEntries} out of ${result.totalEntries} entries!`);
+                  } catch (error) {
+                    console.error('Re-analysis error:', error);
+                    toast.error('Failed to re-analyze entries');
+                  }
+                }
+              }}
+            >
+              Re-analyze All Entries
+            </Button>
+          </div>
+          <div>
             <h3 className="font-semibold mb-2">Chat History Management</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Manage your chat history with Mr. MG. Clean up empty conversations or clear all history.

@@ -408,7 +408,7 @@ Return ONLY the question (1-2 sentences max), nothing else.`;
 {
   "timeContext": "time period mentioned (e.g., 'childhood', '2010', 'age 15', 'summer')",
   "placeContext": "location mentioned (e.g., 'New York', 'grandfather's garage', 'school')",
-  "experienceType": "type of experience (e.g., 'learning', 'relationship', 'achievement', 'loss')",
+  "experienceType": "comma-separated experience keywords (e.g., 'entrepreneurial journey, career reflection, self-discovery' or 'relationship, conflict, growth' or 'relocation, adventure, independence'). Extract 1-4 keywords that describe the experience types in this entry.",
   "challengeType": "challenge faced if any (e.g., 'bullying', 'failure', 'conflict', 'loss')",
   "growthTheme": "growth or lesson (e.g., 'resilience', 'patience', 'self-discovery', 'courage')"
 }
@@ -680,6 +680,73 @@ Use null for fields that don't apply.`;
         }
         
         return entry;
+      }),
+    reanalyzeExperienceTypes: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const db = await import('./db').then(m => m.getDb());
+        if (!db) throw new Error('Database not available');
+        const { journalEntries } = await import('../drizzle/schema');
+        const { eq } = await import('drizzle-orm');
+        const { invokeLLM } = await import('./_core/llm');
+        
+        // Get all user's journal entries
+        const entries = await db.select()
+          .from(journalEntries)
+          .where(eq(journalEntries.userId, ctx.user.id));
+        
+        console.log(`[Journal] Re-analyzing ${entries.length} entries for user ${ctx.user.id}`);
+        
+        let updated = 0;
+        for (const entry of entries) {
+          try {
+            // Re-extract metadata with new comma-separated format
+            const metadataPrompt = `Analyze this journal entry and extract contextual metadata. Return ONLY a JSON object with these fields (use null if not applicable):
+{
+  "timeContext": "time period mentioned (e.g., 'childhood', '2010', 'age 15', 'summer')",
+  "placeContext": "location mentioned (e.g., 'New York', 'grandfather's garage', 'school')",
+  "experienceType": "comma-separated experience keywords (e.g., 'entrepreneurial journey, career reflection, self-discovery' or 'relationship, conflict, growth' or 'relocation, adventure, independence'). Extract 1-4 keywords that describe the experience types in this entry.",
+  "challengeType": "challenge faced if any (e.g., 'bullying', 'failure', 'conflict', 'loss')",
+  "growthTheme": "growth or lesson (e.g., 'resilience', 'patience', 'self-discovery', 'courage')"
+}
+
+Question: ${entry.question}
+Response: ${entry.response}`;
+            
+            const result = await invokeLLM({
+              messages: [{ role: "user", content: metadataPrompt }],
+            });
+            
+            const content = result.choices[0]?.message?.content;
+            if (typeof content === 'string') {
+              const jsonMatch = content.match(/\{[^}]+\}/);
+              if (jsonMatch) {
+                const metadata = JSON.parse(jsonMatch[0]);
+                
+                // Update only experienceType field
+                if (metadata.experienceType) {
+                  await db.update(journalEntries)
+                    .set({ 
+                      experienceType: metadata.experienceType,
+                      updatedAt: new Date()
+                    })
+                    .where(eq(journalEntries.id, entry.id));
+                  
+                  console.log(`[Journal] Updated entry ${entry.id}: ${entry.experienceType} → ${metadata.experienceType}`);
+                  updated++;
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`[Journal] Failed to re-analyze entry ${entry.id}:`, error);
+          }
+        }
+        
+        console.log(`[Journal] Re-analysis complete: ${updated}/${entries.length} entries updated`);
+        return { 
+          success: true, 
+          totalEntries: entries.length,
+          updatedEntries: updated
+        };
       }),
   }),  vision: router({
     list: protectedProcedure.query(async ({ ctx }) => {

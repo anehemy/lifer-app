@@ -4,9 +4,13 @@
 - [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
 
 ## CRITICAL BUGS - Fix Immediately
-- [x] Journal entries showing theme names (Freedom, Power, Love) as experienceType instead of descriptive types
-  - [x] Implement fixThemeEntries backend procedure to re-analyze affected entries
-  - [x] Test the fix functionality
+- [ ] Fix experienceType format: should be comma-separated keywords for bubble visualization
+  - [x] Rollback code to checkpoint 0776f51d
+  - [x] Update AI prompt in extractContext to generate comma-separated keywords (not "and"-connected)
+  - [x] Create re-analysis endpoint (journal.reanalyzeExperienceTypes) to process all entries with new format
+  - [x] Add re-analysis button in Settings page (Data & Privacy section)
+  - [ ] Test re-analysis endpoint and verify comma-separated format works
+  - [ ] Document: experienceType = comma-separated keywords (bubbles), primaryTheme = values (hexagon vertices)
 
 ## CRITICAL BUGS - Fix Immediately
 - [ ] Voice settings architecture: Move from per-user to global admin settings (IN PROGRESS)
