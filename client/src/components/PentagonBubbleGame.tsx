@@ -29,25 +29,32 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
   const animationRef = useRef<number>();
   const [zoom, setZoom] = useState(1);
 
-  // Pentagon dimensions
+  // Hexagon dimensions
   const WIDTH = 1200;
   const HEIGHT = 1000;
   const CENTER_X = WIDTH / 2;
   const CENTER_Y = HEIGHT / 2;
-  const RADIUS = 350; // Pentagon radius
+  const RADIUS = 350; // Hexagon radius
 
-  // Theme vertices (5 points of pentagon)
+  // Physics parameters (will be controllable via UI)
+  const [repulsionStrength, setRepulsionStrength] = useState(0.3);
+  const [attractionStrength, setAttractionStrength] = useState(0.02);
+  const [damping, setDamping] = useState(0.98);
+  const [bubbleSpacing, setBubbleSpacing] = useState(60);
+
+  // Theme vertices (6 points of hexagon)
   const themes: ThemeVertex[] = [
     { name: "Freedom", color: "#06b6d4", x: 0, y: 0 }, // cyan - top
     { name: "Power", color: "#ef4444", x: 0, y: 0 }, // red - top-right
     { name: "Value", color: "#a855f7", x: 0, y: 0 }, // purple - bottom-right
+    { name: "Justice", color: "#10b981", x: 0, y: 0 }, // green - bottom
     { name: "Love", color: "#ec4899", x: 0, y: 0 }, // pink - bottom-left
     { name: "Truth", color: "#f97316", x: 0, y: 0 }, // orange - top-left
   ];
 
-  // Calculate pentagon vertex positions
+  // Calculate hexagon vertex positions
   useEffect(() => {
-    const angle = (2 * Math.PI) / 5;
+    const angle = (2 * Math.PI) / 6; // 6 vertices for hexagon
     const startAngle = -Math.PI / 2; // Start from top
 
     themes.forEach((theme, i) => {
@@ -78,7 +85,7 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
         vx: 0,
         vy: 0,
         radius: 40 + Math.random() * 20,
-        color: "#94a3b8", // Initial gray
+        color: "#a855f7", // Start with purple instead of gray for better visibility
       };
     });
 
@@ -87,24 +94,26 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
 
   // Calculate color based on distance to vertices
   const calculateBubbleColor = (bubble: Bubble): string => {
+    // Find distances to all vertices
     const distances = themes.map(theme => {
       const dx = bubble.x - theme.x;
       const dy = bubble.y - theme.y;
-      return Math.sqrt(dx * dx + dy * dy);
+      return { theme, distance: Math.sqrt(dx * dx + dy * dy) };
     });
 
-    // Find max distance for normalization
-    const maxDist = Math.max(...distances);
-    
-    // Calculate weights (inverse distance)
-    const weights = distances.map(d => 1 - (d / maxDist));
+    // Sort by distance and take the 2 closest vertices
+    distances.sort((a, b) => a.distance - b.distance);
+    const closest = distances.slice(0, 2);
+
+    // Calculate weights using inverse square distance for stronger differentiation
+    const weights = closest.map(d => 1 / (d.distance * d.distance + 1));
     const totalWeight = weights.reduce((sum, w) => sum + w, 0);
 
-    // Blend colors based on weights
+    // Blend only the 2 closest colors
     let r = 0, g = 0, b = 0;
-    themes.forEach((theme, i) => {
+    closest.forEach((item, i) => {
       const weight = weights[i] / totalWeight;
-      const color = hexToRgb(theme.color);
+      const color = hexToRgb(item.theme.color);
       if (color) {
         r += color.r * weight;
         g += color.g * weight;
@@ -125,13 +134,10 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
     } : null;
   };
 
-  // Physics: bubble repulsion
-  const applyRepulsion = (bubbles: Bubble[]) => {
-    const REPULSION_STRENGTH = 0.2; // Reduced from 0.5 for stability
-    const DAMPING = 0.85; // Stronger dampening from 0.95 to stop vibration
-
+  // Physics: bubble repulsion and vertex attraction
+  const applyPhysics = (bubbles: Bubble[]) => {
     bubbles.forEach((bubble, i) => {
-      // Repel from other bubbles
+      // 1. Repel from other bubbles
       bubbles.forEach((other, j) => {
         if (i === j) return;
         
@@ -140,32 +146,63 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
         const dist = Math.sqrt(dx * dx + dy * dy);
         const minDist = bubble.radius + other.radius;
 
-        if (dist < minDist + 50) {
-          const force = (minDist + 50 - dist) * REPULSION_STRENGTH;
+        if (dist < minDist + bubbleSpacing) {
+          const force = (minDist + bubbleSpacing - dist) * repulsionStrength;
           const angle = Math.atan2(dy, dx);
           bubble.vx += Math.cos(angle) * force;
           bubble.vy += Math.sin(angle) * force;
         }
       });
 
-      // Apply velocity
+      // 2. Attract toward nearest vertex (creates clustering near values)
+      let nearestVertex = themes[0];
+      let nearestDist = Infinity;
+      
+      themes.forEach(vertex => {
+        const vdx = vertex.x - bubble.x;
+        const vdy = vertex.y - bubble.y;
+        const vdist = Math.sqrt(vdx * vdx + vdy * vdy);
+        if (vdist < nearestDist) {
+          nearestDist = vdist;
+          nearestVertex = vertex;
+        }
+      });
+
+      // Apply attraction force toward nearest vertex
+      const attractDx = nearestVertex.x - bubble.x;
+      const attractDy = nearestVertex.y - bubble.y;
+      const attractDist = Math.sqrt(attractDx * attractDx + attractDy * attractDy);
+      if (attractDist > 0) {
+        const force = attractionStrength;
+        bubble.vx += (attractDx / attractDist) * force;
+        bubble.vy += (attractDy / attractDist) * force;
+      }
+
+      // 3. Apply velocity
       bubble.x += bubble.vx;
       bubble.y += bubble.vy;
 
-      // Damping
-      bubble.vx *= DAMPING;
-      bubble.vy *= DAMPING;
+      // 4. Apply damping (friction)
+      bubble.vx *= damping;
+      bubble.vy *= damping;
 
-      // Keep within pentagon bounds (simplified: circular boundary)
-      const dx = bubble.x - CENTER_X;
-      const dy = bubble.y - CENTER_Y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      // 5. Stop very slow movement to prevent infinite jitter
+      const speed = Math.sqrt(bubble.vx * bubble.vx + bubble.vy * bubble.vy);
+      if (speed < 0.1) {
+        bubble.vx = 0;
+        bubble.vy = 0;
+      }
+
+      // 6. Keep within hexagon bounds (simplified: circular boundary)
+      const boundDx = bubble.x - CENTER_X;
+      const boundDy = bubble.y - CENTER_Y;
+      const boundDist = Math.sqrt(boundDx * boundDx + boundDy * boundDy);
       const maxDist = RADIUS - bubble.radius - 20;
 
-      if (dist > maxDist) {
-        const angle = Math.atan2(dy, dx);
-        bubble.x = CENTER_X + maxDist * Math.cos(angle);
-        bubble.y = CENTER_Y + maxDist * Math.sin(angle);
+      if (boundDist > maxDist) {
+        const boundAngle = Math.atan2(boundDy, boundDx);
+        bubble.x = CENTER_X + maxDist * Math.cos(boundAngle);
+        bubble.y = CENTER_Y + maxDist * Math.sin(boundAngle);
         bubble.vx *= -0.5;
         bubble.vy *= -0.5;
       }
@@ -187,7 +224,7 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
       // Clear canvas
       ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
-      // Draw pentagon outline - make it more visible
+      // Draw hexagon outline - make it more visible
       ctx.beginPath();
       themes.forEach((theme, i) => {
         if (i === 0) ctx.moveTo(theme.x, theme.y);
@@ -198,7 +235,7 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
       ctx.lineWidth = 4; // Thicker line
       ctx.stroke();
       
-      // Add a subtle fill to show the pentagon area
+      // Add a subtle fill to show the hexagon area
       ctx.fillStyle = "rgba(148, 163, 184, 0.05)";
       ctx.fill();
 
@@ -239,7 +276,7 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
 
       // Apply physics
       if (!dragging) {
-        applyRepulsion(bubbles);
+        applyPhysics(bubbles);
       }
 
       // Draw bubbles
@@ -252,9 +289,9 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
         ctx.lineWidth = 2;
         ctx.stroke();
 
-        // Draw label
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "12px sans-serif";
+        // Draw label with white text for visibility on dark bubbles
+        ctx.fillStyle = "#ffffff"; // White text
+        ctx.font = "bold 13px sans-serif"; // Bold for readability
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         const words = bubble.label.split(" ");
@@ -321,12 +358,12 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="text-center">
-        <h3 className="text-lg font-semibold">Pentagon Bubble Game</h3>
+        <h3 className="text-lg font-semibold">Hexagon Bubble Game</h3>
         <p className="text-sm text-muted-foreground">
           Drag bubbles to group related experiences. Watch colors blend and shift as you explore connections.
         </p>
         <p className="text-xs text-muted-foreground mt-1">
-          {experiences.length} experiences • Drag bubbles to arrange and watch colors change
+          {experiences.length} experiences • Bubbles cluster near matching values
         </p>
       </div>
       
@@ -367,6 +404,91 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
           onMouseLeave={handleMouseUp}
           className="border border-gray-200 rounded-lg shadow-lg cursor-grab active:cursor-grabbing bg-gradient-to-br from-slate-50 to-slate-100"
         />
+        </div>
+      </div>
+
+      {/* Physics Controls for Testing */}
+      <div className="w-full max-w-2xl bg-slate-50 border border-slate-200 rounded-lg p-4 space-y-3">
+        <h4 className="text-sm font-semibold text-slate-700 mb-2">Physics Controls (Testing)</h4>
+        
+        <div className="space-y-2">
+          <div>
+            <label className="text-xs font-medium text-slate-600 flex justify-between">
+              <span>Repulsion Strength</span>
+              <span className="text-slate-500">{repulsionStrength.toFixed(2)}</span>
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={repulsionStrength}
+              onChange={(e) => setRepulsionStrength(parseFloat(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-600 flex justify-between">
+              <span>Vertex Attraction</span>
+              <span className="text-slate-500">{attractionStrength.toFixed(3)}</span>
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="0.2"
+              step="0.01"
+              value={attractionStrength}
+              onChange={(e) => setAttractionStrength(parseFloat(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-600 flex justify-between">
+              <span>Damping (Friction)</span>
+              <span className="text-slate-500">{damping.toFixed(2)}</span>
+            </label>
+            <input
+              type="range"
+              min="0.7"
+              max="0.99"
+              step="0.01"
+              value={damping}
+              onChange={(e) => setDamping(parseFloat(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-medium text-slate-600 flex justify-between">
+              <span>Bubble Spacing</span>
+              <span className="text-slate-500">{bubbleSpacing}px</span>
+            </label>
+            <input
+              type="range"
+              min="10"
+              max="150"
+              step="10"
+              value={bubbleSpacing}
+              onChange={(e) => setBubbleSpacing(parseInt(e.target.value))}
+              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-slate-200">
+          <button
+            onClick={() => {
+              setRepulsionStrength(0.3);
+              setAttractionStrength(0.05);
+              setDamping(0.92);
+              setMinBubbleDistance(50);
+            }}
+            className="w-full px-3 py-1.5 bg-slate-200 hover:bg-slate-300 rounded text-sm font-medium text-slate-700"
+          >
+            Reset to Defaults
+          </button>
         </div>
       </div>
     </div>

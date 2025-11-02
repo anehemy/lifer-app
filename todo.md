@@ -4,6 +4,22 @@
 - [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
 
 ## CRITICAL BUGS - Fix Immediately
+- [x] Bubble visualization fixes implemented (code complete, blocked by tab navigation bug):
+  - [x] Fixed color blending: now uses only 2 closest vertices instead of averaging all 6
+  - [x] Fixed physics: reduced attraction (0.1 → 0.02), increased damping (0.95 → 0.98)
+  - [x] Added velocity threshold to stop movement when speed < 0.1
+  - [x] Hexagon vertices drawn with labels and colored circles
+  - [x] Text color set to WHITE for visibility
+  - [x] Added physics controls UI with sliders for testing
+  - [x] Fixed undefined variable error (minBubbleDistance → bubbleSpacing)
+
+- [ ] Tab navigation bug: Experiences tab not responding to clicks
+  - Cannot test bubble visualization because tab won't switch views
+  - Clicking "Experiences" button doesn't change content
+  - JavaScript click also fails to switch tabs
+  - Need to investigate LifeStoryTimeline tab switching logic
+
+## CRITICAL BUGS - Fix Immediately
 - [ ] Fix experienceType format: should be comma-separated keywords for bubble visualization
   - [x] Rollback code to checkpoint 0776f51d
   - [x] Update AI prompt in extractContext to generate comma-separated keywords (not "and"-connected)
