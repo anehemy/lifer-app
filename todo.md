@@ -1820,3 +1820,11 @@ Note: Server needed restart after Phase 2 & 3 code changes. Minor 415 error rema
 - [ ] Clarify two-page structure: Life Story (write) + Experience Analysis (analyze/combine)
 
 
+
+
+## BUG - Old Route Returning 404 ✅
+- [x] Add redirect from /experiences-test to /experience-analysis
+- [x] Ensure backward compatibility for old links and bookmarks
+- [x] Test redirect works correctly
+
+
