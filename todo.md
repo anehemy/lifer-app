@@ -31,10 +31,14 @@
   - [x] High-friction mode enabled: damping=10 allows precise manual placement, drag without bouncing
   - [x] Fixed damping formula: now uses (1 - damping/10) for intuitive behavior
 
-- [ ] Tab navigation bug preventing testing: Cannot switch to Experiences view
-  - Clicking Experiences tab keeps showing Timeline view
-  - Made LifeStoryTimeline controlled component but issue persists  
-  - User must test manually - may be browser automation limitation
+- [ ] Tab navigation bug in Journal.tsx LifeStoryTimeline component (LOW PRIORITY - investigate later)
+  - Clicking Experiences/Places/Challenges/Growth tabs does NOT switch views
+  - View stays stuck on "Timeline Visualization" regardless of which tab is clicked
+  - Made LifeStoryTimeline a controlled component (viewMode prop from parent) but issue persists
+  - Radix UI Tabs onValueChange callback is not firing
+  - Browser automation cannot reproduce - user can test bubble visualization manually
+  - Investigation needed: Check React DevTools, add debug logging, verify Radix UI Tabs version
+  - Workaround: User can access bubble visualization manually by clicking tabs
 
 ## CRITICAL BUGS - Fix Immediately
 - [ ] Fix experienceType format: should be comma-separated keywords for bubble visualization
@@ -1985,4 +1989,22 @@ Note: Server needed restart after Phase 2 & 3 code changes. Minor 415 error rema
   - Draw hexagon on top layer (after bubbles) so it's always visible
   - Make hexagon vertices more prominent (larger circles, bolder labels)
   - Adjust initial bubble positioning to start further from center
+
+
+
+- [x] tRPC returning HTML instead of JSON on /journal page (RESOLVED)
+  - Error: "Unexpected token '<', \"<!doctype \"... is not valid JSON"
+  - Root cause: Dev server had stopped/crashed
+  - Solution: Restarted dev server
+  - Page now loads correctly without HTML errors
+
+
+
+- [ ] CRITICAL: OAuth callback failing due to database connection error
+  - Error: "OAuth callback failed" - DrizzleQueryError: read ECONNRESET
+  - Root cause: Database connection is being reset during user upsert
+  - Prevents users from logging in successfully
+  - Server logs show: "Failed to upsert user" with ECONNRESET error
+  - Possible causes: Database connection pool exhausted, network timeout, TiDB connection limit
+  - Solution: Add retry logic, increase connection timeout, check DATABASE_URL configuration
 
