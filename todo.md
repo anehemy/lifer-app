@@ -13,11 +13,15 @@
   - [x] Added physics controls UI with sliders for testing
   - [x] Fixed undefined variable error (minBubbleDistance → bubbleSpacing)
 
-- [ ] Tab navigation bug: Experiences tab not responding to clicks
-  - Cannot test bubble visualization because tab won't switch views
-  - Clicking "Experiences" button doesn't change content
-  - JavaScript click also fails to switch tabs
-  - Need to investigate LifeStoryTimeline tab switching logic
+- [x] Tab navigation bug: Experiences tab not responding to clicks (RESOLVED - was clicking wrong buttons)
+  - Bubble visualization is working correctly
+  - Tab switching works as expected
+
+- [x] Bubble physics damping inverted: Higher damping should mean MORE friction (FIXED)
+  - Inverted damping calculation: velocity *= (2 - damping)
+  - Now: damping 0.999 = high friction, damping 0.7 = low friction
+  - Slider precision improved: step 0.001, max 0.999, displays 3 decimals
+  - Repulsion strength precision improved: step 0.01 (was 0.05)
 
 ## CRITICAL BUGS - Fix Immediately
 - [ ] Fix experienceType format: should be comma-separated keywords for bubble visualization
@@ -1951,4 +1955,13 @@ Note: Server needed restart after Phase 2 & 3 code changes. Minor 415 error rema
 - [ ] Add UI button in Experience Analysis to trigger re-analysis
 - [ ] Test that bubbles show real experiences after re-analysis
 
+
+
+
+## URGENT - Bubble Visualization Issues
+- [ ] Fix undefined setMinBubbleDistance error (line 572 in PentagonBubbleGame.tsx)
+  - Should use setBubbleSpacing instead
+- [ ] Hexagon vertices not visible in visualization
+  - Investigate why hexagon drawing code isn't rendering
+  - Verify canvas drawing logic is being called
 

@@ -31,8 +31,10 @@ export default function LifeStoryTimeline({ entries, birthYear, onViewModeChange
   const [viewMode, setViewMode] = useState<ViewMode>("timeline");
   
   const handleViewModeChange = (mode: ViewMode) => {
+    console.log('[LifeStoryTimeline] handleViewModeChange called with mode:', mode);
     setViewMode(mode);
     onViewModeChange?.(mode);
+    console.log('[LifeStoryTimeline] viewMode state updated to:', mode);
   };
   const [expandedEntries, setExpandedEntries] = useState<Set<number>>(new Set());
   const [collapsedPeriods, setCollapsedPeriods] = useState<Set<string>>(new Set());

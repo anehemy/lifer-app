@@ -183,8 +183,12 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
       bubble.y += bubble.vy;
 
       // 4. Apply damping (friction)
-      bubble.vx *= damping;
-      bubble.vy *= damping;
+      // Inverted: higher damping = more friction = slower movement
+      // damping range: 0.7-0.999, so (2 - damping) gives 1.3-1.001
+      // We want: high damping (0.999) → low multiplier (0.001), low damping (0.7) → high multiplier (0.3)
+      const frictionMultiplier = 2 - damping;
+      bubble.vx *= frictionMultiplier;
+      bubble.vy *= frictionMultiplier;
 
       // 5. Stop very slow movement to prevent infinite jitter
       const speed = Math.sqrt(bubble.vx * bubble.vx + bubble.vy * bubble.vy);
@@ -421,7 +425,7 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
               type="range"
               min="0"
               max="1"
-              step="0.05"
+              step="0.01"
               value={repulsionStrength}
               onChange={(e) => setRepulsionStrength(parseFloat(e.target.value))}
               className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
@@ -447,13 +451,13 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
           <div>
             <label className="text-xs font-medium text-slate-600 flex justify-between">
               <span>Damping (Friction)</span>
-              <span className="text-slate-500">{damping.toFixed(2)}</span>
+              <span className="text-slate-500">{damping.toFixed(3)}</span>
             </label>
             <input
               type="range"
               min="0.7"
-              max="0.99"
-              step="0.01"
+              max="0.999"
+              step="0.001"
               value={damping}
               onChange={(e) => setDamping(parseFloat(e.target.value))}
               className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
@@ -483,7 +487,7 @@ export default function PentagonBubbleGame({ experiences }: PentagonBubbleGamePr
               setRepulsionStrength(0.3);
               setAttractionStrength(0.05);
               setDamping(0.92);
-              setMinBubbleDistance(50);
+              setBubbleSpacing(50);
             }}
             className="w-full px-3 py-1.5 bg-slate-200 hover:bg-slate-300 rounded text-sm font-medium text-slate-700"
           >
