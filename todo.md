@@ -4,6 +4,11 @@
 - [x] Chat continuity bug: Question should appear as MR. MG's message (assistant), not user message
 
 ## CRITICAL BUGS - Fix Immediately
+- [x] Journal entries showing theme names (Freedom, Power, Love) as experienceType instead of descriptive types
+  - [x] Implement fixThemeEntries backend procedure to re-analyze affected entries
+  - [x] Test the fix functionality
+
+## CRITICAL BUGS - Fix Immediately
 - [ ] Voice settings architecture: Move from per-user to global admin settings (IN PROGRESS)
   - [x] Create global_settings table
   - [x] Fix duplicate router error in server/routes.ts
@@ -1826,5 +1831,104 @@ Note: Server needed restart after Phase 2 & 3 code changes. Minor 415 error rema
 - [x] Add redirect from /experiences-test to /experience-analysis
 - [x] Ensure backward compatibility for old links and bookmarks
 - [x] Test redirect works correctly
+
+
+
+
+## BUG - Phase 3 Experience Combination Missing Checkboxes
+- [ ] No checkboxes showing to select journal entries for combination
+- [ ] Users cannot select experiences to combine
+- [ ] Add checkboxes to journal entries list below Phase 3 section
+- [ ] Test selection and "Combine Selected" functionality
+
+
+
+
+## NEW FEATURE - Batch Update Experience Metadata from Primary Theme
+- [ ] Check database schema for Experience metadata field location
+- [ ] Create backend endpoint to update Experience field for multiple selected entries
+- [ ] Add UI button/action to set Experience = Primary Theme for selected entries
+- [ ] When user selects entries and clicks "Update Experience", set all their Experience metadata to their Primary Theme value
+- [ ] Test that updated Experience field flows through to other app features (timeline, patterns, etc.)
+
+
+
+
+## NEW FEATURE - Clickable Cluster Cards for Batch Selection
+- [x] Make Phase 2 cluster cards clickable
+- [x] Clicking a cluster selects all entries with that Primary Theme
+- [x] Add visual feedback (border/highlight) to show selected clusters
+- [x] Allow multiple clusters to be selected
+- [x] Update selected count in Phase 3 to reflect cluster selections
+- [ ] Test selecting clusters and using "Set Experience from Theme" button
+
+
+
+
+## NEW FEATURE - Pentagon Bubble Game ✅
+- [x] Create pentagon-shaped canvas component
+- [x] Add 5 theme vertices (Freedom, Power, Value, Love, Truth) at pentagon corners
+- [x] Assign colors to each theme vertex
+- [x] Create experience bubbles from unique experienceType values
+- [x] Implement bubble repulsion physics (bubbles push each other away)
+- [x] Make bubbles draggable
+- [x] Calculate distance from each bubble to each vertex
+- [x] Blend bubble colors based on proximity to vertices
+- [x] Add smooth color transitions as bubbles move
+- [x] Integrate into Patterns page
+- [ ] Test physics and color blending with real data
+- [ ] Save bubble positions for persistence (future enhancement)
+
+
+
+
+## BUG - Pentagon Bubble Game Visibility ✅
+- [x] Make pentagon outline thicker and more visible
+- [x] Increase theme vertex circle size
+- [x] Position theme labels further from vertices for better readability
+- [x] Increase font size for theme names
+- [x] Add background or shadow to theme labels for contrast
+
+
+
+
+## FIX - Pentagon Bubble Game Issues ✅
+- [x] Move Pentagon game from Patterns to Life Story → Experiences tab
+- [x] Remove Pentagon game from Patterns page
+- [x] Increase canvas size so pentagon is fully visible (1200x1000)
+- [x] Add zoom in/out controls
+- [x] Fix bubble physics - add strong dampening to prevent vibration
+- [x] Initialize bubbles with proper colors based on position
+- [x] Reduce repulsion force for more stable movement
+- [ ] Test dragging and color blending with real data
+
+
+
+
+## BUG - Pentagon Canvas Clipped/Not Visible ✅
+- [x] Canvas is being clipped by container - only small portion visible
+- [x] Pentagon outline not showing
+- [x] Most bubbles positioned outside viewport
+- [x] Add proper container sizing or scrolling (added overflow-auto with max-height)
+- [x] Ensure all content fits in visible area
+- [x] Fix mouse coordinates to work with zoom (divide by zoom factor)
+
+## FIX - Pentagon Game Logic & Data
+- [ ] Pentagon should be a BOUNDED PLAY AREA (bubbles constrained inside)
+- [ ] Bubbles should be EXPERIENCE TYPES from journal entries (not themes)
+- [ ] Themes (Freedom, Love, Power, Truth, Value) should be FIXED VERTICES only
+- [ ] Remove empty/unlabeled bubbles
+- [ ] Ensure all experience types from entries are shown as bubbles
+- [ ] Add pentagon boundary collision detection
+
+
+
+
+## FIX - Re-analyze Entries with Theme Names as ExperienceType
+- [ ] Find all entries where experienceType is a theme name (Freedom, Love, Power, Truth, Value)
+- [ ] Re-analyze those entries to extract proper experience type from journal content
+- [ ] Update experienceType field with correct values
+- [ ] Add UI button in Experience Analysis to trigger re-analysis
+- [ ] Test that bubbles show real experiences after re-analysis
 
 

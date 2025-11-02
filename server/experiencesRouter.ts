@@ -685,5 +685,139 @@ export const experiencesRouter = router({
 
       return { success: true };
     }),
+
+  /**
+   * Update experienceType metadata for selected entries based on their primaryTheme
+   */
+  updateExperienceFromTheme: protectedProcedure
+    .input(z.object({ entryIds: z.array(z.number()) }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      if (input.entryIds.length === 0) {
+        throw new Error("No entries selected");
+      }
+
+      let updated = 0;
+      const errors: string[] = [];
+
+      for (const entryId of input.entryIds) {
+        try {
+          // Get the entry to verify ownership
+          const entry = await getJournalEntryById(entryId);
+          if (!entry || entry.userId !== ctx.user.id) {
+            errors.push(`Entry ${entryId}: Not found or unauthorized`);
+            continue;
+          }
+
+          // Get the analysis to get primaryTheme
+          const analysis = await getExperienceAnalysis(entryId);
+          if (!analysis) {
+            errors.push(`Entry ${entryId}: Not analyzed yet`);
+            continue;
+          }
+
+          // Update the experienceType field with primaryTheme value
+          await db
+            .update(journalEntries)
+            .set({ experienceType: analysis.primaryTheme })
+            .where(eq(journalEntries.id, entryId));
+
+          updated++;
+        } catch (error) {
+          console.error(`[ExperiencesRouter] Error updating entry ${entryId}:`, error);
+          errors.push(`Entry ${entryId}: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+      }
+
+      return {
+        updated,
+        total: input.entryIds.length,
+        errors,
+      };
+    }),
+
+  /**
+   * Re-analyze entries that have theme names as experienceType
+   * This restores proper experience types that were overwritten
+   */
+  reanalyzeThemeEntries: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new Error("Database not available");
+
+      const themeNames = ['Freedom', 'Love', 'Power', 'Truth', 'Value'];
+      
+      // Find all entries where experienceType is a theme name
+      const entries = await db
+        .select()
+        .from(journalEntries)
+        .where(eq(journalEntries.userId, ctx.user.id));
+
+      const themeEntries = entries.filter(e => 
+        e.experienceType && themeNames.includes(e.experienceType)
+      );
+
+      console.log(`[ExperiencesRouter] Found ${themeEntries.length} entries with theme names as experienceType`);
+
+      let reanalyzed = 0;
+      const errors: string[] = [];
+
+      for (const entry of themeEntries) {
+        try {
+          // Re-extract metadata using AI
+          const { invokeLLM } = await import("./_core/llm");
+          
+          const metadataPrompt = `Analyze this journal entry and extract contextual metadata. Return ONLY a JSON object with these fields (use null if not applicable):
+{
+  "timeContext": "time period mentioned (e.g., 'childhood', '2010', 'age 15', 'summer')",
+  "placeContext": "location mentioned (e.g., 'New York', 'grandfather's garage', 'school')",
+  "experienceType": "type of experience (e.g., 'learning', 'relationship', 'achievement', 'loss', 'career change', 'relocation')",
+  "challengeType": "challenge faced if any (e.g., 'bullying', 'failure', 'conflict', 'loss')",
+  "growthTheme": "growth or lesson (e.g., 'resilience', 'patience', 'self-discovery', 'courage')"
+}
+
+Question: ${entry.question}
+Response: ${entry.response}`;
+
+          const result = await invokeLLM({
+            messages: [{ role: "user", content: metadataPrompt }],
+          });
+
+          const content = result.choices[0]?.message?.content;
+          if (!content) {
+            throw new Error("No response from LLM");
+          }
+
+          const metadata = JSON.parse(content);
+          
+          // Update experienceType with the re-analyzed value
+          await db
+            .update(journalEntries)
+            .set({ 
+              experienceType: metadata.experienceType,
+              // Also update other fields if they were affected
+              timeContext: metadata.timeContext || entry.timeContext,
+              placeContext: metadata.placeContext || entry.placeContext,
+              challengeType: metadata.challengeType || entry.challengeType,
+              growthTheme: metadata.growthTheme || entry.growthTheme,
+            })
+            .where(eq(journalEntries.id, entry.id));
+
+          reanalyzed++;
+          console.log(`[ExperiencesRouter] Re-analyzed entry ${entry.id}: ${entry.experienceType} → ${metadata.experienceType}`);
+        } catch (error) {
+          console.error(`[ExperiencesRouter] Error re-analyzing entry ${entry.id}:`, error);
+          errors.push(`Entry ${entry.id}: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+      }
+
+      return {
+        reanalyzed,
+        total: themeEntries.length,
+        errors,
+      };
+    }),
 });
 

@@ -75,6 +75,27 @@ export default function ExperienceAnalysis() {
     },
   });
 
+  const fixThemeEntriesMutation = trpc.experiences.fixThemeEntries.useMutation({
+    onSuccess: (result) => {
+      if (result.errors && result.errors.length > 0) {
+        toast.error(
+          `Fixed ${result.reanalyzed} entries, but ${result.errors.length} failed.`,
+          {
+            description: result.errors.slice(0, 3).join('; ') + (result.errors.length > 3 ? '...' : ''),
+            duration: 10000,
+          }
+        );
+      } else {
+        toast.success(`Fixed ${result.reanalyzed} of ${result.total} entries with theme names!`);
+      }
+      // Refetch journal entries to show updated experienceType
+      window.location.reload(); // Simple way to refresh all data
+    },
+    onError: (error) => {
+      toast.error(`Fix failed: ${error.message}`);
+    },
+  });
+
   const [patterns, setPatterns] = useState<any[]>([]);
   const [clusters, setClusters] = useState<any[]>([]);
   const [selectedForCombination, setSelectedForCombination] = useState<number[]>([]);
@@ -91,6 +112,47 @@ export default function ExperienceAnalysis() {
     },
     onError: (error) => {
       toast.error(`Combination failed: ${error.message}`);
+    },
+  });
+
+  // Update experience metadata mutation
+  const reanalyzeMutation = trpc.experiences.reanalyzeThemeEntries.useMutation({
+    onSuccess: (result) => {
+      if (result.errors && result.errors.length > 0) {
+        toast.error(
+          `Re-analyzed ${result.reanalyzed} entries, but ${result.errors.length} failed.`,
+          {
+            description: result.errors.slice(0, 3).join('; ') + (result.errors.length > 3 ? '...' : ''),
+            duration: 8000,
+          }
+        );
+      } else {
+        toast.success(`Re-analyzed ${result.reanalyzed} entries with proper experience types!`);
+      }
+      refetchAnalyses();
+    },
+    onError: (error) => {
+      toast.error(`Re-analysis failed: ${error.message}`);
+    },
+  });
+
+  const updateExperienceMutation = trpc.experiences.updateExperienceFromTheme.useMutation({
+    onSuccess: (result) => {
+      if (result.errors && result.errors.length > 0) {
+        toast.error(
+          `Updated ${result.updated} entries, but ${result.errors.length} failed.`,
+          {
+            description: result.errors.slice(0, 3).join('; ') + (result.errors.length > 3 ? '...' : ''),
+            duration: 8000,
+          }
+        );
+      } else {
+        toast.success(`Updated Experience field for ${result.updated} entries!`);
+      }
+      setSelectedForCombination([]);
+    },
+    onError: (error) => {
+      toast.error(`Update failed: ${error.message}`);
     },
   });
 
@@ -172,23 +234,43 @@ export default function ExperienceAnalysis() {
                 <div className="text-sm text-muted-foreground">Progress</div>
               </div>
               <div>
-                <Button 
-                  onClick={handleAnalyzeAll}
-                  disabled={isAnalyzing || stats.percentageAnalyzed === 100}
-                  className="w-full"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Analyze All
-                    </>
-                  )}
-                </Button>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleAnalyzeAll}
+                    disabled={isAnalyzing}
+                    size="lg"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Analyze All
+                      </>
+                    )}
+                  </Button>
+                  <Button 
+                    onClick={() => reanalyzeMutation.mutate()}
+                    disabled={reanalyzeMutation.isPending}
+                    size="lg"
+                    variant="outline"
+                  >
+                    {reanalyzeMutation.isPending ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Re-analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <TrendingUp className="mr-2 h-4 w-4" />
+                        Fix Theme Entries
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -312,21 +394,54 @@ export default function ExperienceAnalysis() {
               <div className="space-y-2 mt-6">
                 <h4 className="font-semibold text-sm">Experience Clusters ({clusters.length})</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {clusters.map((cluster) => (
-                    <Card key={cluster.id} className="bg-white">
-                      <CardContent className="pt-4 pb-3">
-                        <div className="text-lg font-bold text-purple-600">Cluster {cluster.id}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {cluster.experienceCount} experiences
-                        </div>
-                        {cluster.theme && (
-                          <Badge variant="outline" className="mt-2 text-xs">
-                            {cluster.theme}
-                          </Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
+                  {clusters.map((cluster) => {
+                    // Check if this cluster's entries are all selected
+                    const clusterEntryIds = analyses
+                      ?.filter(a => a.primaryTheme === cluster.theme)
+                      .map(a => a.entryId) || [];
+                    const isClusterSelected = clusterEntryIds.length > 0 && 
+                      clusterEntryIds.every(id => selectedForCombination.includes(id));
+                    
+                    return (
+                      <Card 
+                        key={cluster.id} 
+                        className={`cursor-pointer transition-all hover:shadow-md ${
+                          isClusterSelected 
+                            ? 'bg-purple-100 border-2 border-purple-500' 
+                            : 'bg-white hover:bg-purple-50'
+                        }`}
+                        onClick={() => {
+                          if (isClusterSelected) {
+                            // Deselect all entries in this cluster
+                            setSelectedForCombination(
+                              selectedForCombination.filter(id => !clusterEntryIds.includes(id))
+                            );
+                          } else {
+                            // Select all entries in this cluster
+                            const newSelection = [...new Set([...selectedForCombination, ...clusterEntryIds])];
+                            setSelectedForCombination(newSelection);
+                          }
+                        }}
+                      >
+                        <CardContent className="pt-4 pb-3">
+                          <div className="text-lg font-bold text-purple-600">Cluster {cluster.id}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {cluster.experienceCount} experiences
+                          </div>
+                          {cluster.theme && (
+                            <Badge variant="outline" className="mt-2 text-xs">
+                              {cluster.theme}
+                            </Badge>
+                          )}
+                          {isClusterSelected && (
+                            <div className="mt-2 text-xs font-medium text-purple-700">
+                              ✓ Selected
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -351,29 +466,49 @@ export default function ExperienceAnalysis() {
             <div className="bg-white p-4 rounded-lg border">
               <p className="text-sm text-muted-foreground">
                 {selectedForCombination.length === 0 ? (
-                  "Select 2 or more experiences below to combine them"
+                  "Click cluster cards above or select individual entries below. Set Experience metadata from Theme, or combine 2+ entries for wisdom insights."
                 ) : (
                   <span className="text-emerald-600 font-medium">
-                    {selectedForCombination.length} experiences selected. Click "Combine Selected" to generate wisdom.
+                    {selectedForCombination.length} experiences selected.
                   </span>
                 )}
               </p>
-              {selectedForCombination.length >= 2 && (
-                <div className="mt-3 flex gap-2">
+              {selectedForCombination.length >= 1 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {selectedForCombination.length >= 2 && (
+                    <Button
+                      onClick={() => combineMutation.mutate({ entryIds: selectedForCombination })}
+                      disabled={combineMutation.isPending}
+                      className="bg-emerald-600 hover:bg-emerald-700"
+                    >
+                      {combineMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Generating Wisdom...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Combine Selected ({selectedForCombination.length})
+                        </>
+                      )}
+                    </Button>
+                  )}
                   <Button
-                    onClick={() => combineMutation.mutate({ entryIds: selectedForCombination })}
-                    disabled={combineMutation.isPending}
-                    className="bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => updateExperienceMutation.mutate({ entryIds: selectedForCombination })}
+                    disabled={updateExperienceMutation.isPending}
+                    variant="default"
+                    className="bg-blue-600 hover:bg-blue-700"
                   >
-                    {combineMutation.isPending ? (
+                    {updateExperienceMutation.isPending ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating Wisdom...
+                        Updating...
                       </>
                     ) : (
                       <>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Combine Selected ({selectedForCombination.length})
+                        <TrendingUp className="mr-2 h-4 w-4" />
+                        Set Experience from Theme ({selectedForCombination.length})
                       </>
                     )}
                   </Button>
