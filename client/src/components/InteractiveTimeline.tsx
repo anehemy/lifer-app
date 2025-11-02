@@ -115,7 +115,7 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
   const currentYear = new Date().getFullYear();
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full">
       {/* Birth Year Indicator */}
       {birthYear ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -178,12 +178,12 @@ export default function InteractiveTimeline({ entries, birthYear }: InteractiveT
         </Button>
       </div>
            {/* Timeline Container */}
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
+      <Card className="overflow-hidden w-full border-2 border-purple-200">
+        <CardContent className="p-0 w-full bg-white dark:bg-gray-900">
           <div 
             ref={timelineRef}
-            className="overflow-x-auto overflow-y-hidden py-8 px-4"
-            style={{ height: "280px" }}
+            className="overflow-x-auto overflow-y-hidden py-8 px-4 w-full"
+            style={{ minHeight: "280px", height: "280px" }}
           >
             <div 
               className="relative"

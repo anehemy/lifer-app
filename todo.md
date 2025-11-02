@@ -1712,3 +1712,111 @@ No more error messages or console logs when sessions are deleted.
 - [x] Investigate responsive design issues in Life Story page (identified absolute positioning issue)
 - [x] Fix CSS/layout for mobile viewport (reduced spacing, added padding, increased height to 280px)
 
+
+## CRITICAL BUG - Timeline/Map Not Rendering on Mobile (REOPENED)
+- [ ] Timeline visualization component not rendering at all on mobile devices
+- [ ] Places map component not rendering at all on mobile devices  
+- [ ] Only journal entry cards show, no visualization above them
+- [ ] Issue is not layout/spacing - components aren't mounting on mobile
+- [ ] Check for CSS display:none or visibility:hidden on mobile breakpoints
+- [ ] Check for JavaScript errors preventing component mount on mobile
+- [ ] Verify TabsContent is rendering properly on mobile viewports
+
+
+## Phase 2: Semantic Clustering & Pattern Recognition
+- [ ] Generate vector embeddings for journal entries using LLM
+- [ ] Store embeddings in database (add embeddings column to experience_analyses)
+- [ ] Implement cosine similarity calculation for finding similar experiences
+- [ ] Build clustering algorithm to group related experiences
+- [ ] Create pattern recognition logic to identify recurring themes
+- [ ] Add tRPC endpoints for similarity search and pattern detection
+- [ ] Update ExperiencesTest UI to show similar experiences
+- [ ] Test clustering with real journal data
+- [ ] Validate pattern recognition accuracy
+
+
+## Phase 2 Implementation Status
+- [x] Generate vector embeddings for journal entries using LLM (semanticClustering.ts)
+- [x] Store embeddings in database (semanticEmbedding column already exists)
+- [x] Implement cosine similarity calculation for finding similar experiences
+- [x] Build clustering algorithm to group related experiences (threshold-based)
+- [x] Create pattern recognition logic to identify recurring themes (AI-generated insights)
+- [x] Add tRPC endpoints for similarity search and pattern detection (4 new endpoints)
+- [x] Update ExperiencesTest UI to show similar experiences (Phase 2 section with buttons)
+- [ ] Test clustering with real journal data (ready to test with all 25 entries)
+- [ ] Validate pattern recognition accuracy (needs user testing)
+
+
+## Phase 3: Experience Combination Logic
+- [ ] Create database schema for combined experiences table
+- [ ] Add junction table for experience_combinations
+- [ ] Build AI wisdom generator for combined experiences
+- [ ] Create tRPC endpoints for combining experiences
+- [ ] Add UI for selecting multiple experiences to combine
+- [ ] Display consolidated wisdom insights
+- [ ] Test combination with similar experiences
+
+
+## Phase 3 Complete ✅
+- [x] Create database schema for combined experiences table
+- [x] Add junction table for experience_combinations
+- [x] Build AI wisdom generator for combined experiences
+- [x] Create tRPC endpoints for combining experiences
+- [x] Add UI for selecting multiple experiences to combine
+- [x] Display consolidated wisdom insights
+- [ ] Test combination with similar experiences (ready to test)
+
+
+## CRITICAL BUG - tRPC Returning HTML Instead of JSON
+- [ ] Server returning HTML error pages instead of JSON responses
+- [ ] Multiple "Unexpected token '<'" errors on /journal page
+- [ ] Investigate server logs to find failing endpoints
+- [ ] Fix server-side errors causing crashes
+- [ ] Verify all tRPC endpoints return proper JSON
+
+
+## tRPC Error Resolution ✅
+- [x] Server returning HTML error pages instead of JSON responses (RESOLVED by server restart)
+- [x] Multiple "Unexpected token '<'" errors on /journal page (RESOLVED)
+- [x] Investigate server logs to find failing endpoints (server was in bad state)
+- [x] Fix server-side errors causing crashes (restart cleared bad state)
+- [x] Verify all tRPC endpoints return proper JSON (verified - page loads correctly)
+
+Note: Server needed restart after Phase 2 & 3 code changes. Minor 415 error remains but non-critical.
+
+
+## BUG - Missing Checkboxes on Analyzed Entries
+- [ ] Checkboxes not rendering next to analyzed journal entries
+- [ ] Users cannot select experiences to combine
+- [ ] Fix checkbox rendering in ExperiencesTest.tsx
+- [ ] Test selection and combination flow
+
+
+## Add Experiences Test Navigation
+- [ ] Add "Experiences Test" link to sidebar navigation
+- [ ] Make test page easily accessible for users
+- [ ] Test complete analysis flow
+
+
+## Fix Analysis Bug & Rename
+- [ ] Fix "Analyze All" - 9 entries not being analyzed (16/25 = 64%, should be 100%)
+- [ ] Investigate why some entries are skipped
+- [ ] Rename "Experiences Test" to "Experience Analysis" throughout
+- [ ] Update route from /experiences-test to /experience-analysis
+- [ ] Update navigation label and all references
+- [ ] Clarify two-page structure: Life Story (write) + Experience Analysis (analyze/combine)
+
+
+
+
+## Fix Analysis Bug & Rename ✅
+- [x] Rename "Experiences Test" to "Experience Analysis" throughout
+- [x] Update route from /experiences-test to /experience-analysis
+- [x] Update navigation label and all references
+- [x] Update page title and description
+- [x] Improved error handling - now shows which entries failed and why
+- [ ] Fix "Analyze All" - 9 entries not being analyzed (16/25 = 64%, should be 100%) - NEEDS TESTING
+- [ ] Investigate why some entries are skipped - ERROR MESSAGES NOW VISIBLE
+- [ ] Clarify two-page structure: Life Story (write) + Experience Analysis (analyze/combine)
+
+

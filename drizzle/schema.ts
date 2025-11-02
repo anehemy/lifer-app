@@ -251,3 +251,34 @@ export const experienceAnalyses = mysqlTable("experienceAnalyses", {
 
 export type ExperienceAnalysis = typeof experienceAnalyses.$inferSelect;
 export type InsertExperienceAnalysis = typeof experienceAnalyses.$inferInsert;
+
+/**
+ * Combined Experiences - Stores wisdom generated from combining multiple similar experiences
+ */
+export const combinedExperiences = mysqlTable("combined_experiences", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(), // User-given name for the combination
+  consolidatedWisdom: text("consolidatedWisdom").notNull(), // AI-generated wisdom insight
+  primaryTheme: varchar("primaryTheme", { length: 50 }), // Dominant life theme
+  archetypes: text("archetypes"), // JSON array of common archetypes
+  combinedAt: timestamp("combinedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type CombinedExperience = typeof combinedExperiences.$inferSelect;
+export type InsertCombinedExperience = typeof combinedExperiences.$inferInsert;
+
+/**
+ * Experience Combinations - Junction table linking journal entries to combined experiences
+ */
+export const experienceCombinations = mysqlTable("experience_combinations", {
+  id: int("id").autoincrement().primaryKey(),
+  combinedExperienceId: int("combinedExperienceId").notNull(),
+  journalEntryId: int("journalEntryId").notNull(),
+  addedAt: timestamp("addedAt").defaultNow().notNull(),
+});
+
+export type ExperienceCombination = typeof experienceCombinations.$inferSelect;
+export type InsertExperienceCombination = typeof experienceCombinations.$inferInsert;
+

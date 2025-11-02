@@ -16,7 +16,7 @@ import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import Analytics from "./pages/Analytics";
 import Notifications from "./pages/Notifications";
-import ExperiencesTest from "./pages/ExperiencesTest";
+import ExperienceAnalysis from "./pages/ExperienceAnalysis";
 
 function Router() {
   return (
@@ -33,7 +33,7 @@ function Router() {
         <Route path="/settings" component={Settings} />
         <Route path="/admin" component={Admin} />
         <Route path="/analytics" component={Analytics} />
-        <Route path="/experiences-test" component={ExperiencesTest} />
+        <Route path="/experience-analysis" component={ExperienceAnalysis} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
